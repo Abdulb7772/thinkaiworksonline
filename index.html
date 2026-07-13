@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcomSkyline × ThinkAIWorks — Command Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080d;--bg2:#0c0e16;--bg3:#10131f;--surface:#141828;--surface2:#1a1f30;--surface3:#1e2438;
+  --border:#242a40;--border2:#2e3650;--border3:#3a4470;
+  --text:#eceef5;--text2:#8890b0;--text3:#4a5070;
+  --es:#00e5c8;--es2:#00b8a2;--es3:rgba(0,229,200,.08);
+  --tai:#7c5cfc;--tai2:#5a3fd4;--tai3:rgba(124,92,252,.08);
+  --gold:#f5c842;--gold2:rgba(245,200,66,.1);
+  --green:#22d47a;--red:#ff4f6d;--amber:#ffaa2c;--blue:#4a9eff;
+  --font-head:'Clash Display',sans-serif;
+  --font-body:'Cabinet Grotesk',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --r:8px;--r2:14px;--r3:20px;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;overflow-x:hidden}
+
+/* === LAYOUT === */
+.shell{display:grid;grid-template-columns:260px 1fr;grid-template-rows:70px 1fr;min-height:100vh}
+
+/* === TOPBAR === */
+.topbar{grid-column:1/-1;display:flex;align-items:center;padding:0 28px;background:var(--bg2);border-bottom:1px solid var(--border);gap:16px;position:sticky;top:0;z-index:200}
+.brands{display:flex;align-items:center;gap:0}
+.brand-pill{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:30px;font-family:var(--font-head);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.brand-pill.es{background:var(--es3);color:var(--es);border-color:rgba(0,229,200,.2)}
+.brand-pill.tai{background:var(--tai3);color:var(--tai);border-color:rgba(124,92,252,.2)}
+.brand-pill.active-es{background:rgba(0,229,200,.15);border-color:var(--es)}
+.brand-pill.active-tai{background:rgba(124,92,252,.15);border-color:var(--tai)}
+.brand-divider{width:1px;height:28px;background:var(--border2);margin:0 8px}
+.topbar-center{flex:1;display:flex;align-items:center;justify-content:center;gap:20px;font-size:12px;color:var(--text3)}
+.live-stat{display:flex;align-items:center;gap:6px;padding:4px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:20px}
+.live-stat .dot{width:6px;height:6px;border-radius:50%;animation:pulse2 2s infinite}
+@keyframes pulse2{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
+.topbar-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.ceo-badge{display:flex;align-items:center;gap:8px;background:var(--gold2);border:1px solid rgba(245,200,66,.25);border-radius:30px;padding:5px 14px;cursor:pointer;transition:all .2s}
+.ceo-badge:hover{background:rgba(245,200,66,.15)}
+.ceo-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#f07b3f);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000}
+.ceo-name{font-size:12px;font-weight:600;color:var(--gold)}
+#live-clock{font-family:var(--font-mono);font-size:12px;color:var(--text3)}
+
+/* === SIDEBAR === */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-sect{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;padding:14px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;position:relative;border:1px solid transparent}
+.nav-item:hover{background:var(--surface);color:var(--text)}
+.nav-item.active{color:var(--text);border-color:var(--border2)}
+.nav-item.active.es-mode{background:rgba(0,229,200,.07);color:var(--es);border-color:rgba(0,229,200,.2)}
+.nav-item.active.tai-mode{background:rgba(124,92,252,.07);color:var(--tai);border-color:rgba(124,92,252,.2)}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active .nav-icon{opacity:1}
+.nbadge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;font-family:var(--font-mono)}
+.nbadge.red{background:rgba(255,79,109,.15);color:var(--red);border:1px solid rgba(255,79,109,.3)}
+.nbadge.green{background:rgba(34,212,122,.12);color:var(--green);border:1px solid rgba(34,212,122,.25)}
+.nbadge.amber{background:rgba(255,170,44,.12);color:var(--amber);border:1px solid rgba(255,170,44,.25)}
+.nbadge.blue{background:rgba(74,158,255,.12);color:var(--blue);border:1px solid rgba(74,158,255,.25)}
+.company-switcher{margin-top:auto;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2)}
+.cs-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.cs-opts{display:flex;gap:6px}
+.cs-opt{flex:1;padding:7px;border-radius:var(--r);font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;border:1px solid var(--border2);color:var(--text2)}
+.cs-opt.active-es{background:var(--es3);color:var(--es);border-color:rgba(0,229,200,.3)}
+.cs-opt.active-tai{background:var(--tai3);color:var(--tai);border-color:rgba(124,92,252,.3)}
+
+/* === MAIN === */
+.main{padding:28px;overflow-y:auto;display:flex;flex-direction:column;gap:24px}
+.page{display:none;flex-direction:column;gap:22px;animation:fadeUp .3s ease}
+.page.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* === COMPONENTS === */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.pt{font-family:var(--font-head);font-size:24px;font-weight:700;letter-spacing:-.5px}
+.ps{font-size:13px;color:var(--text2);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:var(--r);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;white-space:nowrap}
+.btn:hover{filter:brightness(1.1)}
+.btn-es{background:var(--es);color:#000}
+.btn-tai{background:var(--tai);color:#fff}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-gold{background:var(--gold);color:#000}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-red{background:rgba(255,79,109,.12);color:var(--red);border:1px solid rgba(255,79,109,.25)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+.card-sm{padding:14px 16px}
+.card-title{font-family:var(--font-head);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+.metric{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:18px;position:relative;overflow:hidden}
+.metric::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 var(--r2) 0 60px;opacity:.05}
+.metric.es::after{background:var(--es)}
+.metric.tai::after{background:var(--tai)}
+.m-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.m-val{font-family:var(--font-mono);font-size:26px;font-weight:500;margin:6px 0 4px}
+.m-delta{font-size:11px}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--text3)}
+
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.tg{background:rgba(34,212,122,.1);color:var(--green);border:1px solid rgba(34,212,122,.2)}
+.tr{background:rgba(255,79,109,.1);color:var(--red);border:1px solid rgba(255,79,109,.2)}
+.ta{background:rgba(255,170,44,.1);color:var(--amber);border:1px solid rgba(255,170,44,.2)}
+.tb{background:rgba(74,158,255,.1);color:var(--blue);border:1px solid rgba(74,158,255,.2)}
+.tes{background:var(--es3);color:var(--es);border:1px solid rgba(0,229,200,.2)}
+.ttai{background:var(--tai3);color:var(--tai);border:1px solid rgba(124,92,252,.2)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:0 12px 10px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:hover{background:var(--bg3)}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 12px;vertical-align:middle}
+
+.progress{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .8s ease}
+
+.score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.score-val{position:absolute;font-family:var(--font-mono);font-size:13px;font-weight:500}
+
+/* CHAT */
+.chat-container{display:flex;flex-direction:column;height:460px;background:var(--bg3);border-radius:var(--r2);border:1px solid var(--border);overflow:hidden}
+.chat-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface)}
+.ceo-chat-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#f07b3f);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;font-family:var(--font-head);flex-shrink:0}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
+.chat-msg{display:flex;flex-direction:column;gap:4px}
+.chat-msg.ai{align-items:flex-start}
+.chat-msg.user{align-items:flex-end}
+.msg-bubble{max-width:78%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6}
+.chat-msg.ai .msg-bubble{background:var(--surface2);border-bottom-left-radius:4px;color:var(--text)}
+.chat-msg.user .msg-bubble{background:var(--tai);border-bottom-right-radius:4px;color:#fff}
+.msg-who{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--text3);text-transform:uppercase}
+.chat-input-area{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surface)}
+.chat-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:9px 14px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none}
+.chat-inp:focus{border-color:var(--tai)}
+.chat-inp::placeholder{color:var(--text3)}
+
+/* UPWORK INTAKE */
+.intake-form{display:flex;flex-direction:column;gap:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
+.form-field input,.form-field select,.form-field textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;transition:border-color .15s}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--es)}
+.form-field select option{background:var(--bg3)}
+.form-field textarea{resize:vertical;min-height:80px}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--r);font-size:12px;font-family:var(--font-mono);cursor:pointer;transition:all .15s;border:1px solid transparent;position:relative}
+.cal-day:hover{background:var(--surface2)}
+.cal-day.has-event::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--es)}
+.cal-day.today{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+.cal-day.other{color:var(--text3)}
+
+/* ALERT CARD */
+.alert-row{display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px}
+.alert-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
+/* OUTREACH EMAIL */
+.email-preview{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-size:12px;font-family:var(--font-mono);line-height:1.7;color:var(--text2)}
+.email-preview .subj{color:var(--text);font-weight:500;margin-bottom:8px}
+.email-preview .to{color:var(--text3);margin-bottom:10px;font-size:10px}
+
+/* BAR CHART */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px;padding:0 4px}
+.b-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.b-bar{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease,opacity .2s}
+.b-bar:hover{opacity:.8}
+.b-lbl{font-size:9px;color:var(--text3);font-family:var(--font-mono)}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;padding:13px 20px;border-radius:var(--r2);font-size:13px;z-index:9999;max-width:380px;animation:fadeUp .3s ease;font-weight:500;border:1px solid}
+.toast.success{background:#0a1f14;border-color:rgba(34,212,122,.35);color:var(--green)}
+.toast.info{background:#0d0f20;border-color:rgba(74,158,255,.35);color:var(--blue)}
+
+/* EMPLOYEE CARD */
+.emp-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:16px;transition:border-color .2s}
+.emp-card:hover{border-color:var(--border2)}
+.emp-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:15px;font-weight:700;flex-shrink:0}
+.emp-score{font-family:var(--font-mono);font-size:22px;font-weight:500}
+.emp-bar-wrap{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.emp-bar-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.emp-bar-label{color:var(--text3);width:68px;flex-shrink:0}
+.emp-bar-inner{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.emp-bar-fill{height:100%;border-radius:2px}
+.emp-bar-val{font-family:var(--font-mono);color:var(--text2);font-size:10px;width:30px;text-align:right}
+
+/* GROWTH SUGGESTIONS */
+.suggestion-card{background:var(--bg3);border-radius:var(--r2);border:1px solid var(--border);padding:16px;display:flex;gap:14px;margin-bottom:10px}
+.sug-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:13px;font-weight:700;flex-shrink:0}
+
+/* SCROLL */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* NOTIFICATION TICKER */
+.ticker{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 28px;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:12px;overflow:hidden}
+.ticker-inner{display:flex;gap:40px;animation:scroll-left 30s linear infinite;white-space:nowrap}
+@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{display:flex;align-items:center;gap:6px}
+
+/* BUDGET SLIDERS */
+.budget-slider-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bs-label{font-size:12px;color:var(--text2);width:140px;flex-shrink:0}
+.bs-input{flex:1;accent-color:var(--es)}
+.bs-val{font-family:var(--font-mono);font-size:12px;color:var(--text);width:60px;text-align:right}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  
+  <div class="ticker-inner" id="ticker-inner"></div>
+</div>
+
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brands">
+    
+    <div class="brand-pill tai" onclick="switchCompany('tai')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      ThinkAIWorks
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="live-stat"><div class="dot" style="background:var(--green)"></div><span id="up-count">3 new Upwork leads</span></div>
+    <div class="live-stat"><div class="dot" style="background:var(--amber)"></div><span>2 meetings today</span></div>
+    <div class="live-stat"><div class="dot" style="background:var(--blue)"></div><span id="rev-ticker">MRR $28,400</span></div>
+  </div>
+  <div class="topbar-right">
+    <span id="live-clock"></span>
+    <div class="ceo-badge" onclick="showPage('ceo')">
+      <div class="ceo-avatar">MA</div>
+      <div class="ceo-name">CEO Muhammad Ali</div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-sect">Core</div>
+  <div class="nav-item active" onclick="showPage('overview',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="1.5"/></svg>
+    Command Center
+  </div>
+  <div class="nav-item" onclick="showPage('upwork',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+    Upwork Intake
+    <span class="nbadge red">3</span>
+  </div>
+  <div class="nav-item" onclick="showPage('crm',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+    CRM Pipeline
+    <span class="nbadge blue">12</span>
+  </div>
+  <div class="nav-item" onclick="showPage('meetings',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/><path stroke-linecap="round" stroke-width="1.5" d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Meetings
+    <span class="nbadge amber">2</span>
+  </div>
+  <div class="nav-sect">Intelligence</div>
+  <div class="nav-item" onclick="showPage('employees',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="8" r="4" stroke-width="1.5"/><path stroke-linecap="round" stroke-width="1.5" d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+    Employee Performance
+  </div>
+  <div class="nav-item" onclick="showPage('outreach',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    AI Outreach
+    <span class="nbadge green">Active</span>
+  </div>
+  <div class="nav-item" onclick="showPage('support',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+    Customer Support
+    <span class="nbadge red">4</span>
+  </div>
+  <div class="nav-sect">Finance & Growth</div>
+  <div class="nav-item" onclick="showPage('budget',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    Budget & Revenue
+  </div>
+  <div class="nav-item" onclick="showPage('growth',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+    Growth Engine
+  </div>
+  <div class="nav-sect">CEO</div>
+  <div class="nav-item" onclick="showPage('ceo',this)">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    CEO Chat (Muhammad Ali)
+  </div>
+  <div class="company-switcher">
+    <div class="cs-label">Active Company</div>
+    <div class="cs-opts">
+      <div class="cs-opt active-es" id="cs-es" onclick="switchCompany('es')">EcomSkyline</div>
+      <div class="cs-opt" id="cs-tai" onclick="switchCompany('tai')">ThinkAIWorks</div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== OVERVIEW ===== -->
+<div id="page-overview" class="page active">
+  <div class="ph">
+    <div>
+      <div class="pt">Command Center</div>
+      <div class="ps" id="overview-sub">Viewing: EcomSkyline · All systems operational</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm">Export Report</button>
+      <button class="btn btn-es btn-sm" id="primary-btn">+ New Client</button>
+    </div>
+  </div>
+  <div class="grid4" id="overview-metrics"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Recent Upwork Leads <span class="tag tes">Auto-synced</span></div>
+      <div id="ov-leads"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Today's Schedule</div>
+      <div id="ov-schedule"></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Revenue — Last 7 Days</div>
+      <div class="bar-chart" id="rev-chart"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px" id="rev-labels"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top Performers This Week</div>
+      <div id="ov-performers"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== UPWORK INTAKE ===== -->
+<div id="page-upwork" class="page">
+  <div class="ph">
+    <div><div class="pt">Upwork Client Intake</div><div class="ps">New leads auto-upload to CRM · AI qualifies & assigns</div></div>
+    <button class="btn btn-es" onclick="submitUpwork()">↑ Submit to CRM</button>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">New Client Intake Form</div>
+      <div class="intake-form" id="intake-form">
+        <div class="form-row">
+          <div class="form-field"><label>Client Name</label><input type="text" id="cl-name" placeholder="e.g. John Carter" /></div>
+          <div class="form-field"><label>Upwork Profile URL</label><input type="text" id="cl-url" placeholder="upwork.com/..." /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Service Required</label>
+            <select id="cl-service">
+              <option>Amazon FBA Management</option><option>Shopify Development</option><option>AI Automation</option><option>Email Marketing</option><option>PPC Advertising</option><option>Product Research</option><option>AI Chatbot Build</option><option>Data Analysis</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Company (Assign To)</label>
+            <select id="cl-company"><option>EcomSkyline</option><option>ThinkAIWorks</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Budget Range</label>
+            <select id="cl-budget"><option>$500–$1,000</option><option>$1,000–$3,000</option><option>$3,000–$7,000</option><option>$7,000+</option></select>
+          </div>
+          <div class="form-field"><label>Priority</label>
+            <select id="cl-priority"><option>High</option><option>Medium</option><option>Low</option></select>
+          </div>
+        </div>
+        <div class="form-field"><label>Project Brief</label><textarea id="cl-brief" placeholder="Describe what the client needs..."></textarea></div>
+        <div class="form-field"><label>Assign Employee</label>
+          <select id="cl-assign"><option>Sarah K. (Lead Manager)</option><option>Omar H. (Dev Lead)</option><option>Zara T. (AI Specialist)</option><option>Bilal M. (Marketing)</option><option>Ayesha N. (Support)</option></select>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="card-title">Pending Upwork Leads <span class="nbadge red">3</span></div>
+        <div id="pending-leads"></div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title">AI Lead Qualifier</div>
+        <div style="background:var(--bg3);border-left:3px solid var(--es);padding:10px 12px;border-radius:0 var(--r) var(--r) 0;font-size:12px;color:var(--text2);line-height:1.7">
+          <strong style="color:var(--es)">AI Analysis:</strong> Latest lead (David Park) has a 91% close probability. Budget $3k–7k, clear brief, previous Upwork history. Recommend assigning to Sarah K. and scheduling a discovery call within 24h.
+        </div>
+        <button class="btn btn-es btn-sm" style="margin-top:10px" onclick="toast('AI auto-scheduled discovery call with David Park · Calendar updated ✓','success')">Auto-Schedule Discovery Call</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CRM ===== -->
+<div id="page-crm" class="page">
+  <div class="ph">
+    <div><div class="pt">CRM Pipeline</div><div class="ps">Linked with Upwork · Auto-updates on client activity</div></div>
+    <button class="btn btn-es" onclick="toast('CRM synced with Upwork · 3 records updated ✓','success')">Sync Upwork</button>
+  </div>
+  <div class="grid4" style="margin-bottom:4px">
+    <div class="metric es"><div class="m-label">Total Leads</div><div class="m-val" style="color:var(--es)">47</div><div class="m-delta up">↑ 6 this week</div></div>
+    <div class="metric"><div class="m-label">Active Clients</div><div class="m-val">18</div><div class="m-delta up">↑ 2 new</div></div>
+    <div class="metric"><div class="m-label">Conversion Rate</div><div class="m-val">38%</div><div class="m-delta up">↑ 4% MoM</div></div>
+    <div class="metric"><div class="m-label">Pipeline Value</div><div class="m-val">$84k</div><div class="m-delta up">↑ $12k</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Pipeline Board</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px" id="crm-board"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">All Clients</div>
+    <table><thead><tr><th>Client</th><th>Company</th><th>Service</th><th>Value</th><th>Stage</th><th>Assigned To</th><th>Last Contact</th><th>Action</th></tr></thead>
+    <tbody id="crm-table"></tbody></table>
+  </div>
+</div>
+
+<!-- ===== MEETINGS ===== -->
+<div id="page-meetings" class="page">
+  <div class="ph">
+    <div><div class="pt">Meeting Hub</div><div class="ps">Create · Schedule · Auto-sync with CRM</div></div>
+    <button class="btn btn-es" onclick="createMeeting()">+ Create Meeting</button>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">
+        <span>May 2025</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm">‹</button>
+          <button class="btn btn-ghost btn-sm">›</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">Su</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">Mo</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">Tu</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">We</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">Th</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">Fr</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">Sa</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Upcoming Meetings</div>
+      <div id="meeting-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Quick Schedule</div>
+    <div class="form-row">
+      <div class="form-field"><label>Meeting Title</label><input type="text" id="m-title" placeholder="e.g. Onboarding Call — David Park"></div>
+      <div class="form-field"><label>Client (from CRM)</label><select id="m-client"><option>David Park</option><option>Emma Richardson</option><option>Ali Hassan</option><option>New Client</option></select></div>
+    </div>
+    <div class="form-row" style="margin-top:10px">
+      <div class="form-field"><label>Date & Time</label><input type="datetime-local" id="m-datetime"></div>
+      <div class="form-field"><label>Attendees</label><select id="m-attendee"><option>Sarah K.</option><option>Omar H.</option><option>Zara T.</option><option>Muhammad Ali (CEO)</option></select></div>
+    </div>
+    <button class="btn btn-es" style="margin-top:14px" onclick="saveMeeting()">Save & Notify Team</button>
+  </div>
+</div>
+
+<!-- ===== EMPLOYEES ===== -->
+<div id="page-employees" class="page">
+  <div class="ph">
+    <div><div class="pt">Employee Performance</div><div class="ps">AI-scored · Real-time KPI tracking across both companies</div></div>
+    <button class="btn btn-ghost btn-sm">Export Scorecards</button>
+  </div>
+  <div class="grid4" style="margin-bottom:4px">
+    <div class="metric"><div class="m-label">Team Size</div><div class="m-val">11</div><div class="m-delta neutral">Both companies</div></div>
+    <div class="metric"><div class="m-label">Avg Score</div><div class="m-val">82</div><div class="m-delta up">↑ 5 pts MoM</div></div>
+    <div class="metric"><div class="m-label">Tasks Done</div><div class="m-val">247</div><div class="m-delta neutral">This month</div></div>
+    <div class="metric"><div class="m-label">At Risk</div><div class="m-val" style="color:var(--red)">1</div><div class="m-delta down">Needs attention</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px" id="emp-cards"></div>
+  <div class="card">
+    <div class="card-title">Full Performance Table</div>
+    <table><thead><tr><th>Employee</th><th>Company</th><th>Role</th><th>AI Score</th><th>Tasks</th><th>Client Rating</th><th>Attendance</th><th>Trend</th><th>Status</th></tr></thead>
+    <tbody id="emp-table"></tbody></table>
+  </div>
+</div>
+
+<!-- ===== OUTREACH ===== -->
+<div id="page-outreach" class="page">
+  <div class="ph">
+    <div><div class="pt">AI Outreach System</div><div class="ps">Automated prospect research · Personalized emails · Follow-up sequences</div></div>
+    <button class="btn btn-es" onclick="launchOutreach()">⚡ Launch Campaign</button>
+  </div>
+  <div class="grid4">
+    <div class="metric es"><div class="m-label">Prospects Found</div><div class="m-val" style="color:var(--es)">1,240</div><div class="m-delta">Upwork + LinkedIn</div></div>
+    <div class="metric"><div class="m-label">Emails Sent</div><div class="m-val">386</div><div class="m-delta up">This week</div></div>
+    <div class="metric"><div class="m-label">Open Rate</div><div class="m-val">44%</div><div class="m-delta up">↑ vs 22% avg</div></div>
+    <div class="metric"><div class="m-label">Booked Calls</div><div class="m-val">23</div><div class="m-delta up">↑ 9% rate</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Active Campaigns</div>
+      <div id="campaigns-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sample Outreach Email — EcomSkyline</div>
+      <div class="email-preview">
+        <div class="to">TO: Mark Hudson · Amazon Seller · mark@... &nbsp; | &nbsp; SCORE: 88% match</div>
+        <div class="subj">Subject: Scaling your Amazon FBA revenue — here's how we do it</div>
+        <div style="color:var(--text)">Hi Mark,</div><br>
+        <div>I came across your store and noticed you're doing well in the kitchen niche. We've scaled 14 similar stores from $20k to $80k+ monthly revenue using our Amazon FBA system at EcomSkyline.</div><br>
+        <div>Key things we handle: <span style="color:var(--es)">inventory forecasting, PPC optimization, supplier negotiations, and listing SEO</span>.</div><br>
+        <div>Would a 20-minute strategy call make sense? I can show you exactly what we'd do for your store.</div><br>
+        <div style="color:var(--text3)">— EcomSkyline Team, Powered by AI Outreach</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-ghost btn-sm">Edit</button>
+        <button class="btn btn-es btn-sm" onclick="toast('Outreach email sent to 47 Amazon sellers ✓','success')">Send to Segment</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">AI Outreach — ThinkAIWorks Sample</div>
+    <div class="email-preview">
+      <div class="to">TO: Jennifer Lee · Head of Ops · Retail Co · jen@... &nbsp; | &nbsp; SCORE: 92% match</div>
+      <div class="subj">Subject: Cut 40% of your ops workload with AI — we've done it for 8 companies</div>
+      <div style="color:var(--text)">Hi Jennifer,</div><br>
+      <div>Your company is scaling fast — and typically that means ops complexity grows faster than headcount. We specialize in AI automation at ThinkAIWorks: chatbots, workflow automation, and custom AI tools.</div><br>
+      <div>We recently helped a logistics company <span style="color:var(--tai)">automate 60% of their customer support tickets</span> and save 120 hours per month.</div><br>
+      <div>Could we do a quick 15-minute call this week?</div>
+    </div>
+    <button class="btn btn-tai btn-sm" style="margin-top:12px" onclick="toast('ThinkAIWorks campaign queued · 63 prospects in sequence ✓','info')">Send to ThinkAIWorks Segment</button>
+  </div>
+</div>
+
+<!-- ===== CUSTOMER SUPPORT ===== -->
+<div id="page-support" class="page">
+  <div class="ph">
+    <div><div class="pt">Customer Support AI</div><div class="ps">AI-first triage · Auto-respond · Escalation management</div></div>
+    <span class="tag tg" style="font-size:13px;padding:7px 14px">● AI Online</span>
+  </div>
+  <div class="grid4">
+    <div class="metric"><div class="m-label">Open Tickets</div><div class="m-val" style="color:var(--red)">4</div><div class="m-delta down">2 urgent</div></div>
+    <div class="metric"><div class="m-label">AI Resolved</div><div class="m-val">28</div><div class="m-delta up">This week</div></div>
+    <div class="metric"><div class="m-label">Avg Response</div><div class="m-val">4m</div><div class="m-delta up">↓ vs 2hr manual</div></div>
+    <div class="metric"><div class="m-label">CSAT Score</div><div class="m-val">4.7</div><div class="m-delta up">↑ /5.0</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Open Tickets</div>
+      <div id="support-tickets"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">AI Support Chat</div>
+      <div class="chat-container" style="height:340px">
+        <div class="chat-header" style="background:var(--surface2)">
+          <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,229,200,.15);border:1px solid rgba(0,229,200,.3);display:flex;align-items:center;justify-content:center;font-size:14px">🤖</div>
+          <div><div style="font-weight:600;font-size:13px">EcomSkyline Support AI</div><div style="font-size:11px;color:var(--text3)">Powered by AI · 24/7</div></div>
+          <span class="tag tg" style="margin-left:auto">Online</span>
+        </div>
+        <div class="chat-messages" id="support-chat-msgs">
+          <div class="chat-msg ai"><div class="msg-who">Support AI</div><div class="msg-bubble" style="background:var(--surface2)">Hi! I'm the EcomSkyline support assistant. How can I help you today with your account or project?</div></div>
+        </div>
+        <div class="chat-input-area">
+          <input class="chat-inp" id="support-inp" placeholder="Type a support message..." onkeydown="if(event.key==='Enter')sendSupport()">
+          <button class="btn btn-es btn-sm" onclick="sendSupport()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BUDGET ===== -->
+<div id="page-budget" class="page">
+  <div class="ph">
+    <div><div class="pt">Budget & Revenue</div><div class="ps">Marketing spend · Revenue tracking · ROI calculator</div></div>
+  </div>
+  <div class="grid4">
+    <div class="metric es"><div class="m-label">Total Revenue</div><div class="m-val" style="color:var(--es)" id="b-rev">$28,400</div><div class="m-delta up">↑ 22% MoM</div></div>
+    <div class="metric"><div class="m-label">Marketing Spend</div><div class="m-val" id="b-spend">$4,200</div><div class="m-delta neutral">14.8% of rev</div></div>
+    <div class="metric"><div class="m-label">Marketing ROI</div><div class="m-val" id="b-roi" style="color:var(--green)">576%</div><div class="m-delta up">Strong</div></div>
+    <div class="metric"><div class="m-label">Net Profit</div><div class="m-val" id="b-profit">$18,900</div><div class="m-delta up">66.5% margin</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Marketing Budget Allocator</div>
+      <div id="budget-sliders"></div>
+      <div style="margin-top:16px;padding:14px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span style="color:var(--text2)">Total Allocated</span>
+          <span style="font-family:var(--font-mono);color:var(--es)" id="total-budget">$4,200</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text2)">Projected ROI</span>
+          <span style="font-family:var(--font-mono);color:var(--green)" id="proj-roi">576%</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue Split — Both Companies</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">EcomSkyline</span><span style="font-family:var(--font-mono);color:var(--es)">$18,200 · 64%</span></div>
+          <div class="progress"><div class="progress-fill" style="width:64%;background:var(--es)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">ThinkAIWorks</span><span style="font-family:var(--font-mono);color:var(--tai)">$10,200 · 36%</span></div>
+          <div class="progress"><div class="progress-fill" style="width:36%;background:var(--tai)"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:18px">
+        <div class="card-title" style="margin-bottom:12px">Monthly Revenue Trend</div>
+        <div class="bar-chart" id="rev-trend-chart"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:var(--text3);font-family:var(--font-mono)">
+          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GROWTH ===== -->
+<div id="page-growth" class="page">
+  <div class="ph">
+    <div><div class="pt">Growth Engine</div><div class="ps">AI-generated suggestions · Both companies · Ranked by impact</div></div>
+    <button class="btn btn-gold" onclick="refreshSuggestions()">⚡ Refresh AI Suggestions</button>
+  </div>
+  <div class="grid4">
+    <div class="metric es"><div class="m-label">Growth Score</div><div class="m-val" style="color:var(--es)">74</div><div class="m-delta up">/100</div></div>
+    <div class="metric"><div class="m-label">MoM Growth</div><div class="m-val">22%</div><div class="m-delta up">Combined</div></div>
+    <div class="metric"><div class="m-label">Churn Rate</div><div class="m-val">6%</div><div class="m-delta up">↓ from 11%</div></div>
+    <div class="metric tai"><div class="m-label">AI Opportunities</div><div class="m-val" style="color:var(--tai)">8</div><div class="m-delta">Identified</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">EcomSkyline Growth Suggestions <span class="tag tes">AI-generated</span></div>
+      <div id="es-suggestions"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">ThinkAIWorks Growth Suggestions <span class="tag ttai">AI-generated</span></div>
+      <div id="tai-suggestions"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Combined Growth Roadmap — Q3 2025</div>
+    <div id="roadmap-list"></div>
+  </div>
+</div>
+
+<!-- ===== CEO CHAT ===== -->
+<div id="page-ceo" class="page">
+  <div class="ph">
+    <div><div class="pt">CEO — Muhammad Ali</div><div class="ps">Your AI-powered CEO advisor with full company context</div></div>
+    <span class="tag tg" style="padding:7px 14px;font-size:13px">● Available</span>
+  </div>
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="chat-container" style="height:500px">
+        <div class="chat-header">
+          <div class="ceo-chat-avatar">MA</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;font-family:var(--font-head)">Muhammad Ali</div>
+            <div style="font-size:11px;color:var(--text3)">CEO · EcomSkyline & ThinkAIWorks</div>
+          </div>
+          <span class="tag ta" style="margin-left:auto">CEO Mode</span>
+        </div>
+        <div class="chat-messages" id="ceo-msgs">
+          <div class="chat-msg ai">
+            <div class="msg-who">CEO Muhammad Ali</div>
+            <div class="msg-bubble">Assalamu Alaikum! I'm Muhammad Ali, CEO of EcomSkyline and ThinkAIWorks. I have full visibility into both companies — revenue, team performance, pipeline, marketing, and growth strategy. What would you like to discuss today?</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input class="chat-inp" id="ceo-inp" placeholder="Ask the CEO anything..." onkeydown="if(event.key==='Enter')sendCEO()" style="border-color:var(--border2)">
+          <button class="btn btn-gold btn-sm" onclick="sendCEO()">Ask</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card card-sm">
+        <div class="card-title">Quick CEO Prompts</div>
+        <div style="display:flex;flex-direction:column;gap:6px" id="ceo-prompts"></div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title">CEO Dashboard Snapshot</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Combined MRR</span><span style="font-family:var(--font-mono);color:var(--green)">$28,400</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Active Clients</span><span style="font-family:var(--font-mono)">18</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Team Members</span><span style="font-family:var(--font-mono)">11</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Open Leads</span><span style="font-family:var(--font-mono);color:var(--amber)">47</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Growth MoM</span><span style="font-family:var(--font-mono);color:var(--green)">+22%</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Urgent Issues</span><span style="font-family:var(--font-mono);color:var(--red)">2</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// === CLOCK ===
+function tick(){document.getElementById('live-clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+setInterval(tick,1000);tick();
+
+// === COMPANY STATE ===
+let company='es';
+function switchCompany(c){
+  company=c;
+  document.getElementById('cs-es').className='cs-opt'+(c==='es'?' active-es':'');
+  document.getElementById('cs-tai').className='cs-opt'+(c==='tai'?' active-tai':'');
+  document.getElementById('overview-sub').textContent='Viewing: '+(c==='es'?'EcomSkyline':'ThinkAIWorks')+' · All systems operational';
+  document.getElementById('primary-btn').className='btn btn-'+(c==='es'?'es':'tai')+' btn-sm';
+  renderOverviewMetrics();
+  toast('Switched to '+(c==='es'?'EcomSkyline':'ThinkAIWorks'),'info');
+}
+
+// === NAV ===
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active','es-mode','tai-mode')});
+  document.getElementById('page-'+id).classList.add('active');
+  if(el){el.classList.add('active',company==='es'?'es-mode':'tai-mode')}
+}
+
+// === TOAST ===
+function toast(msg,type='success'){
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.textContent=(type==='success'?'✓  ':'ℹ  ')+msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+// === TICKER ===
+const tickerItems=['New Upwork lead: David Park — Amazon FBA $5k budget','EcomSkyline revenue up 22% MoM','Meeting scheduled: Emma Richardson, 3pm today','ThinkAIWorks AI chatbot project — kick-off tomorrow','Employee of the week: Sarah K. · Score 94','Upwork lead qualified: 91% close probability','Outstanding invoice: Ali Hassan $2,400','Growth opportunity detected: Construction niche'];
+const inner=document.getElementById('ticker-inner');
+const doubled=[...tickerItems,...tickerItems];
+inner.innerHTML=doubled.map(t=>`<span class="ticker-item"><span style="color:var(--es)">●</span>${t}</span>`).join('');
+
+// === OVERVIEW METRICS ===
+const metricsData={
+  es:[
+    {label:'Monthly Revenue',val:'$18,200',delta:'↑ 22% MoM',cls:'up',co:'es'},
+    {label:'Active Clients',val:'11',delta:'↑ 2 new',cls:'up',co:''},
+    {label:'Upwork Leads',val:'28',delta:'This month',cls:'neutral',co:''},
+    {label:'Avg Project Value',val:'$1,650',delta:'↑ $200',cls:'up',co:''},
+  ],
+  tai:[
+    {label:'Monthly Revenue',val:'$10,200',delta:'↑ 31% MoM',cls:'up',co:'tai'},
+    {label:'Active Clients',val:'7',delta:'↑ 1 new',cls:'up',co:''},
+    {label:'AI Projects Live',val:'12',delta:'4 in build',cls:'neutral',co:''},
+    {label:'Avg Project Value',val:'$3,200',delta:'↑ $800',cls:'up',co:''},
+  ]
+};
+function renderOverviewMetrics(){
+  const data=metricsData[company];
+  document.getElementById('overview-metrics').innerHTML=data.map(m=>`
+    <div class="metric ${m.co}">
+      <div class="m-label">${m.label}</div>
+      <div class="m-val" style="${m.co?'color:var(--'+m.co+')'  :''}">${m.val}</div>
+      <div class="m-delta ${m.cls}">${m.delta}</div>
+    </div>`).join('');
+}
+renderOverviewMetrics();
+
+// === OVERVIEW LEADS ===
+const leads=[
+  {name:'David Park',service:'Amazon FBA',budget:'$3k–7k',score:91,co:'es',status:'New'},
+  {name:'Emma Richardson',service:'Shopify Dev',budget:'$1k–3k',score:77,co:'es',status:'Contacted'},
+  {name:'Tariq Sultan',service:'AI Chatbot',budget:'$5k+',score:88,co:'tai',status:'New'},
+];
+document.getElementById('ov-leads').innerHTML=leads.map(l=>`
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+    <div style="width:36px;height:36px;border-radius:50%;background:${l.co==='es'?'var(--es3)':'var(--tai3)'};border:1px solid ${l.co==='es'?'rgba(0,229,200,.2)':'rgba(124,92,252,.2)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${l.co==='es'?'var(--es)':'var(--tai)'};font-family:var(--font-head)">${l.name.split(' ').map(x=>x[0]).join('')}</div>
+    <div style="flex:1">
+      <div style="font-weight:600;font-size:13px">${l.name}</div>
+      <div style="font-size:11px;color:var(--text2)">${l.service} · ${l.budget}</div>
+    </div>
+    <span class="tag ${l.co==='es'?'tes':'ttai'}">${l.co==='es'?'ES':'TAI'}</span>
+    <span style="font-family:var(--font-mono);font-size:11px;color:var(--green)">${l.score}%</span>
+    <button class="btn btn-ghost btn-sm" onclick="toast('Lead added to CRM ✓','success')">Add to CRM</button>
+  </div>`).join('');
+
+// === SCHEDULE ===
+const schedule=[
+  {time:'10:00 AM',title:'Discovery Call — David Park',type:'Video Call',co:'es'},
+  {time:'2:00 PM',title:'Project Review — Emma R.',type:'Internal',co:'es'},
+  {time:'4:30 PM',title:'AI Demo — Tariq Sultan',type:'Video Call',co:'tai'},
+];
+document.getElementById('ov-schedule').innerHTML=schedule.map(s=>`
+  <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);min-width:72px">${s.time}</div>
+    <div style="flex:1">
+      <div style="font-weight:500;font-size:13px">${s.title}</div>
+      <div style="font-size:11px;color:var(--text3)">${s.type}</div>
+    </div>
+    <span class="tag ${s.co==='es'?'tes':'ttai'}">${s.co==='es'?'ES':'TAI'}</span>
+  </div>`).join('');
+
+// === REV CHART ===
+const revData=[12,15,11,18,22,19,28];
+const revLabels=['M','T','W','T','F','S','T'];
+const chart=document.getElementById('rev-chart');
+chart.innerHTML=revData.map((v,i)=>`
+  <div class="b-col">
+    <div class="b-bar" style="height:${(v/28)*100}%;background:${i===6?'var(--es)':'var(--border2)'};min-height:4px" title="$${v}k"></div>
+  </div>`).join('');
+document.getElementById('rev-labels').innerHTML=revLabels.map(l=>`<span style="font-size:9px;color:var(--text3);font-family:var(--font-mono);text-align:center;flex:1">${l}</span>`).join('');
+
+// === TOP PERFORMERS ===
+const performers=[
+  {name:'Sarah K.',role:'Lead Manager',score:94,co:'es'},
+  {name:'Zara T.',role:'AI Specialist',score:89,co:'tai'},
+  {name:'Omar H.',role:'Dev Lead',score:86,co:'es'},
+];
+document.getElementById('ov-performers').innerHTML=performers.map((p,i)=>`
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+    <div style="font-family:var(--font-mono);font-size:16px;color:var(--text3);width:20px">${i+1}</div>
+    <div style="width:34px;height:34px;border-radius:50%;background:${p.co==='es'?'var(--es3)':'var(--tai3)'};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:${p.co==='es'?'var(--es)':'var(--tai)'}">${p.name.split(' ').map(x=>x[0]).join('')}</div>
+    <div style="flex:1"><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--text2)">${p.role}</div></div>
+    <span style="font-family:var(--font-mono);color:var(--green);font-size:14px">${p.score}</span>
+  </div>`).join('');
+
+// === UPWORK PENDING LEADS ===
+const pendingLeads=[
+  {name:'David Park',budget:'$3k–7k',service:'Amazon FBA',score:91,age:'12m ago'},
+  {name:'Emma Richardson',budget:'$1k–3k',service:'Shopify Dev',score:77,age:'1h ago'},
+  {name:'Tariq Sultan',budget:'$5k+',service:'AI Chatbot',score:88,age:'3h ago'},
+];
+document.getElementById('pending-leads').innerHTML=pendingLeads.map(l=>`
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div style="font-weight:600">${l.name}</div><div style="font-size:11px;color:var(--text2);margin-top:2px">${l.service} · ${l.budget}</div></div>
+      <span style="font-family:var(--font-mono);color:var(--green);font-size:12px">${l.score}% match</span>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <button class="btn btn-es btn-sm" onclick="toast('${l.name} added to CRM pipeline ✓','success')">Add to CRM</button>
+      <button class="btn btn-ghost btn-sm">View Profile</button>
+    </div>
+  </div>`).join('');
+
+function submitUpwork(){
+  const name=document.getElementById('cl-name').value||'New Client';
+  toast(name+' added to CRM · Meeting scheduled · Team notified ✓','success');
+}
+
+// === CRM ===
+const crmClients=[
+  {name:'David Park',co:'ES',svc:'Amazon FBA',val:'$5,200',stage:'Discovery',assignee:'Sarah K.',last:'Today'},
+  {name:'Emma Richardson',co:'ES',svc:'Shopify Dev',val:'$2,800',stage:'Proposal',assignee:'Omar H.',last:'Yesterday'},
+  {name:'Tariq Sultan',co:'TAI',svc:'AI Chatbot',val:'$6,000',stage:'Negotiation',assignee:'Zara T.',last:'Today'},
+  {name:'Ali Hassan',co:'ES',svc:'PPC Ads',val:'$1,400',stage:'Active',assignee:'Bilal M.',last:'2d ago'},
+  {name:'Jennifer Lee',co:'TAI',svc:'AI Automation',val:'$8,500',stage:'Active',assignee:'Zara T.',last:'Today'},
+  {name:'Mark Hudson',co:'ES',svc:'FBA Management',val:'$3,200',stage:'Closed Won',assignee:'Sarah K.',last:'1w ago'},
+];
+const stageCols=['Discovery','Proposal','Negotiation','Active','Closed Won'];
+const stageColors={'Discovery':'tb','Proposal':'ta','Negotiation':'ta','Active':'tg','Closed Won':'tg'};
+document.getElementById('crm-board').innerHTML=stageCols.map(s=>`
+  <div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px">${s} <span style="font-family:var(--font-mono)">(${crmClients.filter(c=>c.stage===s).length})</span></div>
+    ${crmClients.filter(c=>c.stage===s).map(c=>`
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:6px">
+        <div style="font-weight:600;font-size:12px">${c.name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">${c.svc}</div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--green);margin-top:4px">${c.val}</div>
+      </div>`).join('')}
+  </div>`).join('');
+document.getElementById('crm-table').innerHTML=crmClients.map(c=>`
+  <tr>
+    <td><span style="font-weight:600">${c.name}</span></td>
+    <td><span class="tag ${c.co==='ES'?'tes':'ttai'}">${c.co==='ES'?'EcomSkyline':'ThinkAIWorks'}</span></td>
+    <td style="color:var(--text2)">${c.svc}</td>
+    <td style="font-family:var(--font-mono);color:var(--green)">${c.val}</td>
+    <td><span class="tag ${stageColors[c.stage]}">${c.stage}</span></td>
+    <td style="color:var(--text2)">${c.assignee}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.last}</td>
+    <td><button class="btn btn-ghost btn-sm">View</button></td>
+  </tr>`).join('');
+
+// === CALENDAR ===
+function buildCal(){
+  const grid=document.getElementById('cal-grid');
+  const eventDays=[2,5,8,12,18,22,25,28];
+  let html='';
+  for(let i=1;i<=31;i++){
+    const isToday=i===18;
+    const hasEv=eventDays.includes(i);
+    html+=`<div class="cal-day${isToday?' today':''}${hasEv?' has-event':''}" onclick="toast('May ${i} — ${hasEv?'Meeting scheduled':'No meetings'}','info')">${i}</div>`;
+  }
+  grid.innerHTML=html;
+}
+buildCal();
+
+const meetings=[
+  {title:'Discovery Call — David Park',date:'Today, 10:00 AM',type:'Video',co:'es',attendees:'Sarah K.'},
+  {title:'Project Review — Emma R.',date:'Today, 2:00 PM',type:'Internal',co:'es',attendees:'Omar H., Muhammad Ali'},
+  {title:'AI Demo — Tariq Sultan',date:'Today, 4:30 PM',type:'Video',co:'tai',attendees:'Zara T.'},
+  {title:'Monthly Strategy — All Team',date:'May 22, 10:00 AM',type:'Internal',co:'both',attendees:'Full Team'},
+];
+document.getElementById('meeting-list').innerHTML=meetings.map(m=>`
+  <div style="display:flex;gap:12px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">
+    <div style="width:40px;height:40px;background:${m.co==='es'?'var(--es3)':m.co==='tai'?'var(--tai3)':'var(--surface2)'};border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${m.type==='Video'?'📹':'👥'}</div>
+    <div style="flex:1">
+      <div style="font-weight:600;font-size:13px">${m.title}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">${m.date} · ${m.attendees}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+      <span class="tag ${m.co==='es'?'tes':m.co==='tai'?'ttai':'tb'}">${m.co==='both'?'Both':m.co.toUpperCase()}</span>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Joining meeting...','info')">Join</button>
+    </div>
+  </div>`).join('');
+
+function createMeeting(){toast('Meeting creator opened — fill in details below','info')}
+function saveMeeting(){
+  const t=document.getElementById('m-title').value||'New Meeting';
+  toast(t+' scheduled · Team notified · CRM updated ✓','success');
+}
+
+// === EMPLOYEES ===
+const employees=[
+  {name:'Sarah K.',initials:'SK',role:'Lead Manager',co:'es',score:94,tasks:42,rating:4.9,att:98,trend:'up',status:'Top'},
+  {name:'Omar H.',initials:'OH',role:'Dev Lead',co:'es',score:86,tasks:38,rating:4.7,att:95,trend:'up',status:'Strong'},
+  {name:'Zara T.',initials:'ZT',role:'AI Specialist',co:'tai',score:89,tasks:35,rating:4.8,att:97,trend:'up',status:'Strong'},
+  {name:'Bilal M.',initials:'BM',role:'Marketing',co:'es',score:78,tasks:29,rating:4.5,att:92,trend:'stable',status:'Good'},
+  {name:'Ayesha N.',initials:'AN',role:'Support',co:'both',score:82,tasks:56,rating:4.6,att:94,trend:'up',status:'Good'},
+  {name:'Kamran R.',initials:'KR',role:'Content',co:'es',score:61,tasks:18,rating:3.9,att:82,trend:'down',status:'Risk'},
+  {name:'Hina J.',initials:'HJ',role:'SEO Specialist',co:'es',score:75,tasks:24,rating:4.3,att:90,trend:'stable',status:'Good'},
+  {name:'Usman F.',initials:'UF',role:'Automation Dev',co:'tai',score:83,tasks:31,rating:4.6,att:93,trend:'up',status:'Strong'},
+  {name:'Sana K.',initials:'SK2',role:'Client Success',co:'both',score:88,tasks:48,rating:4.8,att:96,trend:'up',status:'Strong'},
+];
+const empColors={'es':'var(--es)','tai':'var(--tai)','both':'var(--gold)'};
+const empBgs={'es':'var(--es3)','tai':'var(--tai3)','both':'var(--gold2)'};
+document.getElementById('emp-cards').innerHTML=employees.slice(0,6).map(e=>`
+  <div class="emp-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div class="emp-avatar" style="background:${empBgs[e.co]};color:${empColors[e.co]}">${e.initials.slice(0,2)}</div>
+      <div>
+        <div style="font-weight:700;font-size:13px">${e.name}</div>
+        <div style="font-size:11px;color:var(--text2)">${e.role}</div>
+      </div>
+      <div style="margin-left:auto">
+        <div class="emp-score" style="color:${e.score>=90?'var(--green)':e.score>=75?'var(--amber)':'var(--red)'}">${e.score}</div>
+        <div style="font-size:9px;color:var(--text3);text-align:right">Score</div>
+      </div>
+    </div>
+    <span class="tag ${e.co==='es'?'tes':e.co==='tai'?'ttai':'ta'}" style="font-size:10px;margin-bottom:8px">${e.co==='es'?'EcomSkyline':e.co==='tai'?'ThinkAIWorks':'Both'}</span>
+    <div class="emp-bar-wrap">
+      <div class="emp-bar-row"><span class="emp-bar-label">Tasks</span><div class="emp-bar-inner"><div class="emp-bar-fill" style="width:${(e.tasks/56)*100}%;background:var(--blue)"></div></div><span class="emp-bar-val">${e.tasks}</span></div>
+      <div class="emp-bar-row"><span class="emp-bar-label">Rating</span><div class="emp-bar-inner"><div class="emp-bar-fill" style="width:${(e.rating/5)*100}%;background:var(--gold)"></div></div><span class="emp-bar-val">${e.rating}</span></div>
+      <div class="emp-bar-row"><span class="emp-bar-label">Attendance</span><div class="emp-bar-inner"><div class="emp-bar-fill" style="width:${e.att}%;background:${e.att>=90?'var(--green)':'var(--red)'}"></div></div><span class="emp-bar-val">${e.att}%</span></div>
+    </div>
+    ${e.status==='Risk'?`<div style="margin-top:10px;background:rgba(255,79,109,.08);border:1px solid rgba(255,79,109,.2);border-radius:var(--r);padding:8px;font-size:11px;color:var(--red)">⚠ Performance below target — review recommended</div>`:''}
+  </div>`).join('');
+
+document.getElementById('emp-table').innerHTML=employees.map(e=>`
+  <tr>
+    <td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:${empBgs[e.co]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${empColors[e.co]}">${e.initials.slice(0,2)}</div><span style="font-weight:500">${e.name}</span></div></td>
+    <td><span class="tag ${e.co==='es'?'tes':e.co==='tai'?'ttai':'ta'}">${e.co==='es'?'ES':e.co==='tai'?'TAI':'Both'}</span></td>
+    <td style="color:var(--text2)">${e.role}</td>
+    <td style="font-family:var(--font-mono);color:${e.score>=90?'var(--green)':e.score>=75?'var(--amber)':'var(--red)'}">${e.score}</td>
+    <td style="font-family:var(--font-mono)">${e.tasks}</td>
+    <td>⭐ ${e.rating}</td>
+    <td style="font-family:var(--font-mono)">${e.att}%</td>
+    <td style="color:${e.trend==='up'?'var(--green)':e.trend==='down'?'var(--red)':'var(--text3)'}">${e.trend==='up'?'↑ Rising':e.trend==='down'?'↓ Falling':'→ Stable'}</td>
+    <td><span class="tag ${e.status==='Top'?'tg':e.status==='Strong'?'tb':e.status==='Good'?'ta':'tr'}">${e.status}</span></td>
+  </tr>`).join('');
+
+// === OUTREACH CAMPAIGNS ===
+const campaigns=[
+  {name:'Amazon Sellers — FBA Mgmt',co:'es',sent:186,opens:'44%',replies:'9%',status:'active'},
+  {name:'Shopify Stores — Scaling',co:'es',sent:94,opens:'38%',replies:'7%',status:'active'},
+  {name:'SaaS Companies — AI Tools',co:'tai',sent:106,opens:'51%',replies:'12%',status:'active'},
+];
+document.getElementById('campaigns-list').innerHTML=campaigns.map(c=>`
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <div style="font-weight:600;font-size:13px">${c.name}</div>
+        <span class="tag ${c.co==='es'?'tes':'ttai'}" style="margin-top:4px">${c.co==='es'?'EcomSkyline':'ThinkAIWorks'}</span>
+      </div>
+      <span class="tag tg">Active</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px">
+      <div><div style="color:var(--text3)">Sent</div><div style="font-family:var(--font-mono);font-size:14px">${c.sent}</div></div>
+      <div><div style="color:var(--text3)">Opens</div><div style="font-family:var(--font-mono);font-size:14px;color:var(--amber)">${c.opens}</div></div>
+      <div><div style="color:var(--text3)">Replies</div><div style="font-family:var(--font-mono);font-size:14px;color:var(--green)">${c.replies}</div></div>
+    </div>
+  </div>`).join('');
+
+function launchOutreach(){toast('New outreach campaign queued · AI personalizing 89 emails ✓','success')}
+
+// === SUPPORT TICKETS ===
+const tickets=[
+  {id:'#T-441',client:'Ali Hassan',issue:'Invoice discrepancy — charged twice',priority:'High',co:'es',status:'Open'},
+  {id:'#T-442',client:'Emma R.',issue:'Project deliverable delayed by 2 days',priority:'High',co:'es',status:'Open'},
+  {id:'#T-443',client:'Jennifer Lee',issue:'AI chatbot not responding on weekends',priority:'Medium',co:'tai',status:'In Progress'},
+  {id:'#T-444',client:'Mark Hudson',issue:'Need additional report format',priority:'Low',co:'es',status:'Open'},
+];
+document.getElementById('support-tickets').innerHTML=tickets.map(t=>`
+  <div class="alert-row">
+    <div class="alert-icon" style="background:${t.priority==='High'?'rgba(255,79,109,.1)':t.priority==='Medium'?'rgba(255,170,44,.1)':'rgba(74,158,255,.1)'}">${t.priority==='High'?'🔴':t.priority==='Medium'?'🟡':'🔵'}</div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:600;font-size:13px">${t.client}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${t.id}</span>
+        <span class="tag ${t.co==='es'?'tes':'ttai'}">${t.co.toUpperCase()}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">${t.issue}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+      <span class="tag ${t.status==='Open'?'tr':'ta'}">${t.status}</span>
+      <button class="btn btn-ghost btn-sm" onclick="toast('AI drafted response for ${t.id} · Ready to send ✓','success')">AI Reply</button>
+    </div>
+  </div>`).join('');
+
+const supportReplies=[
+  "I understand your concern. Let me check your account details right now and get this resolved within the next 2 hours.",
+  "Thanks for reaching out. This is a known issue on our end — our dev team has a fix deploying today. I'll personally follow up once it's live.",
+  "I've escalated this to our senior team. You'll receive a detailed update within 1 business hour. We apologize for the inconvenience.",
+  "Great question! For this type of request, the best approach is to send us your preferences and we'll customize accordingly within 24 hours.",
+];
+let supportIdx=0;
+function sendSupport(){
+  const inp=document.getElementById('support-inp');
+  const msgs=document.getElementById('support-chat-msgs');
+  const txt=inp.value.trim();if(!txt)return;
+  msgs.innerHTML+=`<div class="chat-msg user"><div class="msg-who">You</div><div class="msg-bubble">${txt}</div></div>`;
+  inp.value='';msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    const r=supportReplies[supportIdx%supportReplies.length];supportIdx++;
+    msgs.innerHTML+=`<div class="chat-msg ai"><div class="msg-who">Support AI</div><div class="msg-bubble" style="background:var(--surface2)">${r}</div></div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  },900);
+}
+
+// === BUDGET SLIDERS ===
+const budgetItems=[
+  {label:'Upwork Promoted',val:800,max:3000},
+  {label:'LinkedIn Ads',val:600,max:3000},
+  {label:'Google Ads',val:1200,max:3000},
+  {label:'Content / SEO',val:400,max:2000},
+  {label:'Email Tools',val:200,max:1000},
+  {label:'AI Tools & SaaS',val:300,max:1500},
+  {label:'Events / Webinars',val:700,max:2000},
+];
+function renderBudgetSliders(){
+  document.getElementById('budget-sliders').innerHTML=budgetItems.map((b,i)=>`
+    <div class="budget-slider-row">
+      <span class="bs-label">${b.label}</span>
+      <input type="range" class="bs-input" min="0" max="${b.max}" value="${b.val}" step="50" oninput="updateBudget()">
+      <span class="bs-val" id="bs-${i}">$${b.val}</span>
+    </div>`).join('');
+}
+renderBudgetSliders();
+function updateBudget(){
+  const inputs=document.querySelectorAll('.bs-input');
+  let total=0;
+  inputs.forEach((inp,i)=>{
+    const v=parseInt(inp.value);
+    total+=v;
+    const el=document.getElementById('bs-'+i);
+    if(el)el.textContent='$'+v.toLocaleString();
+  });
+  const roi=Math.round((total*6.8)/total*100);
+  document.getElementById('total-budget').textContent='$'+total.toLocaleString();
+  document.getElementById('proj-roi').textContent=roi+'%';
+  document.getElementById('b-spend').textContent='$'+total.toLocaleString();
+}
+
+// === REV TREND CHART ===
+const trendData=[14200,16800,18400,21000,24500,28400];
+const trendChart=document.getElementById('rev-trend-chart');
+trendChart.innerHTML=trendData.map((v,i)=>`
+  <div class="b-col">
+    <div class="b-bar" style="height:${(v/28400)*100}%;background:${i===5?'var(--es)':i===4?'var(--tai)':'var(--border2)'};min-height:4px"></div>
+  </div>`).join('');
+
+// === GROWTH SUGGESTIONS ===
+const esSugg=[
+  {n:1,title:'Launch Tiered Retainer Packages',detail:'Offer Bronze/Silver/Gold FBA management tiers. Predictable MRR, easier upsell. Est. +$4k MRR.',impact:'High',effort:'Low',color:'var(--green)'},
+  {n:2,title:'Expand to UK & EU Amazon Markets',detail:'Your FBA expertise translates directly to Amazon.co.uk and Amazon.de. 3x addressable market.',impact:'High',effort:'Medium',color:'var(--amber)'},
+  {n:3,title:'Partner with Shopify App Developers',detail:'Referral partnerships with complementary tools drives warm inbound leads with zero ad spend.',impact:'Medium',effort:'Low',color:'var(--green)'},
+  {n:4,title:'Build a YouTube Channel on FBA Tactics',detail:'Short-form content drives organic Upwork leads. Competitors with channels get 3x inbound rate.',impact:'Medium',effort:'Medium',color:'var(--amber)'},
+];
+const taiSugg=[
+  {n:1,title:'Productize AI Chatbot as a SaaS',detail:'Package your chatbot work into a monthly subscription. $99–299/mo recurring vs one-time builds.',impact:'High',effort:'Medium',color:'var(--green)'},
+  {n:2,title:'Target Logistics & Courier Companies',detail:'Highly underserved by AI automation. Your RCC-style dashboard is a repeatable product.',impact:'High',effort:'Low',color:'var(--green)'},
+  {n:3,title:'Create AI Automation Templates',detail:'Sell pre-built automation workflows on Gumroad or Upwork as digital products. Passive revenue.',impact:'Medium',effort:'Low',color:'var(--amber)'},
+  {n:4,title:'Launch AI ROI Calculator for Prospects',detail:'Interactive tool on website showing how much AI saves companies. Converts cold traffic to calls.',impact:'High',effort:'Low',color:'var(--green)'},
+];
+function renderSuggestions(){
+  ['es','tai'].forEach(co=>{
+    const data=co==='es'?esSugg:taiSugg;
+    document.getElementById(co+'-suggestions').innerHTML=data.map(s=>`
+      <div class="suggestion-card">
+        <div class="sug-num" style="background:${co==='es'?'var(--es3)':'var(--tai3)'};color:${co==='es'?'var(--es)':'var(--tai)'};">${s.n}</div>
+        <div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px">${s.title}</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px">${s.detail}</div>
+          <div style="display:flex;gap:6px">
+            <span class="tag" style="background:rgba(34,212,122,.08);color:${s.color};border:1px solid ${s.color}30">Impact: ${s.impact}</span>
+            <span class="tag tb">Effort: ${s.effort}</span>
+          </div>
+        </div>
+      </div>`).join('');
+  });
+  document.getElementById('roadmap-list').innerHTML=[
+    {q:'Q3 Month 1',items:['Launch EcomSkyline tiered packages','Build ThinkAIWorks chatbot SaaS MVP','Hire 1 additional AI dev'],co:'both'},
+    {q:'Q3 Month 2',items:['Expand FBA to UK market','Launch AI automation template store','Run first LinkedIn ad campaign'],co:'both'},
+    {q:'Q3 Month 3',items:['Onboard first 5 SaaS chatbot subscribers','Target logistics niche with TAI','Review and adjust marketing budget'],co:'both'},
+  ].map(r=>`
+    <div style="display:flex;gap:16px;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">
+      <div style="min-width:100px;font-family:var(--font-mono);font-size:11px;color:var(--text3);font-weight:600">${r.q}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${r.items.map(it=>`<span class="tag tb" style="font-size:11px">${it}</span>`).join('')}</div>
+    </div>`).join('');
+}
+renderSuggestions();
+function refreshSuggestions(){toast('AI refreshed growth suggestions with latest company data ✓','success')}
+
+// === CEO CHAT ===
+const ceoPrompts=[
+  'What is our biggest growth opportunity right now?',
+  'How are both companies performing vs last month?',
+  'Which employees need my attention?',
+  'What should we prioritize this week?',
+  'How can we reduce churn?',
+  'What marketing should we double down on?',
+];
+document.getElementById('ceo-prompts').innerHTML=ceoPrompts.map(p=>`
+  <button class="btn btn-ghost btn-sm" style="text-align:left;justify-content:flex-start;font-size:12px" onclick="askCEO('${p}')">${p}</button>`).join('');
+
+const ceoReplies={
+  'What is our biggest growth opportunity right now?':'Shukriya for asking. Looking at both companies, ThinkAIWorks has the highest upside right now. Productizing the AI chatbot into a SaaS model could add $8–12k MRR within 90 days with existing infrastructure. For EcomSkyline, tiered retainer packages will stabilize revenue and make scaling predictable. My recommendation: prioritize both this month.',
+  'How are both companies performing vs last month?':'Combined MRR is $28,400 — up 22% month-over-month. EcomSkyline is driving 64% of revenue at $18,200. ThinkAIWorks grew 31% but from a smaller base at $10,200. Conversion rates are improving (38%, up 4%). The weak spot is churn at 6% — we need to improve onboarding and client success, particularly Ayesha and Sana\'s workflows.',
+  'Which employees need my attention?':'Kamran R. in Content has the lowest AI score (61) and his attendance dropped to 82%. I recommend a 1-on-1 this week. On the positive side, Sarah K. is exceptional at 94 — consider giving her a lead role in the UK expansion. Zara T. at ThinkAIWorks is our best AI asset and should be involved in the SaaS product build.',
+  'What should we prioritize this week?':'Three priorities: (1) Close David Park — he is a $5,200 client with 91% close probability, Sarah should reach out today. (2) Address the 2 urgent support tickets for Ali Hassan and Emma R. before they escalate. (3) Have a strategy session on the ThinkAIWorks SaaS pricing model. These three actions have the highest ROI this week.',
+  'How can we reduce churn?':'Our churn is 6%, which is manageable but we can get it to 3%. The main issues are: slow onboarding (clients lose confidence in week 1), inconsistent updates, and unclear deliverables. I suggest implementing weekly automated progress reports for every active client, an onboarding checklist within 48 hours of signup, and a dedicated client success check-in at day 14.',
+  'What marketing should we double down on?':'Upwork outreach is giving us the best ROI at the lowest cost. Our open rate of 44% is double the industry average. Double the Upwork Promoted budget and test a LinkedIn campaign targeting Amazon brand owners for EcomSkyline. For ThinkAIWorks, an AI ROI calculator tool on the website will convert cold traffic. Don\'t increase Google Ads yet — the conversion tracking needs improvement first.',
+};
+const defaultCEOReplies=[
+  'That is a great strategic question. Based on current company data: EcomSkyline has 11 active clients generating $18,200 MRR, and ThinkAIWorks has 7 active clients at $10,200 MRR. Combined growth is 22% month over month. What specific aspect would you like to dig into?',
+  'Looking at the numbers, I see clear opportunity in both companies. The key lever right now is converting our 47 open leads — our pipeline value is $84k. If we can move even 40% of that to close, we\'re looking at a very strong quarter.',
+  'From a CEO perspective: our team is performing well overall, with an average score of 82. The area needing attention is client retention and our content pipeline. Would you like me to elaborate on either?',
+];
+let ceoIdx=0;
+function askCEO(prompt){
+  document.getElementById('ceo-inp').value=prompt;
+  sendCEO();
+}
+function sendCEO(){
+  const inp=document.getElementById('ceo-inp');
+  const msgs=document.getElementById('ceo-msgs');
+  const txt=inp.value.trim();if(!txt)return;
+  msgs.innerHTML+=`<div class="chat-msg user"><div class="msg-who">You</div><div class="msg-bubble">${txt}</div></div>`;
+  inp.value='';msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    const reply=ceoReplies[txt]||defaultCEOReplies[ceoIdx%defaultCEOReplies.length];ceoIdx++;
+    msgs.innerHTML+=`<div class="chat-msg ai"><div class="msg-who">CEO Muhammad Ali</div><div class="msg-bubble">${reply}</div></div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  },1100);
+}
+</script>
+</body>
+</html>
