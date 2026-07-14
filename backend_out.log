@@ -1,0 +1,3 @@
+⚠ Local DNS cannot resolve Atlas SRV — retrying with Google DNS...
+✓ MongoDB connected successfully (via Google DNS)
+Server running on port 5000
