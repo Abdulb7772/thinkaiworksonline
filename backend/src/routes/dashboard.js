@@ -8,6 +8,13 @@ const Campaign = require('../models/Campaign');
 const Budget = require('../models/Budget');
 const router = express.Router();
 
+function normalizeAttendanceLog(log) {
+  if (!log) return {};
+  if (log instanceof Map) return Object.fromEntries(log);
+  if (typeof log === 'object') return { ...log };
+  return {};
+}
+
 const tickerItems = [
   'EcomSkyline revenue growing steadily',
   'ThinkAIWorks AI chatbot project active',
@@ -30,7 +37,7 @@ const buildAppData = async () => {
   } catch {}
 
   const totalSpend = budgets.reduce((s, b) => s + (b.value || 0), 0);
-  const totalRev = budgets.reduce((s, b) => s + (b.max || 0) * 3, 28400);
+  const totalRev = clients.reduce((s, c) => s + (parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0), 0) || 28400;
   const esRevenue = Math.round(totalRev * 0.64);
   const taiRevenue = totalRev - esRevenue;
 
@@ -44,11 +51,15 @@ const buildAppData = async () => {
       ],
       tai: [
         { label: 'Monthly Revenue', val: `$${taiRevenue.toLocaleString()}`, delta: '↑ 31% MoM', cls: 'up', co: 'tai' },
-        { label: 'Active Clients', val: String(clients.filter(c => c.company === 'ThinkAIWorks').length || 7), delta: '↑ 1 new', cls: 'up', co: '' },
-        { label: 'AI Projects Live', val: '12', delta: '4 in build', cls: 'neutral', co: '' },
-        { label: 'Avg Project Value', val: '$3,200', delta: '↑ $800', cls: 'up', co: '' },
+        { label: 'Active Clients', val: String(clients.filter(c => c.company === 'ThinkAIWorks').length || 0), delta: 'Current total', cls: 'up', co: '' },
+        { label: 'AI Projects Live', val: String(clients.filter(c => c.company === 'ThinkAIWorks' && c.stage === 'Active').length || 0), delta: 'Active stage', cls: 'neutral', co: '' },
+        { label: 'Avg Project Value', val: (() => { const taiClients = clients.filter(c => c.company === 'ThinkAIWorks'); const vals = taiClients.map(c => parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0).filter(v => v > 0); return vals.length ? '$' + Math.round(vals.reduce((a, b) => a + b, 0) / vals.length).toLocaleString() : '$0'; })(), delta: 'Per project', cls: 'up', co: '' },
       ],
     },
+    clients: clients.map(c => ({
+      name: c.name, company: c.company || 'EcomSkyline', service: c.service || '',
+      value: c.value || '', stage: c.stage || 'Discovery', assignedTo: c.assignedTo || '', lastContact: c.lastContact || '',
+    })),
     overviewLeads: leads.slice(0, 5).map(l => ({
       name: l.name, service: l.service || 'N/A', budget: l.budgetRange || 'N/A',
       score: l.score || 0, co: l.company === 'ThinkAIWorks' ? 'tai' : 'es', status: l.status || 'New',
@@ -76,10 +87,10 @@ const buildAppData = async () => {
       type: m.type || 'Internal', co: m.company ? m.company.toLowerCase().slice(0, 3) === 'thi' ? 'tai' : 'es' : 'es', attendees: m.attendees || '',
     })),
     employees: employees.map(e => ({
-      name: e.name, initials: e.name.split(' ').map(p => p[0]).join('').slice(0, 2),
-      role: e.role || 'Team', co: e.company === 'ThinkAIWorks' ? 'tai' : e.company === 'Both' ? 'both' : 'es',
+      _id: e._id, name: e.name, email: e.email || '', initials: e.name.split(' ').map(p => p[0]).join('').slice(0, 2),
+      role: e.role || 'Team', subRole: e.subRole || null, co: e.company === 'ThinkAIWorks' ? 'tai' : e.company === 'Both' ? 'both' : 'es',
       score: e.score || 0, tasks: e.tasks || 0, rating: e.rating || 0,
-      attendance: e.attendance || 0, trend: e.trend || 'stable', status: e.status || 'Good',
+      attendance: e.attendance || 0, attendanceLog: normalizeAttendanceLog(e.attendanceLog), trend: e.trend || 'stable', status: e.status || 'Good',
     })),
     campaigns: campaigns.map(c => ({
       name: c.name, co: c.company === 'ThinkAIWorks' ? 'tai' : 'es',
@@ -93,7 +104,7 @@ const buildAppData = async () => {
       items: budgets.map(b => ({ label: b.label, value: b.value, max: b.max })),
       totals: { spend: totalSpend, profit: totalRev - totalSpend, roi: totalSpend ? `${Math.round((totalRev / totalSpend) * 100)}%` : '0%', rev: totalRev },
     },
-    revTrend: [14200, 16800, 18400, 21000, 24500, totalRev],
+    revTrend: (() => { const step = Math.round(totalRev / 6); return Array.from({length:6},(_,i)=>step * (i + 1)); })(),
     tickerItems,
   };
 };

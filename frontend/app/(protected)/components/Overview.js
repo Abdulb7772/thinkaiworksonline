@@ -1,47 +1,38 @@
 'use client';
 
-const defaultEsMetrics = [
-  { label: 'Monthly Revenue', val: '$18,200', delta: '\u2191 22% MoM', cls: 'up', co: 'es' },
-  { label: 'Active Clients', val: '11', delta: '\u2191 2 new', cls: 'up', co: '' },
-  { label: 'Upwork Leads', val: '28', delta: 'This month', cls: 'neutral', co: '' },
-  { label: 'Avg Project Value', val: '$1,650', delta: '\u2191 $200', cls: 'up', co: '' },
-];
+import { useState } from 'react';
+import { api } from '@/lib/config';
+import AddClient from './AddClient';
 
-const defaultTaiMetrics = [
-  { label: 'Monthly Revenue', val: '$10,200', delta: '\u2191 31% MoM', cls: 'up', co: 'tai' },
-  { label: 'Active Clients', val: '7', delta: '\u2191 1 new', cls: 'up', co: '' },
-  { label: 'AI Projects Live', val: '12', delta: '4 in build', cls: 'neutral', co: '' },
-  { label: 'Avg Project Value', val: '$3,200', delta: '\u2191 $800', cls: 'up', co: '' },
-];
-
-const defaultLeads = [
-  { name: 'David Park', service: 'Amazon FBA', budget: '$3k\u20137k', score: 91, co: 'es', status: 'New' },
-  { name: 'Emma Richardson', service: 'Shopify Dev', budget: '$1k\u20133k', score: 77, co: 'es', status: 'Contacted' },
-  { name: 'Tariq Sultan', service: 'AI Chatbot', budget: '$5k+', score: 88, co: 'tai', status: 'New' },
-];
-
-const defaultSchedule = [
-  { time: '10:00 AM', title: 'Discovery Call \u2014 David Park', type: 'Video Call', co: 'es' },
-  { time: '2:00 PM', title: 'Project Review \u2014 Emma R.', type: 'Internal', co: 'es' },
-  { time: '4:30 PM', title: 'AI Demo \u2014 Tariq Sultan', type: 'Video Call', co: 'tai' },
-];
-
-const defaultPerformers = [
-  { name: 'Sarah K.', role: 'Lead Manager', score: 94, co: 'es' },
-  { name: 'Zara T.', role: 'AI Specialist', score: 89, co: 'tai' },
-  { name: 'Omar H.', role: 'Dev Lead', score: 86, co: 'es' },
-];
-
-const chartData = [12, 15, 11, 18, 22, 19, 28];
 const chartLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'T'];
 
-export default function Overview({ company, data, onToast }) {
-  const metrics = data?.metrics || (company === 'es' ? defaultEsMetrics : defaultTaiMetrics);
-  const leads = data?.overviewLeads || defaultLeads;
-  const schedule = data?.schedule || defaultSchedule;
-  const performers = data?.performers || defaultPerformers;
-  const maxVal = Math.max(...chartData);
-  const companyName = company === 'es' ? 'EcomSkyline' : 'ThinkAIWorks';
+export default function Overview({ data, leads, onToast, onAddLead }) {
+  const [showAdd, setShowAdd] = useState(false);
+  const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
+  const metrics = data?.overviewMetrics?.tai || [];
+  const overviewLeads = leads || data?.overviewLeads || [];
+  const schedule = data?.schedule || [];
+  const performers = data?.performers || [];
+  const chartData = data?.revChart?.data || [];
+  const maxVal = Math.max(...chartData, 1);
+
+  const stagePercent = (stage) => {
+    const map = { 'Discovery': 10, 'Proposal': 30, 'Negotiation': 60, 'Active': 90, 'Closed Won': 100 };
+    return map[stage] || 0;
+  };
+
+  const addToCRM = async (lead) => {
+    try {
+      await api('/clients', {
+        method: 'POST',
+        body: JSON.stringify({ name: lead.name, service: lead.service, stage: 'Discovery' }),
+      });
+      onToast?.(lead.name + ' added to CRM ✓', 'success');
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    }
+  };
+  const companyName = 'ThinkAIWorks';
 
   const getInitials = (name) =>
     name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -55,13 +46,23 @@ export default function Overview({ company, data, onToast }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-ghost btn-sm">Export Report</button>
-          <button id="primary-btn" className={`btn btn-${company === 'es' ? 'es' : 'tai'} btn-sm`}>+ New Client</button>
+          {userRole === 'admin' && (
+            <button id="primary-btn" className="btn btn-tai btn-sm" onClick={() => setShowAdd(true)}>+ New Client</button>
+          )}
         </div>
       </div>
 
+      {showAdd && (
+        <AddClient
+          onClose={() => setShowAdd(false)}
+          onToast={onToast}
+          onAddLead={onAddLead}
+        />
+      )}
+
       <div className="grid4">
         {metrics.map((m, i) => (
-          <div key={i} className={`metric ${m.co || company}`}>
+          <div key={i} className={`metric ${m.co || 'tai'}`}>
             <div className="m-label">{m.label}</div>
             <div className="m-val">{m.val}</div>
             <div className={`m-delta ${m.cls}`}>{m.delta}</div>
@@ -75,10 +76,12 @@ export default function Overview({ company, data, onToast }) {
             <span>Recent Upwork Leads</span>
             <span className="tag tes">Auto-synced</span>
           </div>
-          {leads.map((lead, i) => (
+          {overviewLeads.length === 0 ? (
+            <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No leads yet</div>
+          ) : overviewLeads.map((lead, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0',
-              borderBottom: i < leads.length - 1 ? '1px solid var(--border)' : 'none',
+              borderBottom: i < overviewLeads.length - 1 ? '1px solid var(--border)' : 'none',
             }}>
               <div style={{
                 width: 36, height: 36, borderRadius: '50%',
@@ -101,11 +104,11 @@ export default function Overview({ company, data, onToast }) {
                 {lead.co && <span className={`tag t${lead.co}`}>{lead.co === 'es' ? 'ES' : 'TAI'}</span>}
                 <span style={{
                   fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 500,
-                  color: 'var(--green)',
+                  color: lead.stage === 'Closed Won' ? 'var(--green)' : lead.stage === 'Active' ? 'var(--es)' : lead.stage === 'Negotiation' ? 'var(--amber)' : lead.stage === 'Proposal' ? 'var(--blue)' : 'var(--text3)',
                 }}>
-                  {lead.score}%
+                  {lead.stage ? stagePercent(lead.stage) + '%' : (lead.score || 0) + '%'}
                 </span>
-                <button className="btn btn-ghost btn-sm" onClick={() => onToast?.('Lead added to CRM ✓', 'success')}>Add to CRM</button>
+                {userRole === 'admin' && <button className="btn btn-ghost btn-sm" onClick={() => addToCRM(lead)}>Add to CRM</button>}
               </div>
             </div>
           ))}

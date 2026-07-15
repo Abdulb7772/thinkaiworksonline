@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const dns = require('dns');
 
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 let isConnected = false;
 
 const connectDB = async (uri) => {
   try {
     await mongoose.connect(uri, {
-      connectTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       bufferCommands: false,
     });
@@ -15,26 +16,7 @@ const connectDB = async (uri) => {
     console.log('✓ MongoDB connected successfully');
     return mongoose.connection;
   } catch (error) {
-    if (error.code === 'ECONNREFUSED' || error.cause?.code === 'ECONNREFUSED' || /querySrv.*ECONNREFUSED/.test(error.message)) {
-      console.log('⚠ Local DNS cannot resolve Atlas SRV — retrying with Google DNS...');
-      dns.setServers(['8.8.8.8', '8.8.4.4']);
-      try {
-        await mongoose.connect(uri, {
-          connectTimeoutMS: 5000,
-          serverSelectionTimeoutMS: 5000,
-          socketTimeoutMS: 45000,
-          bufferCommands: false,
-        });
-        isConnected = true;
-        console.log('✓ MongoDB connected successfully (via Google DNS)');
-        return mongoose.connection;
-      } catch (retryError) {
-        console.error('✗ MongoDB connection (retry) failed:', retryError.message);
-      }
-    } else {
-      console.error('✗ MongoDB connection failed:', error.message);
-    }
-
+    console.error('✗ MongoDB connection failed:', error.message);
     isConnected = false;
     console.log('⚠ Server will start without database. Auth and data queries require MongoDB.');
     return null;

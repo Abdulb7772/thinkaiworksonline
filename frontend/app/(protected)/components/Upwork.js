@@ -1,33 +1,60 @@
 'use client';
 
+import { useState } from 'react';
+import { api } from '@/lib/config';
+import ViewProfile from './ViewProfile';
+
 const services = ['Amazon FBA Management', 'Shopify Development', 'AI Automation', 'Email Marketing', 'PPC Advertising', 'Product Research', 'AI Chatbot Build', 'Data Analysis'];
 const budgetRanges = ['$500–$1,000', '$1,000–$3,000', '$3,000–$7,000', '$7,000+'];
 const priorities = ['High', 'Medium', 'Low'];
 const employees = ['Sarah K. (Lead Manager)', 'Omar H. (Dev Lead)', 'Zara T. (AI Specialist)', 'Bilal M. (Marketing)', 'Ayesha N. (Support)'];
 
-const pendingLeads = [
-  {name:'David Park',budget:'$3k–7k',service:'Amazon FBA',score:91,age:'12m ago'},
-  {name:'Emma Richardson',budget:'$1k–3k',service:'Shopify Dev',score:77,age:'1h ago'},
-  {name:'Tariq Sultan',budget:'$5k+',service:'AI Chatbot',score:88,age:'3h ago'},
-];
+export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLead }) {
+  const [viewing, setViewing] = useState(null);
+  const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
+  const handleSubmit = async () => {
+    const name = document.getElementById('cl-name')?.value?.trim();
+    if (!name) { onToast('Enter a client name', 'error'); return; }
+    const service = document.getElementById('cl-service')?.value || '—';
+    try {
+      await api('/clients', {
+        method: 'POST',
+        body: JSON.stringify({ name, service, company: 'ThinkAIWorks', stage: 'Discovery' }),
+      });
+      onAddLead?.({ name, budget: '—', service, stage: 'Discovery', age: 'Just now' });
+      onToast(name + ' added to CRM pipeline ✓', 'success');
+    } catch (err) {
+      onToast(err.message, 'error');
+    }
+  };
 
-export default function Upwork({ company, onToast }) {
-  const handleSubmit = () => {
-    const name = document.getElementById('cl-name')?.value || 'New Client';
-    onToast(name + ' added to CRM · Meeting scheduled · Team notified ✓');
+  const addToCRM = async (lead) => {
+    try {
+      await api('/clients', {
+        method: 'POST',
+        body: JSON.stringify({ name: lead.name, service: lead.service, stage: 'Discovery' }),
+      });
+      onRemoveLead?.(lead.name);
+      onToast(lead.name + ' added to CRM pipeline ✓', 'success');
+    } catch (err) {
+      onToast(err.message, 'error');
+    }
   };
 
   return (
     <div className="page active" style={{display:'flex'}}>
+      {viewing && <ViewProfile item={viewing} onClose={() => setViewing(null)} />}
       <div className="ph">
         <div>
           <div className="pt">Upwork Client Intake</div>
           <div className="ps">New leads auto-upload to CRM · AI qualifies & assigns</div>
         </div>
-        <button className="btn btn-es" onClick={handleSubmit}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
-          ↑ Submit to CRM
-        </button>
+        {userRole === 'admin' && (
+          <button className="btn btn-es" onClick={handleSubmit}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+            ↑ Submit to CRM
+          </button>
+        )}
       </div>
 
       <div className="grid2">
@@ -53,10 +80,10 @@ export default function Upwork({ company, onToast }) {
               </div>
               <div className="form-field">
                 <label>Company (Assign To)</label>
-                <select id="cl-company">
-                  <option>EcomSkyline</option>
-                  <option>ThinkAIWorks</option>
-                </select>
+                <div style={{padding:'9px 12px',background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:'var(--r)',fontSize:13,color:'var(--tai)'}}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight:6,verticalAlign:'middle'}}><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                  ThinkAIWorks
+                </div>
               </div>
             </div>
             <div className="form-row">
@@ -90,10 +117,10 @@ export default function Upwork({ company, onToast }) {
           <div className="card">
             <div className="card-title">
               Pending Upwork Leads
-              <span className="nbadge red">3</span>
+              <span className="nbadge red">{leads.length}</span>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {pendingLeads.map((l,i) => (
+              {leads.map((l,i) => (
                 <div key={i} style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:12}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                     <div>
@@ -103,8 +130,8 @@ export default function Upwork({ company, onToast }) {
                     <span style={{fontFamily:'var(--font-mono)',color:'var(--green)',fontSize:12}}>{l.score}% match</span>
                   </div>
                   <div style={{display:'flex',gap:6,marginTop:10}}>
-                    <button className="btn btn-es btn-sm" onClick={() => onToast(l.name + ' added to CRM pipeline ✓')}>Add to CRM</button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => onToast('Viewing profile...')}>View Profile</button>
+                    {userRole === 'admin' && <button className="btn btn-es btn-sm" onClick={() => addToCRM(l)}>Add to CRM</button>}
+                    <button className="btn btn-ghost btn-sm" onClick={() => setViewing(l)}>View Profile</button>
                   </div>
                 </div>
               ))}

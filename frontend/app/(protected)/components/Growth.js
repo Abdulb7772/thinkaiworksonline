@@ -1,12 +1,5 @@
 'use client';
 
-const metrics = [
-  { label: 'Growth Score', val: '74', delta: '/100', cls: 'up', co: 'es' },
-  { label: 'MoM Growth', val: '22%', delta: 'Combined', cls: 'up', co: '' },
-  { label: 'Churn Rate', val: '6%', delta: '↓ from 11%', cls: 'up', co: '' },
-  { label: 'AI Opportunities', val: '8', delta: 'Identified', cls: 'neutral', co: 'tai' },
-];
-
 const esSuggestions = [
   {n:1,title:'Launch Tiered Retainer Packages',detail:'Offer Bronze/Silver/Gold FBA management tiers. Predictable MRR, easier upsell. Est. +$4k MRR.',impact:'High',effort:'Low',color:'var(--green)'},
   {n:2,title:'Expand to UK & EU Amazon Markets',detail:'Your FBA expertise translates directly to Amazon.co.uk and Amazon.de. 3x addressable market.',impact:'High',effort:'Medium',color:'var(--amber)'},
@@ -27,7 +20,14 @@ const roadmap = [
   {q:'Q3 Month 3',items:['Onboard first 5 SaaS chatbot subscribers','Target logistics niche with TAI','Review and adjust marketing budget'],co:'both'},
 ];
 
-export default function Growth({ company, onToast }) {
+export default function Growth({ company, onToast, data }) {
+  const metrics = [
+    { label: 'Growth Score', val: '74', delta: '/100', cls: 'up', co: 'es' },
+    { label: 'MoM Growth', val: '22%', delta: 'Combined', cls: 'up', co: '' },
+    { label: 'Churn Rate', val: '6%', delta: 'All time', cls: 'up', co: '' },
+    { label: 'Pipeline Value', val: data?.crmMetrics?.[3]?.val || '—', delta: 'Current', cls: 'neutral', co: 'tai' },
+  ];
+
   const impClass = (v) => v === 'High' ? 'tg' : 'ta';
 
   return (
