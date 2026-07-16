@@ -100,8 +100,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
               </select>
             </div>
             <div className="form-field">
-<<<<<<< HEAD
-              <label>Date &amp; Time</label>
+              <label>Date & Time</label>
               <input type="datetime-local" value={form.datetime} onChange={set('datetime')} min={now} />
             </div>
           </div>

@@ -179,14 +179,33 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                         )}
                       </button>
                     ) : (
-                      /* Meeting is in the future — show Join button */
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => onToast(`Joining ${m.title}...`)}
-                        style={{fontSize:12,fontWeight:600}}
-                      >
-                        Join
-                      </button>
+                      <>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => onToast(`Joining ${m.title}...`)}
+                          style={{fontSize:12,fontWeight:600}}
+                        >
+                          Join
+                        </button>
+                        <button
+                          disabled={isDeleting}
+                          onClick={() => handleDone(m)}
+                          style={{
+                            display:'flex',alignItems:'center',gap:5,
+                            padding:'5px 13px',
+                            background: isDeleting ? 'rgba(255,79,109,0.08)' : 'rgba(255,79,109,0.14)',
+                            color:'var(--red)',
+                            border:'1px solid rgba(255,79,109,0.28)',
+                            borderRadius:'var(--r)',
+                            fontSize:12,fontWeight:600,
+                            cursor: isDeleting ? 'not-allowed' : 'pointer',
+                            transition:'all 0.2s ease',
+                            whiteSpace:'nowrap',
+                          }}
+                        >
+                          {isDeleting ? 'Cancelling...' : 'Cancel'}
+                        </button>
+                      </>
                     )}
                   </div>
                 );
@@ -216,7 +235,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
             </div>
             <div className="form-row">
               <div className="form-field">
-                <label>Date &amp; Time</label>
+                <label>Date & Time</label>
                 <input type="datetime-local" value={qs.datetime} onChange={qsSet('datetime')} />
               </div>
               <div className="form-field">
@@ -228,7 +247,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
               </div>
             </div>
             <button className="btn btn-es" style={{alignSelf:'flex-start'}} onClick={handleQuickSchedule}>
-              Save &amp; Notify Team
+              Save & Notify Team
             </button>
           </div>
         </div>
