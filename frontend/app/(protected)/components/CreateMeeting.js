@@ -17,6 +17,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
   const [saving, setSaving] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const now = new Date().toISOString().slice(0, 16);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +72,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
             </div>
             <div className="form-field">
               <label>Date & Time</label>
-              <input type="datetime-local" value={form.datetime} onChange={set('datetime')} />
+              <input type="datetime-local" value={form.datetime} onChange={set('datetime')} min={now} />
             </div>
           </div>
 
