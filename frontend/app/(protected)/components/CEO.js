@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import emailjs from '@emailjs/browser';
 import { api } from '@/lib/config';
 
 const promptReplies = {
@@ -182,6 +183,8 @@ export default function CEO({ company, onToast, data }) {
   ]);
   const [modalInp, setModalInp] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [contactLoading, setContactLoading] = useState(false);
   const modalEnd = useRef(null);
 
   const combinedMrr = data?.overviewMetrics?.es?.[0]?.val || '$—';
@@ -191,6 +194,9 @@ export default function CEO({ company, onToast, data }) {
   const growthMoM = data?.overviewMetrics?.es?.[0]?.delta || '—';
   const urgentIssues = data?.tickets?.filter(t => t.priority === 'High' && t.status === 'Open').length || 0;
   const ceoContext = buildCeoContext(data);
+  const emailjsServiceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '';
+  const emailjsTemplateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '';
+  const emailjsPublicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '';
 
   const sendMsg = useCallback((text) => {
     const msg = text || inp;
@@ -207,6 +213,67 @@ export default function CEO({ company, onToast, data }) {
   const handlePrompt = (prompt) => {
     setInp(prompt);
     sendMsg(prompt);
+  };
+
+  const handleContactChange = (key) => (event) => {
+    setContactForm((prev) => ({ ...prev, [key]: event.target.value }));
+  };
+
+  const sendContactEmail = async (event) => {
+    event.preventDefault();
+
+    if (!contactForm.name.trim() || !contactForm.email.trim() || !contactForm.subject.trim() || !contactForm.message.trim()) {
+      onToast?.('Please fill in all contact fields.', 'error');
+      return;
+    }
+
+    if (!emailjsServiceId || !emailjsTemplateId || !emailjsPublicKey) {
+      onToast?.('EmailJS is not configured yet. Add the service, template, and public key in your env file.', 'error');
+      return;
+    }
+
+    setContactLoading(true);
+    try {
+      const fullMessage = [
+        'New message from the CEO contact form',
+        `Name: ${contactForm.name.trim()}`,
+        `Email: ${contactForm.email.trim()}`,
+        `Subject: ${contactForm.subject.trim()}`,
+        'Company: EcomSkyline & ThinkAIWorks',
+        '',
+        'Message:',
+        contactForm.message.trim(),
+      ].join('\n');
+
+      await emailjs.send(
+        emailjsServiceId,
+        emailjsTemplateId,
+        {
+          from_name: contactForm.name.trim(),
+          from_email: contactForm.email.trim(),
+          subject: contactForm.subject.trim(),
+          message: fullMessage,
+          user_message: contactForm.message.trim(),
+          to_name: 'Muhammad Ali',
+          company: 'EcomSkyline & ThinkAIWorks',
+          reply_to: contactForm.email.trim(),
+          sent_at: new Date().toLocaleString(),
+        },
+        { publicKey: emailjsPublicKey }
+      );
+
+      onToast?.('Message sent to CEO.', 'success');
+      setContactForm({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      const errorText = String(error?.text || error?.message || 'Failed to send message.');
+      if (/insufficient authentication scopes|gmail_api|precondition failed|authorization/i.test(errorText)) {
+        onToast?.('EmailJS Gmail service is not authorized. Reconnect the Gmail service in EmailJS or switch to an SMTP service.', 'error');
+      } else {
+        onToast?.(errorText, 'error');
+      }
+    } finally {
+      setContactLoading(false);
+    }
   };
 
   const sendModalMsg = async () => {
@@ -292,15 +359,47 @@ export default function CEO({ company, onToast, data }) {
           </div>
 
           <div className="card-sm metric" style={{borderColor:'var(--border2)'}}>
-            <div className="card-title" style={{marginBottom:12}}>Dashboard Snapshot</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12}}>
-              <div><span style={{color:'var(--text3)'}}>Combined MRR </span><span style={{fontWeight:600,color:'var(--green)'}}>{combinedMrr}</span></div>
-              <div><span style={{color:'var(--text3)'}}>Active Clients </span><span style={{fontWeight:600}}>{activeClients}</span></div>
-              <div><span style={{color:'var(--text3)'}}>Team Members </span><span style={{fontWeight:600}}>{teamSize}</span></div>
-              <div><span style={{color:'var(--text3)'}}>Open Leads </span><span style={{fontWeight:600,color:'var(--amber)'}}>{openLeads}</span></div>
-              <div><span style={{color:'var(--text3)'}}>Growth MoM </span><span style={{fontWeight:600,color:'var(--green)'}}>{growthMoM}</span></div>
-              <div><span style={{color:'var(--text3)'}}>Urgent Issues </span><span style={{fontWeight:600,color:'var(--red)'}}>{urgentIssues}</span></div>
-            </div>
+            <div className="card-title" style={{marginBottom:12}}>Get in touch with CEO</div>
+            <form onSubmit={sendContactEmail} style={{display:'flex',flexDirection:'column',gap:10}}>
+              <input
+                type="text"
+                placeholder="Your name"
+                value={contactForm.name}
+                onChange={handleContactChange('name')}
+                className="chat-inp"
+                style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'10px',padding:'10px 12px',color:'var(--text)'}}
+              />
+              <input
+                type="email"
+                placeholder="Your email"
+                value={contactForm.email}
+                onChange={handleContactChange('email')}
+                className="chat-inp"
+                style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'10px',padding:'10px 12px',color:'var(--text)'}}
+              />
+              <input
+                type="text"
+                placeholder="Subject"
+                value={contactForm.subject}
+                onChange={handleContactChange('subject')}
+                className="chat-inp"
+                style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'10px',padding:'10px 12px',color:'var(--text)'}}
+              />
+              <textarea
+                placeholder="Write your message to the CEO..."
+                value={contactForm.message}
+                onChange={handleContactChange('message')}
+                rows={5}
+                className="chat-inp"
+                style={{width:'100%',resize:'vertical',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'10px',padding:'10px 12px',color:'var(--text)'}}
+              />
+              <button className="btn btn-gold btn-sm" type="submit" disabled={contactLoading}>
+                {contactLoading ? 'Sending...' : 'Send to CEO'}
+              </button>
+              <div style={{fontSize:11,color:'var(--text3)',lineHeight:1.5}}>
+                Send an email directly to the CEO. This will go to Muhammad Ali’s inbox and he will respond personally. Please keep it professional and relevant to the business.
+              </div>
+            </form>
           </div>
         </div>
       </div>

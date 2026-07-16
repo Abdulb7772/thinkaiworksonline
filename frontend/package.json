@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "next": "^14.2.0",
     "next-auth": "^4.24.14",
     "nodemailer": "^7.0.13",
