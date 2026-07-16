@@ -10,8 +10,14 @@ const coLabel = {es:'tes',tai:'ttai',both:'tb'};
 
 const today = new Date().getDate();
 
+function isMeetingPast(datetime) {
+  if (!datetime) return true; // no datetime = treat as completable
+  return new Date(datetime) < new Date();
+}
+
 export default function Meetings({ company, onToast, data, onRefresh }) {
   const [showCreate, setShowCreate] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
   const meetings = data?.meetings || [];
   const eventDays = meetings.map(m => {
@@ -21,6 +27,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
 
   const [qs, setQs] = useState({ title: '', client: '', datetime: '', attendees: '' });
   const qsSet = (k) => (e) => setQs({ ...qs, [k]: e.target.value });
+
   const handleQuickSchedule = async () => {
     if (!qs.title) { onToast('Enter a meeting title', 'error'); return; }
     try {
@@ -33,6 +40,20 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
       onRefresh?.();
     } catch (err) {
       onToast(err.message, 'error');
+    }
+  };
+
+  const handleDone = async (m) => {
+    if (!m._id || deletingId === m._id) return;
+    setDeletingId(m._id);
+    try {
+      await api(`/meetings/${m._id}`, { method: 'DELETE' });
+      onToast(`"${m.title}" marked as done and removed`, 'success');
+      onRefresh?.();
+    } catch (err) {
+      onToast(err.message || 'Failed to remove meeting', 'error');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -52,6 +73,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
       </div>
 
       <div className="grid2">
+        {/* Calendar */}
         <div className="card">
           <div className="card-title">
             {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -61,13 +83,22 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
             </div>
           </div>
           <div className="cal-grid">
-            {weekdayHeaders.map(d => <div key={d} style={{textAlign:'center',fontSize:10,color:'var(--text3)',fontWeight:700,padding:'4px 0',textTransform:'uppercase',letterSpacing:'0.5px'}}>{d}</div>)}
+            {weekdayHeaders.map(d => (
+              <div key={d} style={{textAlign:'center',fontSize:10,color:'var(--text3)',fontWeight:700,padding:'4px 0',textTransform:'uppercase',letterSpacing:'0.5px'}}>{d}</div>
+            ))}
             {days.map(d => (
-              <div key={d} className={`cal-day ${eventDays.includes(d) ? 'has-event' : ''} ${d===today?'today':''}`} onClick={() => onToast(`Day ${d} — ${eventDays.includes(d) ? 'Meeting scheduled' : 'No meetings'}`)}>{d}</div>
+              <div
+                key={d}
+                className={`cal-day ${eventDays.includes(d) ? 'has-event' : ''} ${d===today ? 'today' : ''}`}
+                onClick={() => onToast(`Day ${d} — ${eventDays.includes(d) ? 'Meeting scheduled' : 'No meetings'}`)}
+              >
+                {d}
+              </div>
             ))}
           </div>
         </div>
 
+        {/* Upcoming Meetings */}
         <div className="card">
           <div className="card-title">
             Upcoming Meetings
@@ -77,22 +108,95 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
             <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No meetings scheduled</div>
           ) : (
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
-              {meetings.map((m,i) => (
-                <div key={i} style={{display:'flex',alignItems:'center',gap:14,padding:'11px 14px',background:'var(--bg3)',borderRadius:'var(--r)',border:'1px solid var(--border)'}}>
-                  <div style={{fontSize:20}}>{m.type === 'Video' || m.type?.includes('Video') ? '📹' : '👥'}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:600,fontSize:13}}>{m.title}</div>
-                    <div style={{fontSize:11,color:'var(--text2)',marginTop:2}}>{m.date} · {m.attendees}</div>
+              {meetings.map((m, i) => {
+                const past = isMeetingPast(m.datetime);
+                const isDeleting = deletingId === m._id;
+                return (
+                  <div
+                    key={m._id || i}
+                    style={{
+                      display:'flex',
+                      alignItems:'center',
+                      gap:14,
+                      padding:'11px 14px',
+                      background:'var(--bg3)',
+                      borderRadius:'var(--r)',
+                      border: past ? '1px solid rgba(34,212,122,0.18)' : '1px solid var(--border)',
+                      transition:'border-color 0.3s ease',
+                    }}
+                  >
+                    <div style={{fontSize:20}}>{m.type === 'Video' || m.type?.includes('Video') ? '📹' : '👥'}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:600,fontSize:13}}>{m.title}</div>
+                      <div style={{fontSize:11,color:'var(--text2)',marginTop:2}}>{m.date} · {m.attendees}</div>
+                    </div>
+                    {m.co && (
+                      <span className={`tag ${coLabel[m.co] || 'tb'}`}>
+                        {m.co === 'es' ? 'Ecom' : m.co === 'tai' ? 'TAI' : 'Both'}
+                      </span>
+                    )}
+
+                    {past ? (
+                      /* Meeting time has passed — show Done button */
+                      <button
+                        disabled={isDeleting}
+                        onClick={() => handleDone(m)}
+                        style={{
+                          display:'flex',
+                          alignItems:'center',
+                          gap:5,
+                          padding:'5px 13px',
+                          background: isDeleting ? 'rgba(34,212,122,0.08)' : 'rgba(34,212,122,0.14)',
+                          color:'var(--green)',
+                          border:'1px solid rgba(34,212,122,0.28)',
+                          borderRadius:'var(--r)',
+                          fontSize:12,
+                          fontWeight:600,
+                          cursor: isDeleting ? 'not-allowed' : 'pointer',
+                          transition:'all 0.2s ease',
+                          whiteSpace:'nowrap',
+                        }}
+                      >
+                        {isDeleting ? (
+                          <>
+                            <span style={{
+                              width:10,height:10,
+                              border:'2px solid var(--green)',
+                              borderTopColor:'transparent',
+                              borderRadius:'50%',
+                              display:'inline-block',
+                              animation:'meetingSpin 0.6s linear infinite',
+                            }} />
+                            Removing...
+                          </>
+                        ) : (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Done
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      /* Meeting is in the future — show Join button */
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => onToast(`Joining ${m.title}...`)}
+                        style={{fontSize:12,fontWeight:600}}
+                      >
+                        Join
+                      </button>
+                    )}
                   </div>
-                  {m.co && <span className={`tag ${coLabel[m.co] || 'tb'}`}>{m.co === 'es' ? 'Ecom' : m.co === 'tai' ? 'TAI' : 'Both'}</span>}
-                  <button className="btn btn-ghost btn-sm" onClick={() => onToast(`Joined ${m.title}`)}>Join</button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
+      {/* Quick Schedule (admin/employee only) */}
       {userRole !== 'customer' && (
         <div className="card">
           <div className="card-title">Quick Schedule</div>
@@ -112,7 +216,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
             </div>
             <div className="form-row">
               <div className="form-field">
-                <label>Date & Time</label>
+                <label>Date &amp; Time</label>
                 <input type="datetime-local" value={qs.datetime} onChange={qsSet('datetime')} />
               </div>
               <div className="form-field">
@@ -123,7 +227,9 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                 </select>
               </div>
             </div>
-            <button className="btn btn-es" style={{alignSelf:'flex-start'}} onClick={handleQuickSchedule}>Save & Notify Team</button>
+            <button className="btn btn-es" style={{alignSelf:'flex-start'}} onClick={handleQuickSchedule}>
+              Save &amp; Notify Team
+            </button>
           </div>
         </div>
       )}
@@ -137,6 +243,12 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
           employees={data?.employees}
         />
       )}
+
+      <style>{`
+        @keyframes meetingSpin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

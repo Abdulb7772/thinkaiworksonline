@@ -83,7 +83,9 @@ const buildAppData = async () => {
       { label: 'Pipeline Value', val: `$${clients.reduce((s, c) => s + (parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0), 0).toLocaleString()}`, delta: 'Current total', cls: 'up', co: '' },
     ],
     meetings: meetings.slice(0, 10).map(m => ({
-      title: m.title, date: m.datetime ? new Date(m.datetime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'TBD',
+      _id: m._id, title: m.title,
+      date: m.datetime ? new Date(m.datetime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'TBD',
+      datetime: m.datetime ? new Date(m.datetime).toISOString() : null,
       type: m.type || 'Internal', co: m.company ? m.company.toLowerCase().slice(0, 3) === 'thi' ? 'tai' : 'es' : 'es', attendees: m.attendees || '',
     })),
     employees: employees.map(e => ({
