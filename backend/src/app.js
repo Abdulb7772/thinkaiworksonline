@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { connectDB, closeDatabase } = require('./config/db');
 const apiRoutes = require('./routes');
+const { startMeetingReminderJob } = require('./jobs/meetingReminder');
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -53,6 +54,7 @@ const startServer = async () => {
     console.warn('MongoDB unavailable — running without database');
   }
 
+  startMeetingReminderJob();
   const tryListen = (p) => {
     server = app.listen(p);
     server.on('listening', () => console.log(`Server running on port ${p}`));

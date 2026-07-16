@@ -13,6 +13,8 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
     attendees: '',
     type: 'Video',
     company: 'ThinkAIWorks',
+    clientEmail: '',
+    adminEmails: '',   // comma-separated in the input, split to array on submit
   });
   const [saving, setSaving] = useState(false);
 
@@ -22,13 +24,38 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
     e.preventDefault();
     if (!form.title) return;
     setSaving(true);
+
+    // Parse comma-separated admin emails into an array
+    const adminEmailsArr = form.adminEmails
+      ? form.adminEmails.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+
+    const hasEmails = form.clientEmail.trim() || adminEmailsArr.length > 0;
+
     try {
+      const payload = {
+        title:       form.title,
+        client:      form.client,
+        datetime:    form.datetime,
+        attendees:   form.attendees,
+        type:        form.type,
+        company:     form.company,
+        clientEmail: form.clientEmail.trim(),
+        adminEmails: adminEmailsArr,
+      };
+
       const meeting = await api('/meetings', {
         method: 'POST',
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
+
       onSaved?.(meeting);
-      onToast?.('Meeting created successfully', 'success');
+      onToast?.(
+        hasEmails
+          ? 'Meeting created — reminder emails will be sent 10 min before'
+          : 'Meeting created successfully',
+        'success'
+      );
       onClose();
     } catch (err) {
       onToast?.(err.message, 'error');
@@ -39,7 +66,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560 }}>
         <div className="modal-head">
           <div className="modal-title">Create Meeting</div>
           <button className="modal-close" onClick={onClose}>
@@ -48,6 +75,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
         </div>
 
         <form className="intake-form" onSubmit={handleSubmit}>
+          {/* Row 1: Title + Type */}
           <div className="form-row">
             <div className="form-field" style={{flex:2}}>
               <label>Meeting Title *</label>
@@ -61,6 +89,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
             </div>
           </div>
 
+          {/* Row 2: Client + Date & Time */}
           <div className="form-row">
             <div className="form-field">
               <label>Client from CRM</label>
@@ -70,11 +99,12 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
               </select>
             </div>
             <div className="form-field">
-              <label>Date & Time</label>
+              <label>Date &amp; Time</label>
               <input type="datetime-local" value={form.datetime} onChange={set('datetime')} />
             </div>
           </div>
 
+          {/* Row 3: Attendees + Company */}
           <div className="form-row">
             <div className="form-field">
               <label>Attendees</label>
@@ -92,6 +122,50 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
             </div>
           </div>
 
+          {/* Email Reminder section */}
+          <div style={{
+            marginTop: 4,
+            padding: '14px 16px',
+            background: 'rgba(124,92,252,0.06)',
+            border: '1px solid rgba(124,92,252,0.18)',
+            borderRadius: 'var(--r)',
+          }}>
+            <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:12}}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tai)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
+              <span style={{fontSize:11,fontWeight:700,color:'var(--tai)',textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                Email Reminders — 10 min before meeting
+              </span>
+            </div>
+
+            <div className="form-row" style={{marginTop:0}}>
+              <div className="form-field">
+                <label style={{color:'var(--text2)'}}>Client Email</label>
+                <input
+                  type="email"
+                  placeholder="client@example.com"
+                  value={form.clientEmail}
+                  onChange={set('clientEmail')}
+                  style={{fontSize:13}}
+                />
+              </div>
+              <div className="form-field">
+                <label style={{color:'var(--text2)'}}>Admin Email(s)</label>
+                <input
+                  type="text"
+                  placeholder="admin1@co.com, admin2@co.com"
+                  value={form.adminEmails}
+                  onChange={set('adminEmails')}
+                  style={{fontSize:13}}
+                />
+              </div>
+            </div>
+
+            <p style={{margin:'8px 0 0',fontSize:11,color:'var(--text3)'}}>
+              &#9432; Leave blank to skip reminders. Separate multiple admin emails with commas.
+            </p>
+          </div>
+
+          {/* Actions */}
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
             <button type="submit" className="btn btn-es" disabled={saving || !form.title} style={{ flex: 1 }}>
