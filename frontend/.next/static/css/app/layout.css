@@ -196,6 +196,15 @@ td{padding:10px 12px;vertical-align:middle}
 .bs-input{flex:1 1;accent-color:var(--es)}
 .bs-val{font-family:var(--font-mono);font-size:12px;color:var(--text);width:60px;text-align:right}
 
+.modal-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-title{font-family:var(--font-head);font-size:18px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:flex;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+
 /* Auth pages */
 .bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(124,92,252,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(124,92,252,.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
 .bg-glow{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);opacity:.12}
@@ -252,8 +261,6 @@ td{padding:10px 12px;vertical-align:middle}
 .pwd-strength span.active.strong{background:var(--green)}
 .pwd-strength-label{font-size:10px;color:var(--text3);margin-top:4px;min-height:14px;transition:color .3s}
 
-.demo-badge{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;padding:9px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text3);font-family:var(--font-mono)}
-.demo-badge strong{color:var(--text2)}
 
 .terms-text{text-align:center;font-size:11px;color:var(--text3);margin-top:14px;line-height:1.5}
 .terms-text a{color:var(--text2);text-decoration:none}

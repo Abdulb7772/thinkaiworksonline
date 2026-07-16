@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"app\\\\(protected)\\\\components\\\\Topbar.js -> next-auth/react\":{\"id\":\"app\\\\(protected)\\\\components\\\\Topbar.js -> next-auth/react\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_next-auth_react_index_js.js\"]},\"lib\\\\config.js -> next-auth/react\":{\"id\":\"lib\\\\config.js -> next-auth/react\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_next-auth_react_index_js.js\"]}}"
