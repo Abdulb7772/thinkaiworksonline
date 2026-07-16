@@ -268,3 +268,32 @@ td{padding:10px 12px;vertical-align:middle}
 
 @media(max-width:480px){.auth-container{padding:16px}.auth-card{padding:32px 24px}}
 
+/* ── Splash Screen ── */
+.splash-orb{position:fixed;width:500px;height:500px;border-radius:50%;pointer-events:none;z-index:0;filter:blur(140px);opacity:0;animation:splashOrbIn 1.4s ease-out forwards}
+.splash-orb.es{top:-200px;right:-100px;background:var(--es);animation:splashOrbIn 1.4s ease-out forwards,splashOrbDriftES 6s ease-in-out 1.4s infinite alternate}
+.splash-orb.tai{bottom:-200px;left:-100px;background:var(--tai);animation:splashOrbIn 1.4s ease-out forwards,splashOrbDriftTAI 6s ease-in-out 1.4s infinite alternate}
+.splash-orb.gold{top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:var(--gold);opacity:.04;filter:blur(200px);animation:splashOrbIn 2s ease-out forwards,splashOrbPulse 4s ease-in-out 2s infinite alternate}
+
+.splash-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:16px;opacity:0;transform:scale(.92);transition:all 1s cubic-bezier(.22,1,.36,1)}
+.splash-content.visible{opacity:1;transform:scale(1)}
+
+.splash-logo-wrap{animation:splashLogoFloat 3s ease-in-out infinite}
+.splash-logo{width:120px;height:120px;border-radius:24px;object-fit:cover;box-shadow:0 0 60px rgba(124,92,252,.15),0 0 120px rgba(0,229,200,.08);animation:splashLogoGlow 3s ease-in-out infinite alternate}
+
+.splash-brand{display:flex;align-items:center;gap:4px;margin-top:8px;animation:splashFadeUp .8s .3s both}
+.splash-title{font-family:var(--font-head);font-size:clamp(32px,6vw,52px);font-weight:700;letter-spacing:-1.5px;background:linear-gradient(135deg,var(--text),var(--tai),var(--es));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:splashFadeUp .8s .5s both}
+.splash-subtitle{font-size:13px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;animation:splashFadeUp .8s .7s both}
+
+.splash-loader{width:200px;margin-top:24px;animation:splashFadeUp .8s .9s both}
+.splash-loader-track{width:100%;height:3px;background:var(--border);border-radius:3px;overflow:hidden}
+.splash-loader-bar{height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,var(--es),var(--tai),var(--gold));animation:splashLoadBar 2s ease-in-out forwards}
+
+@keyframes splashOrbIn{0%{opacity:0;transform:scale(.6)}100%{opacity:.12;transform:scale(1)}}
+@keyframes splashOrbDriftES{0%{transform:translate(0,0)}100%{transform:translate(-80px,40px)}}
+@keyframes splashOrbDriftTAI{0%{transform:translate(0,0)}100%{transform:translate(80px,-40px)}}
+@keyframes splashOrbPulse{0%{opacity:.04}100%{opacity:.08}}
+@keyframes splashLogoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes splashLogoGlow{0%{box-shadow:0 0 40px rgba(124,92,252,.1),0 0 80px rgba(0,229,200,.05)}100%{box-shadow:0 0 60px rgba(124,92,252,.2),0 0 140px rgba(0,229,200,.1)}}
+@keyframes splashLoadBar{0%{width:0}100%{width:100%}}
+@keyframes splashFadeUp{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:none}}
+

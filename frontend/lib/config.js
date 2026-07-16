@@ -14,10 +14,20 @@ export const api = async (path, options = {}) => {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  return fetch(`${API_BASE_URL}/api${path}`, { ...options, headers })
-    .then(async (res) => {
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
-      return data;
-    });
+  const response = await fetch(`${API_BASE_URL}/api${path}`, { ...options, headers });
+  const contentType = response.headers.get('content-type') || '';
+
+  let data = null;
+  if (contentType.includes('application/json')) {
+    data = await response.json().catch(() => null);
+  } else {
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(text || `Request failed (${response.status})`);
+    }
+    return text;
+  }
+
+  if (!response.ok) throw new Error(data?.error || `Request failed (${response.status})`);
+  return data;
 };

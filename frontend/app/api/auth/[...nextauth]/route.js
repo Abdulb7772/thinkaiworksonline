@@ -3,6 +3,16 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+const readJsonResponse = async (response) => {
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await response.text();
+    throw new Error(text || `Auth server returned ${response.status}`);
+  }
+
+  return response.json();
+};
+
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -17,7 +27,9 @@ export const authOptions = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: credentials.email, password: credentials.password }),
         });
-        const data = await res.json();
+        const data = await readJsonResponse(res).catch((error) => {
+          throw new Error(`Login API error: ${error.message}`);
+        });
         if (!res.ok) throw new Error(data.error || 'Invalid credentials');
         return { ...data.user, accessToken: data.token };
       },

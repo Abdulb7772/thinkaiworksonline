@@ -1,59 +1,19 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const Employee = require('../models/Employee');
 const { protect } = require('../middleware/auth');
 const { isDBConnected } = require('../config/db');
+const { sendEmail } = require('../services/emailService');
 
 const router = express.Router();
 
-const createTransporter = async () => {
-  const transporter = process.env.SMTP_USER && process.env.SMTP_PASS
-    ? nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT, 10) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      })
-    : await (async () => {
-        const testAccount = await nodemailer.createTestAccount();
-        return nodemailer.createTransport({
-          host: testAccount.smtp.host,
-          port: testAccount.smtp.port,
-          secure: testAccount.smtp.secure,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-          },
-        });
-      })();
-
-  await transporter.verify();
-  return transporter;
-};
-
 const sendEmployeeEmail = async ({ recipients, loginEmail, name, password }) => {
   const appUrl = 'https://www.thinkaiworks.online/';
-  const transporter = await createTransporter();
   const uniqueRecipients = Array.from(new Set(recipients.map((email) => email.trim().toLowerCase()).filter(Boolean)));
 
-  const mailOptions = {
-    from: process.env.SMTP_FROM || `ThinkAIWorks <${process.env.SMTP_USER || 'noreply@thinkaiworks.online'}>`,
-    replyTo: process.env.SMTP_REPLY_TO || process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@thinkaiworks.online',
-    sender: process.env.SMTP_FROM || `ThinkAIWorks <${process.env.SMTP_USER || 'noreply@thinkaiworks.online'}>`,
+  await sendEmail({
     to: uniqueRecipients,
     subject: 'Your ThinkAIWorks access details',
-    headers: {
-      'X-Priority': '3 (Normal)',
-      Importance: 'Normal',
-      'List-Unsubscribe': `<mailto:unsubscribe@thinkaiworks.online?subject=Unsubscribe>`,
-    },
-    list: {
-      unsubscribe: 'mailto:unsubscribe@thinkaiworks.online?subject=Unsubscribe',
-    },
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
         <div style="text-align:center;margin-bottom:24px;">
@@ -72,12 +32,7 @@ const sendEmployeeEmail = async ({ recipients, loginEmail, name, password }) => 
       </div>
     `,
     text: `Your ThinkAIWorks account has been created. Login Email: ${loginEmail}\nPassword: ${password}\nOpen: ${appUrl}`,
-  };
-
-  const info = await transporter.sendMail(mailOptions);
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-  if (previewUrl) console.log('Test email preview URL:', previewUrl);
-  return { info, previewUrl };
+  });
 };
 
 router.post('/', protect, async (req, res, next) => {
@@ -107,11 +62,9 @@ router.post('/', protect, async (req, res, next) => {
 
     await Employee.create({ name, email: normalizedLoginEmail, role: 'Team', subRole: subRole || null });
 
-    let previewUrl = null;
     let emailWarning = null;
     try {
-      const result = await sendEmployeeEmail({ recipients: [recipient], loginEmail: normalizedLoginEmail, name, password });
-      previewUrl = result.previewUrl || null;
+      await sendEmployeeEmail({ recipients: [recipient], loginEmail: normalizedLoginEmail, name, password });
     } catch (emailError) {
       emailWarning = emailError.message || 'Email failed to send';
       console.error('Employee email failed:', emailWarning);
@@ -121,7 +74,6 @@ router.post('/', protect, async (req, res, next) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
       notificationSentTo: recipient,
     };
-    if (previewUrl) responsePayload.emailPreviewUrl = previewUrl;
     if (emailWarning) responsePayload.emailWarning = emailWarning;
 
     res.status(201).json(responsePayload);

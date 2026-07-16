@@ -45,7 +45,7 @@ export default function LoginPage() {
       if (session?.user) localStorage.setItem('user', JSON.stringify(session.user));
 
       showToast('Welcome back!', 'success');
-      setTimeout(() => router.push('/'), 600);
+      setTimeout(() => router.push('/dashboard'), 600);
     } catch (err) {
       setLoading(false);
       const msg = err.message;
