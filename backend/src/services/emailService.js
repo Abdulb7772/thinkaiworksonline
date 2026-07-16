@@ -6,7 +6,7 @@ const getResend = () => {
   if (!resendInstance) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      throw new Error('RESEND_API_KEY is not set');
+      throw new Error('RESEND_API_KEY is not set — add it to your Render environment variables (or .env for local dev)');
     }
     resendInstance = new Resend(apiKey);
   }
