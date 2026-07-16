@@ -15,7 +15,7 @@ const getResend = () => {
 
 const sendEmail = async ({ to, subject, html, text }) => {
   const resend = getResend();
-  const from = process.env.EMAIL_FROM || 'noreply@yourdomain.com';
+  const from = process.env.EMAIL_FROM || 'noreply@thinkaiworks.online';
   const recipients = Array.isArray(to) ? to : [to];
   const recipientStr = recipients.join(', ');
 
