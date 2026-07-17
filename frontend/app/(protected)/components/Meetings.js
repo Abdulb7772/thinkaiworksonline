@@ -132,7 +132,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                       </span>
                     )}
 
-                    {userRole !== 'customer' && past ? (
+                    {userRole !== 'customer' && past && (
                       <button
                         disabled={isDeleting}
                         onClick={() => handleDone(m)}
@@ -173,7 +173,8 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                           </>
                         )}
                       </button>
-                    ) : !past ? (
+                    )}
+                    {!past && (
                       <>
                         <button
                           className="btn btn-ghost btn-sm"
@@ -182,26 +183,28 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                         >
                           Join
                         </button>
-                        {userRole !== 'customer' && <button
-                          disabled={isDeleting}
-                          onClick={() => handleCancel(m)}
-                          style={{
-                            display:'flex',alignItems:'center',gap:5,
-                            padding:'5px 13px',
-                            background: isDeleting ? 'rgba(255,79,109,0.08)' : 'rgba(255,79,109,0.14)',
-                            color:'var(--red)',
-                            border:'1px solid rgba(255,79,109,0.28)',
-                            borderRadius:'var(--r)',
-                            fontSize:12,fontWeight:600,
-                            cursor: isDeleting ? 'not-allowed' : 'pointer',
-                            transition:'all 0.2s ease',
-                            whiteSpace:'nowrap',
-                          }}
-                        >
-                          {isDeleting ? 'Cancelling...' : 'Cancel'}
-                        </button>
+                        {userRole !== 'customer' && (
+                          <button
+                            disabled={isDeleting}
+                            onClick={() => handleCancel(m)}
+                            style={{
+                              display:'flex',alignItems:'center',gap:5,
+                              padding:'5px 13px',
+                              background: isDeleting ? 'rgba(255,79,109,0.08)' : 'rgba(255,79,109,0.14)',
+                              color:'var(--red)',
+                              border:'1px solid rgba(255,79,109,0.28)',
+                              borderRadius:'var(--r)',
+                              fontSize:12,fontWeight:600,
+                              cursor: isDeleting ? 'not-allowed' : 'pointer',
+                              transition:'all 0.2s ease',
+                              whiteSpace:'nowrap',
+                            }}
+                          >
+                            {isDeleting ? 'Cancelling...' : 'Cancel'}
+                          </button>
+                        )}
                       </>
-                    ) : null}
+                    )}
                   </div>
                 );
               })}
