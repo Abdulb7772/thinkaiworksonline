@@ -132,8 +132,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                       </span>
                     )}
 
-                    {past ? (
-                      /* Meeting time has passed — show Done button */
+                    {userRole !== 'customer' && past ? (
                       <button
                         disabled={isDeleting}
                         onClick={() => handleDone(m)}
@@ -174,7 +173,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                           </>
                         )}
                       </button>
-                    ) : (
+                    ) : !past ? (
                       <>
                         <button
                           className="btn btn-ghost btn-sm"
@@ -183,7 +182,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                         >
                           Join
                         </button>
-                        <button
+                        {userRole !== 'customer' && <button
                           disabled={isDeleting}
                           onClick={() => handleCancel(m)}
                           style={{
@@ -202,7 +201,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                           {isDeleting ? 'Cancelling...' : 'Cancel'}
                         </button>
                       </>
-                    )}
+                    ) : null}
                   </div>
                 );
               })}
