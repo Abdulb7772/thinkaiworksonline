@@ -49,6 +49,11 @@ export default function LoginPage() {
     } catch (err) {
       setLoading(false);
       const msg = err.message;
+      if (msg && msg.startsWith('VERIFY_NEEDED:')) {
+        const email = msg.slice('VERIFY_NEEDED:'.length);
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       showToast(msg, 'error');
       if (msg.toLowerCase().includes('email')) { setErrors((e) => ({ ...e, email: msg })); shake('email'); }
       else if (msg.toLowerCase().includes('password')) { setErrors((e) => ({ ...e, password: msg })); shake('password'); }
@@ -80,7 +85,7 @@ export default function LoginPage() {
               <label htmlFor="email">Email</label>
               <div className="input-wrap">
                 <svg className="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <input type="email" id="email" placeholder="muhammad@thinkaiworks.online" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={errors.email ? 'error' : ''} />
+                <input type="email" id="email" placeholder="example@thinkaiworks.online" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={errors.email ? 'error' : ''} />
               </div>
               <div className={`field-error ${errors.email ? 'visible' : ''}`}>{errors.email}</div>
             </div>

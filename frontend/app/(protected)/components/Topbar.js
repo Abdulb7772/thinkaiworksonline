@@ -27,12 +27,11 @@ export default function Topbar({ activePage, onNavigate, data, leads, onMenuTogg
   const mrrTai = data?.overviewMetrics?.tai?.[0]?.val;
   const combinedMrr = mrrTai ? mrr + ' · ' + mrrTai : mrr;
 
-  const logout = async () => {
+  const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    const { signOut } = await import('next-auth/react');
-    await signOut({ redirect: false });
-    router.push('/login');
+    import('next-auth/react').then(({ signOut }) => signOut({ redirect: false })).catch(() => {});
+    window.location.href = '/login';
   };
 
   return (

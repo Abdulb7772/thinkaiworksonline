@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
   role: {
     type: String,
     enum: ['admin', 'customer', 'employee'],

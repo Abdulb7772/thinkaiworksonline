@@ -1,48 +1,116 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/config';
 
 const types = ['Internal', 'Video', 'Client Meeting'];
 
+const EmailChipInput = ({ listId, label, placeholder, emails, setEmails, options }) => {
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef(null);
+
+  const addEmail = (email) => {
+    const e = email.trim();
+    if (e && /^\S+@\S+\.\S+$/.test(e) && !emails.includes(e)) {
+      setEmails([...emails, e]);
+    }
+    setDraft('');
+    inputRef.current?.focus();
+  };
+
+  const removeEmail = (idx) => setEmails(emails.filter((_, i) => i !== idx));
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (draft.trim()) { addEmail(draft); return; }
+    }
+    if (e.key === 'Backspace' && !draft && emails.length) {
+      removeEmail(emails.length - 1);
+    }
+  };
+
+  return (
+    <div className="form-field">
+      <label>{label}</label>
+      <input
+        ref={inputRef}
+        list={listId}
+        placeholder={placeholder}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+      <datalist id={listId}>
+        {options.map((o, i) => (
+          <option key={i} value={o.email} />
+        ))}
+      </datalist>
+      {emails.length > 0 && (
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:2}}>
+          {emails.map((e, i) => (
+            <span key={i} style={{
+              display:'inline-flex',alignItems:'center',gap:4,
+              padding:'3px 8px',background:'rgba(124,92,252,0.12)',
+              border:'1px solid rgba(124,92,252,0.25)',
+              borderRadius:'var(--r)',fontSize:12,color:'var(--tai)',
+            }}>
+              {e}
+              <button type="button" onClick={() => removeEmail(i)} style={{
+                background:'none',border:'none',color:'var(--text3)',
+                cursor:'pointer',padding:0,fontSize:14,lineHeight:1,
+              }}>&times;</button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function CreateMeeting({ onClose, onSaved, onToast, clients, employees }) {
   const [form, setForm] = useState({
     title: '',
-    client: '',
     datetime: '',
-    attendees: '',
     type: 'Video',
     company: 'ThinkAIWorks',
-    clientEmail: '',
-    adminEmails: '',   // comma-separated in the input, split to array on submit
+    creatorEmail: '',
+    meetingLink: '',
   });
+  const [clientEmails, setClientEmails] = useState([]);
+  const [attendeeEmails, setAttendeeEmails] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.email) setForm((f) => ({ ...f, creatorEmail: u.email }));
+    } catch {}
+  }, []);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const now = new Date().toISOString().slice(0, 16);
+
+  const clientsWithEmail = (clients || []).filter((c) => c.email);
+  const employeesWithEmail = (employees || []).filter((e) => e.email);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title) return;
     setSaving(true);
 
-    // Parse comma-separated admin emails into an array
-    const adminEmailsArr = form.adminEmails
-      ? form.adminEmails.split(',').map(s => s.trim()).filter(Boolean)
-      : [];
-
-    const hasEmails = form.clientEmail.trim() || adminEmailsArr.length > 0;
+    const hasEmails = clientEmails.length > 0 || form.creatorEmail.trim() || attendeeEmails.length > 0;
 
     try {
       const payload = {
-        title:       form.title,
-        client:      form.client,
-        datetime:    form.datetime,
-        attendees:   form.attendees,
-        type:        form.type,
-        company:     form.company,
-        clientEmail: form.clientEmail.trim(),
-        adminEmails: adminEmailsArr,
+        title:          form.title,
+        datetime:       form.datetime,
+        type:           form.type,
+        company:        form.company,
+        clientEmails,
+        creatorEmail:   form.creatorEmail.trim(),
+        attendeeEmails,
+        meetingLink:    form.meetingLink.trim(),
       };
 
       const meeting = await api('/meetings', {
@@ -90,29 +158,11 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
             </div>
           </div>
 
-          {/* Row 2: Client + Date & Time */}
+          {/* Row 2: Date & Time + Company */}
           <div className="form-row">
-            <div className="form-field">
-              <label>Client from CRM</label>
-              <select value={form.client} onChange={set('client')}>
-                <option value="">Select client...</option>
-                {(clients || []).map((c, i) => <option key={i}>{c.name}</option>)}
-              </select>
-            </div>
             <div className="form-field">
               <label>Date & Time</label>
               <input type="datetime-local" value={form.datetime} onChange={set('datetime')} min={now} />
-            </div>
-          </div>
-
-          {/* Row 3: Attendees + Company */}
-          <div className="form-row">
-            <div className="form-field">
-              <label>Attendees</label>
-              <select value={form.attendees} onChange={set('attendees')}>
-                <option value="">Select attendee...</option>
-                {(employees || []).map((e, i) => <option key={i}>{e.name || e}</option>)}
-              </select>
             </div>
             <div className="form-field">
               <label>Company</label>
@@ -123,9 +173,9 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
             </div>
           </div>
 
-          {/* Email Reminder section */}
+          {/* Email & Links section */}
           <div style={{
-            marginTop: 4,
+            marginTop: 12,
             padding: '14px 16px',
             background: 'rgba(124,92,252,0.06)',
             border: '1px solid rgba(124,92,252,0.18)',
@@ -134,35 +184,52 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
             <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:12}}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tai)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
               <span style={{fontSize:11,fontWeight:700,color:'var(--tai)',textTransform:'uppercase',letterSpacing:'0.5px'}}>
-                Email Reminders — 10 min before meeting
+                Notifications & Links
               </span>
             </div>
 
             <div className="form-row" style={{marginTop:0}}>
               <div className="form-field">
-                <label style={{color:'var(--text2)'}}>Client Email</label>
+                <label style={{color:'var(--text2)'}}>Creator Email</label>
                 <input
                   type="email"
-                  placeholder="client@example.com"
-                  value={form.clientEmail}
-                  onChange={set('clientEmail')}
-                  style={{fontSize:13}}
+                  value={form.creatorEmail}
+                  readOnly
+                  style={{fontSize:13,color:'var(--tai)',cursor:'default',background:'var(--bg)'}}
                 />
               </div>
               <div className="form-field">
-                <label style={{color:'var(--text2)'}}>Admin Email(s)</label>
+                <label style={{color:'var(--text2)'}}>Meeting Link</label>
                 <input
-                  type="text"
-                  placeholder="admin1@co.com, admin2@co.com"
-                  value={form.adminEmails}
-                  onChange={set('adminEmails')}
+                  type="url"
+                  placeholder="https://zoom.us/j/..."
+                  value={form.meetingLink}
+                  onChange={set('meetingLink')}
                   style={{fontSize:13}}
                 />
               </div>
             </div>
 
+            <EmailChipInput
+              listId="clientEmailList"
+              label="Client Email(s)"
+              placeholder="Type or select"
+              emails={clientEmails}
+              setEmails={setClientEmails}
+              options={clientsWithEmail}
+            />
+
+            <EmailChipInput
+              listId="attendeeEmailList"
+              label="Attendee Email(s)"
+              placeholder="Type or select"
+              emails={attendeeEmails}
+              setEmails={setAttendeeEmails}
+              options={employeesWithEmail}
+            />
+
             <p style={{margin:'8px 0 0',fontSize:11,color:'var(--text3)'}}>
-              &#9432; Leave blank to skip reminders. Separate multiple admin emails with commas.
+              &#9432; Type an email and press Enter to add, or pick from suggestions. Press Backspace on empty input to remove the last email.
             </p>
           </div>
 

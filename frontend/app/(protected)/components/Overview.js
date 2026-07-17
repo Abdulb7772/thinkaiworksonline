@@ -37,6 +37,12 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
   const getInitials = (name) =>
     name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
+  const allClients = data?.customers || [];
+  const [clientPage, setClientPage] = useState(0);
+  const pageSize = 4;
+  const totalPages = Math.ceil(allClients.length / pageSize);
+  const pagedClients = allClients.slice(clientPage * pageSize, (clientPage + 1) * pageSize);
+
   return (
     <div className="page active" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div className="ph">
@@ -45,7 +51,6 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
           <div className="ps">Viewing: {companyName} \u00b7 All systems operational</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-ghost btn-sm">Export Report</button>
           {userRole === 'admin' && (
             <button id="primary-btn" className="btn btn-tai btn-sm" onClick={() => setShowAdd(true)}>+ New Client</button>
           )}
@@ -196,6 +201,66 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
           </div>
         </div>
       </div>
+
+      {(userRole === 'admin' || userRole === 'employee') && (
+        <div className="card" style={{marginTop:4}}>
+          <div className="card-title">
+            <span>Registered Clients</span>
+            <span className="tag tb">{allClients.length} total</span>
+          </div>
+          {allClients.length === 0 ? (
+            <div style={{textAlign:'center',padding:'24px 0',color:'var(--text3)',fontSize:13}}>No clients registered yet</div>
+          ) : (
+            <>
+              <div style={{overflowX:'auto'}}>
+                <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+                  <thead>
+                    <tr style={{borderBottom:'1px solid var(--border)',color:'var(--text3)',fontSize:11,textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                      <th style={{padding:'8px 12px',textAlign:'left',fontWeight:600}}>Name</th>
+                      <th style={{padding:'8px 12px',textAlign:'left',fontWeight:600}}>Email</th>
+                      <th style={{padding:'8px 12px',textAlign:'left',fontWeight:600}}>Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedClients.map((c, i) => (
+                      <tr key={i} style={{borderBottom:'1px solid var(--border2)'}}>
+                        <td style={{padding:'10px 12px',fontWeight:600}}>{c.name}</td>
+                        <td style={{padding:'10px 12px',color:'var(--text2)'}}>{c.email || '—'}</td>
+                        <td style={{padding:'10px 12px',color:'var(--text3)',fontSize:12}}>
+                          {c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {totalPages > 1 && (
+                <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:12,padding:'12px 0 4px'}}>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    disabled={clientPage === 0}
+                    onClick={() => setClientPage(clientPage - 1)}
+                    style={{fontSize:12}}
+                  >
+                    ‹ Prev
+                  </button>
+                  <span style={{fontSize:12,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>
+                    {clientPage + 1} / {totalPages}
+                  </span>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    disabled={clientPage >= totalPages - 1}
+                    onClick={() => setClientPage(clientPage + 1)}
+                    style={{fontSize:12}}
+                  >
+                    Next ›
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

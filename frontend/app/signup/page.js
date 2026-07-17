@@ -45,14 +45,13 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const data = await api('/auth/register', {
+      await api('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ name, email, password, role }),
       });
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      showToast(`Account created! Welcome, ${data.user.name}!`, 'success');
-      setTimeout(() => router.push('/dashboard'), 600);
+      showToast('Verification code sent! Check your email.', 'success');
+      setLoading(false);
+      setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 600);
     } catch (err) {
       setLoading(false);
       const msg = err.message;

@@ -25,33 +25,29 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
     return d ? d.getDate() : null;
   }).filter(Boolean);
 
-  const [qs, setQs] = useState({ title: '', client: '', datetime: '', attendees: '' });
-  const qsSet = (k) => (e) => setQs({ ...qs, [k]: e.target.value });
-
-  const handleQuickSchedule = async () => {
-    if (!qs.title) { onToast('Enter a meeting title', 'error'); return; }
-    try {
-      await api('/meetings', {
-        method: 'POST',
-        body: JSON.stringify({ ...qs, type: 'Video', company: 'ThinkAIWorks' }),
-      });
-      onToast('Meeting saved & team notified', 'success');
-      setQs({ title: '', client: '', datetime: '', attendees: '' });
-      onRefresh?.();
-    } catch (err) {
-      onToast(err.message, 'error');
-    }
-  };
-
   const handleDone = async (m) => {
     if (!m._id || deletingId === m._id) return;
     setDeletingId(m._id);
     try {
-      await api(`/meetings/${m._id}`, { method: 'DELETE' });
-      onToast(`"${m.title}" marked as done and removed`, 'success');
+      await api(`/meetings/${m._id}/complete`, { method: 'PUT' });
+      onToast(`"${m.title}" marked as done`, 'success');
       onRefresh?.();
     } catch (err) {
       onToast(err.message || 'Failed to remove meeting', 'error');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleCancel = async (m) => {
+    if (!m._id || deletingId === m._id) return;
+    setDeletingId(m._id);
+    try {
+      await api(`/meetings/${m._id}/cancel`, { method: 'PUT' });
+      onToast(`"${m.title}" cancelled`, 'success');
+      onRefresh?.();
+    } catch (err) {
+      onToast(err.message || 'Failed to cancel meeting', 'error');
     } finally {
       setDeletingId(null);
     }
@@ -67,7 +63,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
         {userRole !== 'customer' && (
           <button className="btn btn-es" onClick={() => setShowCreate(true)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            + Create Meeting
+            Create Meeting
           </button>
         )}
       </div>
@@ -189,7 +185,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                         </button>
                         <button
                           disabled={isDeleting}
-                          onClick={() => handleDone(m)}
+                          onClick={() => handleCancel(m)}
                           style={{
                             display:'flex',alignItems:'center',gap:5,
                             padding:'5px 13px',
@@ -214,44 +210,6 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
           )}
         </div>
       </div>
-
-      {/* Quick Schedule (admin/employee only) */}
-      {userRole !== 'customer' && (
-        <div className="card">
-          <div className="card-title">Quick Schedule</div>
-          <div className="intake-form">
-            <div className="form-row">
-              <div className="form-field">
-                <label>Meeting Title</label>
-                <input type="text" placeholder="e.g. Strategy Review" value={qs.title} onChange={qsSet('title')} />
-              </div>
-              <div className="form-field">
-                <label>Client from CRM</label>
-                <select value={qs.client} onChange={qsSet('client')}>
-                  <option value="">Select client...</option>
-                  {(data?.clients || []).map((c, i) => <option key={i}>{c.name}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="form-field">
-                <label>Date & Time</label>
-                <input type="datetime-local" value={qs.datetime} onChange={qsSet('datetime')} />
-              </div>
-              <div className="form-field">
-                <label>Attendees</label>
-                <select value={qs.attendees} onChange={qsSet('attendees')}>
-                  <option value="">Select attendee...</option>
-                  {(data?.employees || []).map((e, i) => <option key={i}>{e.name || e}</option>)}
-                </select>
-              </div>
-            </div>
-            <button className="btn btn-es" style={{alignSelf:'flex-start'}} onClick={handleQuickSchedule}>
-              Save & Notify Team
-            </button>
-          </div>
-        </div>
-      )}
 
       {showCreate && userRole !== 'customer' && (
         <CreateMeeting

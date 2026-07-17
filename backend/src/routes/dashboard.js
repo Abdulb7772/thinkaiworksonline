@@ -6,6 +6,7 @@ const Employee = require('../models/Employee');
 const Ticket = require('../models/Ticket');
 const Campaign = require('../models/Campaign');
 const Budget = require('../models/Budget');
+const User = require('../models/User');
 const router = express.Router();
 
 function normalizeAttendanceLog(log) {
@@ -22,10 +23,10 @@ const tickerItems = [
 ];
 
 const buildAppData = async () => {
-  let leads = [], clients = [], meetings = [], employees = [], tickets = [], campaigns = [], budgets = [];
+  let leads = [], clients = [], meetings = [], employees = [], tickets = [], campaigns = [], budgets = [], customers = [];
 
   try {
-    [leads, clients, meetings, employees, tickets, campaigns, budgets] = await Promise.all([
+    [leads, clients, meetings, employees, tickets, campaigns, budgets, customers] = await Promise.all([
       Lead.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Client.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Meeting.find().sort({ datetime: 1 }).lean().catch(() => []),
@@ -33,6 +34,7 @@ const buildAppData = async () => {
       Ticket.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Campaign.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Budget.find().sort({ createdAt: -1 }).lean().catch(() => []),
+      User.find({ role: 'customer' }).sort({ name: 1 }).lean().catch(() => []),
     ]);
   } catch {}
 
@@ -57,14 +59,14 @@ const buildAppData = async () => {
       ],
     },
     clients: clients.map(c => ({
-      name: c.name, company: c.company || 'EcomSkyline', service: c.service || '',
+      name: c.name, email: c.email || '', company: c.company || 'EcomSkyline', service: c.service || '',
       value: c.value || '', stage: c.stage || 'Discovery', assignedTo: c.assignedTo || '', lastContact: c.lastContact || '',
     })),
     overviewLeads: leads.slice(0, 5).map(l => ({
       name: l.name, service: l.service || 'N/A', budget: l.budgetRange || 'N/A',
       score: l.score || 0, co: l.company === 'ThinkAIWorks' ? 'tai' : 'es', status: l.status || 'New',
     })),
-    schedule: meetings.slice(0, 5).map(m => ({
+    schedule: meetings.filter(m => !m.completedAt && !m.cancelledAt).slice(0, 5).map(m => ({
       time: m.datetime ? new Date(m.datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'TBD',
       title: m.title, type: m.type || 'Meeting', co: m.company === 'ThinkAIWorks' ? 'tai' : 'es',
     })),
@@ -82,7 +84,7 @@ const buildAppData = async () => {
       { label: 'Open Tickets', val: String(tickets.filter(t => t.status === 'Open').length), delta: 'Real-time', cls: 'neutral', co: '' },
       { label: 'Pipeline Value', val: `$${clients.reduce((s, c) => s + (parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0), 0).toLocaleString()}`, delta: 'Current total', cls: 'up', co: '' },
     ],
-    meetings: meetings.slice(0, 10).map(m => ({
+    meetings: meetings.filter(m => !m.completedAt && !m.cancelledAt).slice(0, 10).map(m => ({
       _id: m._id, title: m.title,
       date: m.datetime ? new Date(m.datetime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'TBD',
       datetime: m.datetime ? new Date(m.datetime).toISOString() : null,
@@ -107,6 +109,10 @@ const buildAppData = async () => {
       totals: { spend: totalSpend, profit: totalRev - totalSpend, roi: totalSpend ? `${Math.round((totalRev / totalSpend) * 100)}%` : '0%', rev: totalRev },
     },
     revTrend: (() => { const step = Math.round(totalRev / 6); return Array.from({length:6},(_,i)=>step * (i + 1)); })(),
+    customers: customers.map(c => ({
+      _id: c._id, name: c.name, email: c.email || '',
+      createdAt: c.createdAt,
+    })),
     tickerItems,
   };
 };
@@ -118,6 +124,23 @@ router.get('/app-data', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+router.post('/sync-customers', async (req, res, next) => {
+  try {
+    const customers = await User.find({ role: 'customer' }).select('name email').lean();
+    let created = 0, skipped = 0;
+    for (const c of customers) {
+      const exists = await Client.findOne({ email: c.email });
+      if (!exists) {
+        await Client.create({ name: c.name, email: c.email, company: 'ThinkAIWorks' });
+        created++;
+      } else {
+        skipped++;
+      }
+    }
+    res.json({ message: `Synced ${created} customers, ${skipped} already existed.` });
+  } catch (error) { next(error); }
 });
 
 router.post('/upwork/submit', async (req, res, next) => {

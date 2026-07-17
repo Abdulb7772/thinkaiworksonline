@@ -20,6 +20,7 @@ import CEO from '../(protected)/components/CEO';
 import EmployeeRatings from '../(protected)/components/EmployeeRatings';
 import Attendance from '../(protected)/components/Attendance';
 import CreateEmployeeAccount from '../(protected)/components/CreateEmployeeAccount';
+import MeetingHistory from '../(protected)/components/MeetingHistory';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -80,6 +81,7 @@ export default function Dashboard() {
     growth:           { comp: Growth,                 props: { data } },
     ceo:              { comp: CEO,                    props: { data } },
     'create-employee':{ comp: CreateEmployeeAccount,  props: {} },
+    'meeting-history':{ comp: MeetingHistory,         props: { onToast: showToast } },
   };
 
   const Section = sections[activePage]?.comp;

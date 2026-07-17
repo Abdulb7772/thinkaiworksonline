@@ -24,7 +24,9 @@ const startMeetingReminderJob = () => {
         datetime:     { $gte: windowStart, $lte: windowEnd },
         reminderSent: false,
         $or: [
-          { clientEmail: { $exists: true, $ne: '' } },
+          { clientEmails: { $exists: true, $not: { $size: 0 } } },
+          { creatorEmail: { $exists: true, $ne: '' } },
+          { attendeeEmails: { $exists: true, $not: { $size: 0 } } },
           { adminEmails: { $exists: true, $not: { $size: 0 } } },
         ],
       });
@@ -32,11 +34,15 @@ const startMeetingReminderJob = () => {
       for (const meeting of upcoming) {
         try {
           await sendMeetingReminder({
-            title:       meeting.title,
-            datetime:    meeting.datetime,
-            attendees:   meeting.attendees,
-            clientEmail: meeting.clientEmail,
-            adminEmails: meeting.adminEmails,
+            title:          meeting.title,
+            datetime:       meeting.datetime,
+            attendees:      meeting.attendees,
+            type:           meeting.type,
+            clientEmails:   meeting.clientEmails,
+            creatorEmail:   meeting.creatorEmail,
+            attendeeEmails: meeting.attendeeEmails,
+            adminEmails:    meeting.adminEmails,
+            meetingLink:    meeting.meetingLink,
           });
 
           meeting.reminderSent = true;

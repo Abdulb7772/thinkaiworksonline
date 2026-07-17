@@ -5,6 +5,7 @@ const cors = require('cors');
 const { connectDB, closeDatabase } = require('./config/db');
 const apiRoutes = require('./routes');
 const { startMeetingReminderJob } = require('./jobs/meetingReminder');
+const { startMeetingFollowUpJob } = require('./jobs/meetingFollowUp');
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -55,6 +56,7 @@ const startServer = async () => {
   }
 
   startMeetingReminderJob();
+  startMeetingFollowUpJob();
   const tryListen = (p) => {
     server = app.listen(p);
     server.on('listening', () => console.log(`Server running on port ${p}`));

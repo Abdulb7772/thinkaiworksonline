@@ -30,7 +30,12 @@ export const authOptions = {
         const data = await readJsonResponse(res).catch((error) => {
           throw new Error(`Login API error: ${error.message}`);
         });
-        if (!res.ok) throw new Error(data.error || 'Invalid credentials');
+        if (!res.ok) {
+          if (data.needsVerification && data.email) {
+            throw new Error(`VERIFY_NEEDED:${data.email}`);
+          }
+          throw new Error(data.error || 'Invalid credentials');
+        }
         return { ...data.user, accessToken: data.token };
       },
     }),

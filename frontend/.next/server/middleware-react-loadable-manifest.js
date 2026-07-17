@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app\\\\layout.js -> next-auth/react\":{\"id\":\"app\\\\layout.js -> next-auth/react\",\"files\":[]},\"app\\\\login\\\\page.js -> next-auth/react\":{\"id\":\"app\\\\login\\\\page.js -> next-auth/react\",\"files\":[]}}"
