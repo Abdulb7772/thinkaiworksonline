@@ -210,9 +210,8 @@ const sendMeetingFollowUp = async ({ title, datetime, attendees, type, clientEma
           </table>
         </div>
 
-        <div style="display:inline-block;padding:8px 20px;background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.25);border-radius:20px;margin-bottom:4px;">
-          <span style="color:#7c5cfc;font-size:13px;font-weight:600;">✓ Joined with Zoom</span>
-        </div>
+        <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:14px 36px;background:#7c5cfc;color:#ffffff;text-decoration:none;border-radius:12px;font-size:16px;font-weight:700;letter-spacing:0.3px;">Visit ThinkAIWorks →</a>
+        <p style="margin:10px 0 0;color:#5a6090;font-size:12px;">Explore more tools and features</p>
 
         <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:10px;padding:14px 18px;margin-top:24px;">
           <p style="margin:0;color:#34d399;font-size:12px;">Best regards,<br/>The ThinkAIWorks Team</p>
