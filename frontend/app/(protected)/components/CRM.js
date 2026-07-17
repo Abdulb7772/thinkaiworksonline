@@ -67,7 +67,8 @@ export default function CRM({ company, onToast, onAddLead, data }) {
 
       <div className="card">
         <div className="card-title">Pipeline Board</div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12}}>
+        <div className="table-wrap">
+        <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,minWidth:640}}>
           {stages.map(s => (
             <div key={s}>
               <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:.8,color:'var(--text3)',marginBottom:8}}>
@@ -83,6 +84,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
             </div>
           ))}
         </div>
+        </div>{/* /table-wrap */}
       </div>
 
       <div className="card">
@@ -90,7 +92,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text3)', fontSize: 13 }}>Loading clients...</div>
         ) : (
-          <table>
+          <div className="table-wrap"><table>
             <thead>
               <tr>
                 <th>Client</th><th>Company</th><th>Service</th><th>Value</th><th>Stage</th><th>Assigned To</th><th>Last Contact</th><th>Action</th>
@@ -110,7 +112,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

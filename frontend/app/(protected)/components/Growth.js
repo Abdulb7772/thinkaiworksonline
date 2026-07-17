@@ -100,7 +100,7 @@ export default function Growth({ company, onToast, data }) {
 
       <div className="card">
         <div className="card-title">Combined Growth Roadmap</div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16}}>
+        <div className="grid3">
           {roadmap.map((q,i) => (
             <div key={i} style={{background:'var(--bg3)',borderRadius:'var(--r2)',border:'1px solid var(--border)',padding:16}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>

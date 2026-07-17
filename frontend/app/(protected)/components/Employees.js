@@ -119,6 +119,7 @@ export default function Employees({ company, onToast, data, onRefresh }) {
           <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No employees found</div>
         ) : (
           <>
+            <div className="table-wrap">
             <table>
               <thead>
                 <tr>
@@ -150,6 +151,7 @@ export default function Employees({ company, onToast, data, onRefresh }) {
                 ))}
               </tbody>
             </table>
+            </div>{/* /table-wrap */}
             {totalPages > 1 && (
               <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:8,padding:'12px 0 4px'}}>
                 <button className="btn btn-ghost btn-sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>‹ Prev</button>

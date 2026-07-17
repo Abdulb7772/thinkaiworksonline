@@ -93,7 +93,7 @@ export default function EmployeeRatings({ data, onToast, onRefresh }) {
         {employees.length === 0 ? (
           <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No employees found</div>
         ) : (
-          <table>
+          <div className="table-wrap"><table>
             <thead>
               <tr>
                 <th>Employee</th><th>Role</th><th>Current Rating</th><th>Set Rating</th>
@@ -114,7 +114,7 @@ export default function EmployeeRatings({ data, onToast, onRefresh }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

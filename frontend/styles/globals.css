@@ -293,3 +293,129 @@ td{padding:10px 12px;vertical-align:middle}
 @keyframes splashLogoGlow{0%{box-shadow:0 0 40px rgba(124,92,252,.1),0 0 80px rgba(0,229,200,.05)}100%{box-shadow:0 0 60px rgba(124,92,252,.2),0 0 140px rgba(0,229,200,.1)}}
 @keyframes splashLoadBar{0%{width:0}100%{width:100%}}
 @keyframes splashFadeUp{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:none}}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   Breakpoints: 768px (tablet+mobile) · 480px · 360px
+   Desktop (≥1024px) is pixel-identical to before.
+═══════════════════════════════════════════════════════════ */
+
+/* ── Hamburger button (hidden on desktop, shown on mobile) ── */
+.hamburger-btn{display:none;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--border2);color:var(--text2);cursor:pointer;flex-shrink:0;transition:all .15s}
+.hamburger-btn:hover{background:var(--surface2);color:var(--text)}
+.hamburger-btn svg{pointer-events:none}
+
+/* ── Sidebar overlay backdrop (mobile drawer) ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:299;animation:fadeIn .2s ease}
+.sidebar-overlay.visible{display:block}
+
+/* ── Table scroll wrapper ── */
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ═══ 768px — tablet / mobile ═══ */
+@media(max-width:768px){
+
+  /* Shell: drop sidebar column, shrink topbar row */
+  .shell{grid-template-columns:1fr;grid-template-rows:56px 1fr}
+
+  /* Topbar */
+  .topbar{padding:0 14px;height:56px;gap:10px}
+  .topbar-center{display:none}
+  .ceo-badge .ceo-name{display:none}
+  .user-badge span{display:none}
+  #live-clock{display:none}
+  .hamburger-btn{display:flex}
+
+  /* Sidebar → slide-in drawer */
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:272px;z-index:300;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);padding-top:12px;padding-bottom:24px}
+  .sidebar.sidebar-open{transform:translateX(0);box-shadow:12px 0 48px rgba(0,0,0,.5)}
+
+  /* Main */
+  .main{padding:16px;gap:16px}
+
+  /* Page header */
+  .ph{flex-direction:column;align-items:flex-start;gap:10px}
+  .pt{font-size:20px}
+
+  /* Grids */
+  .grid2{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .grid4{grid-template-columns:1fr 1fr;gap:10px}
+
+  /* Metric cards */
+  .metric{padding:14px}
+  .m-val{font-size:22px}
+
+  /* Forms */
+  .form-row{grid-template-columns:1fr}
+
+  /* Chat */
+  .chat-container{height:340px}
+  .msg-bubble{max-width:88%}
+
+  /* Modal → bottom sheet */
+  .modal-overlay{align-items:flex-end}
+  .modal{max-width:100%;border-radius:var(--r3) var(--r3) 0 0;padding:24px 20px;max-height:92vh;animation:modalSlideUp .25s ease}
+  @keyframes modalSlideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+
+  /* Cards */
+  .card{padding:16px}
+
+  /* Ticker */
+  .ticker{padding:5px 14px}
+
+  /* Budget slider */
+  .budget-slider-row{flex-wrap:wrap}
+  .bs-label{width:100%}
+
+  /* Suggestion card */
+  .suggestion-card{flex-direction:column;gap:10px}
+
+  /* Toast */
+  .toast{bottom:14px;right:14px;left:14px;max-width:none;font-size:12px;padding:11px 16px}
+
+  /* Employee cards */
+  .emp-card{padding:12px}
+
+  /* Bar chart */
+  .bar-chart{height:80px}
+
+  /* Alert rows */
+  .alert-row{padding:10px}
+
+  /* Auth pages */
+  .auth-card{padding:28px 20px}
+  .auth-container{padding:12px}
+}
+
+/* ═══ 480px — small phones ═══ */
+@media(max-width:480px){
+  .grid4{grid-template-columns:1fr}
+  .pt{font-size:18px}
+  .m-val{font-size:20px}
+  .modal{padding:20px 16px;max-height:95vh}
+  .chat-container{height:300px}
+  .brand-pill{padding:5px 10px;font-size:12px}
+  .ceo-badge{padding:4px 10px;gap:6px}
+  .ceo-avatar{width:24px;height:24px;font-size:10px}
+  .card-title{font-size:13px}
+  .btn{padding:8px 14px;font-size:12px}
+  .emp-card .emp-score{font-size:18px}
+  .email-preview{font-size:11px}
+}
+
+/* ═══ 360px — very small devices ═══ */
+@media(max-width:360px){
+  .main{padding:12px;gap:12px}
+  .card{padding:12px}
+  .topbar{padding:0 10px;gap:8px}
+  .pt{font-size:17px}
+  .btn{padding:7px 12px;font-size:11px}
+  .metric{padding:12px}
+  .m-val{font-size:18px}
+  .modal{padding:18px 14px}
+  .chat-container{height:280px}
+}
+
+/* Prevent body scroll when mobile drawer is open */
+body.sidebar-drawer-open{overflow:hidden}

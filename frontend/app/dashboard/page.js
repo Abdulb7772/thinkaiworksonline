@@ -32,6 +32,9 @@ export default function Dashboard() {
   const [isChecking, setIsChecking] = useState(true);
   const [leads, setLeads] = useState([]);
 
+  // Mobile sidebar drawer state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const addLead = (lead) => setLeads((prev) => [{ ...lead, age: 'Just now' }, ...prev]);
   const removeLead = (name) => setLeads((prev) => prev.filter((l) => l.name !== name));
 
@@ -64,19 +67,19 @@ export default function Dashboard() {
   }, []);
 
   const sections = {
-    overview: { comp: Overview, props: { data, leads, onAddLead: addLead } },
-    upwork: { comp: Upwork, props: { leads, onAddLead: addLead, onRemoveLead: removeLead } },
-    crm: { comp: CRM, props: { data, onAddLead: addLead } },
-    meetings: { comp: Meetings, props: { data, onRefresh: fetchData } },
-    employees: { comp: Employees, props: { data, onRefresh: fetchData } },
-    ratings: { comp: EmployeeRatings, props: { data, onRefresh: fetchData } },
-    attendance: { comp: Attendance, props: { data, onRefresh: fetchData } },
-    outreach: { comp: Outreach, props: { data, onRefresh: fetchData } },
-    support: { comp: Support, props: { data, onRefresh: fetchData } },
-    budget: { comp: Budget, props: { data } },
-    growth: { comp: Growth, props: { data } },
-    ceo: { comp: CEO, props: { data } },
-    'create-employee': { comp: CreateEmployeeAccount, props: {} },
+    overview:         { comp: Overview,               props: { data, leads, onAddLead: addLead } },
+    upwork:           { comp: Upwork,                 props: { leads, onAddLead: addLead, onRemoveLead: removeLead } },
+    crm:              { comp: CRM,                    props: { data, onAddLead: addLead } },
+    meetings:         { comp: Meetings,               props: { data, onRefresh: fetchData } },
+    employees:        { comp: Employees,              props: { data, onRefresh: fetchData } },
+    ratings:          { comp: EmployeeRatings,        props: { data, onRefresh: fetchData } },
+    attendance:       { comp: Attendance,             props: { data, onRefresh: fetchData } },
+    outreach:         { comp: Outreach,               props: { data, onRefresh: fetchData } },
+    support:          { comp: Support,                props: { data, onRefresh: fetchData } },
+    budget:           { comp: Budget,                 props: { data } },
+    growth:           { comp: Growth,                 props: { data } },
+    ceo:              { comp: CEO,                    props: { data } },
+    'create-employee':{ comp: CreateEmployeeAccount,  props: {} },
   };
 
   const Section = sections[activePage]?.comp;
@@ -93,11 +96,16 @@ export default function Dashboard() {
           onNavigate={setActivePage}
           data={data}
           leads={leads}
+          onMenuToggle={() => setSidebarOpen((o) => !o)}
         />
 
         <Sidebar
           activePage={activePage}
           onNavigate={setActivePage}
+          data={data}
+          leads={leads}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
 
         <main className="main">
