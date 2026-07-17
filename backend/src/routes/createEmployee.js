@@ -60,7 +60,7 @@ router.post('/', protect, async (req, res, next) => {
 
     const user = await User.create({ name, email: normalizedLoginEmail, password, role: 'employee' });
 
-    await Employee.create({ name, email: normalizedLoginEmail, notificationEmail: recipient, role: 'Team', subRole: subRole || null });
+    await Employee.create({ name, loginEmail: normalizedLoginEmail, email: recipient, role: 'Team', subRole: subRole || null });
 
     let emailWarning = null;
     try {

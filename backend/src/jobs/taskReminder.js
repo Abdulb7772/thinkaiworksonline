@@ -10,13 +10,12 @@ const checkDailyTasks = async () => {
   const pendingTasks = await Task.find({ date: today, status: { $ne: 'done' } }).populate('assignedTo', 'name email').populate('assignedBy', 'name email');
 
   for (const task of pendingTasks) {
-    const employee = await Employee.findOne({ email: task.assignedTo.email });
-    const notificationEmail = employee?.notificationEmail || task.assignedTo.email;
+    const employee = await Employee.findOne({ loginEmail: task.assignedTo.email });
     const admin = task.assignedBy;
 
     try {
       await sendEmail({
-        to: [admin.email, notificationEmail],
+        to: [admin.email, employee?.email || task.assignedTo.email],
         subject: `⏰ Task Reminder: "${task.title}" due today`,
         html: `
           <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">

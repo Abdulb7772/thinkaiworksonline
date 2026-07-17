@@ -56,7 +56,7 @@ async function upsertSelfAttendance(req, res, next) {
       return res.status(400).json({ error: 'Attendance entry is required' });
     }
 
-    const existing = await Employee.findOne({ email: userEmail });
+    const existing = await Employee.findOne({ loginEmail: userEmail });
     const existingLog = normalizeAttendanceLog(existing?.attendanceLog);
     const currentEntry = getEntryForDate(existingLog, date);
 
@@ -89,7 +89,8 @@ async function upsertSelfAttendance(req, res, next) {
 
     const baseData = {
       name: userName || existing?.name || userEmail,
-      email: userEmail,
+      loginEmail: userEmail,
+      email: existing?.email || email || userEmail,
       role: role || existing?.role || req.user?.role || 'Team',
       subRole: subRole || existing?.subRole || null,
       company: company || existing?.company || 'ThinkAIWorks',

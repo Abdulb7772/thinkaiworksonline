@@ -4,8 +4,8 @@ const SUB_ROLES = ['intern', 'developer', 'team lead', 'member', 'manager', 'hr'
 
 const EmployeeSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  loginEmail: { type: String },
   email: { type: String },
-  notificationEmail: { type: String },
   role: { type: String },
   subRole: { type: String },
   company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks', 'Both'], default: 'ThinkAIWorks' },
