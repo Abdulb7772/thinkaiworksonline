@@ -1,0 +1,136 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/config';
+
+export default function Tasks({ onToast }) {
+  const [tasks, setTasks] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [role, setRole] = useState('admin');
+  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '' });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (u.role) setRole(u.role);
+  }, []);
+
+  const fetch = async () => {
+    try {
+      const [t, e] = await Promise.all([
+        api('/tasks/'),
+        api('/tasks/employees'),
+      ]);
+      setTasks(t);
+      setEmployees(e);
+    } catch {}
+  };
+
+  useEffect(() => { fetch(); }, []);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!form.title || !form.assignedTo || !form.date) {
+      onToast?.('Please fill all required fields', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      await api('/tasks/', { method: 'POST', body: JSON.stringify(form) });
+      onToast?.('Task assigned', 'success');
+      setForm({ title: '', description: '', assignedTo: '', date: '' });
+      fetch();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateStatus = async (id, status) => {
+    try {
+      await api(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      onToast?.(`Task marked ${status}`, 'success');
+      fetch();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+
+  return (
+    <div className="page active" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <div className="ph">
+        <div>
+          <div className="pt">Daily Tasks</div>
+          <div className="ps">Assign and track daily tasks for employees</div>
+        </div>
+      </div>
+
+      {role === 'admin' && (
+        <div className="card" style={{ maxWidth: 520 }}>
+          <div className="card-title">Assign New Task</div>
+          <form className="intake-form" onSubmit={handleCreate}>
+            <div className="form-field">
+              <label>Title *</label>
+              <input type="text" placeholder="e.g. Complete report" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required />
+            </div>
+            <div className="form-field">
+              <label>Description</label>
+              <textarea placeholder="Optional details" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
+            </div>
+            <div className="form-field">
+              <label>Assign To *</label>
+              <select value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })} required>
+                <option value="">Select employee</option>
+                {employees.map(emp => (
+                  <option key={emp._id} value={emp._id}>{emp.name} ({emp.email})</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field">
+              <label>Date *</label>
+              <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
+            </div>
+            <button type="submit" className="btn btn-tai" disabled={saving} style={{ alignSelf: 'flex-start' }}>
+              {saving ? 'Assigning...' : 'Assign Task'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="card">
+        <div className="card-title">{role === 'admin' ? 'All Tasks' : 'My Tasks'}</div>
+        {tasks.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text3)' }}>No tasks yet</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {tasks.map(task => (
+              <div key={task._id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text3)' }}>
+                    {task.assignedTo?.name} &middot; {task.date}
+                    {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : 'badge-amber'}`}>
+                    {task.status === 'in_progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                  </span>
+                  {task.status === 'pending' && task.assignedTo?._id === JSON.parse(localStorage.getItem('user') || '{}')._id && (
+                    <button className="btn btn-sm btn-outline" onClick={() => updateStatus(task._id, 'in_progress')}>Start</button>
+                  )}
+                  {task.status === 'in_progress' && task.assignedTo?._id === JSON.parse(localStorage.getItem('user') || '{}')._id && (
+                    <button className="btn btn-sm btn-tai" onClick={() => updateStatus(task._id, 'done')}>Done</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

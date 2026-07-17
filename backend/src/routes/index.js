@@ -24,5 +24,7 @@ router.use('/budgets', budgetRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/support', supportRoutes);
 router.use('/ceo', require('./ceo'));
+router.use('/tasks', require('./tasks'));
+router.use('/chat', require('./chat'));
 
 module.exports = router;

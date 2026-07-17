@@ -45,6 +45,13 @@ const ROLE_NAV = {
           { id: 'ceo', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', label: 'CEO Chat (Muhammad Ali)' },
         ],
       },
+      {
+        label: 'Tasks & Communication',
+        items: [
+          { id: 'tasks', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', label: 'Daily Tasks' },
+          { id: 'chat', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', label: 'Chat' },
+        ],
+      },
     ],
   },
   customer: {
@@ -77,15 +84,6 @@ const ROLE_NAV = {
   employee: {
     sections: [
       {
-        label: 'Core',
-        items: [
-          { id: 'overview',  icon: 'M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14h7v7H3z', label: 'Command Center' },
-          { id: 'upwork',    icon: 'M12 4v16m8-8H4', label: 'Upwork Intake', badge: { text: '3', cls: 'red' } },
-          { id: 'crm',       icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0', label: 'CRM Pipeline', badge: { text: '12', cls: 'blue' } },
-          { id: 'meetings',  icon: 'M3 4h18v18H3zm13-2v4M8 2v4M3 10h18', label: 'Meetings', badge: { text: '2', cls: 'amber' } },
-        ],
-      },
-      {
         label: 'Intelligence',
         items: [
           { id: 'employees', icon: 'M12 8a4 4 0 100-8 4 4 0 000 8zm-8 12c0-4 3.58-7 8-7s8 3 8 7', label: 'Employee Performance' },
@@ -99,6 +97,13 @@ const ROLE_NAV = {
         items: [
           { id: 'budget', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z', label: 'Budget & Revenue' },
           { id: 'growth', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', label: 'Growth Engine' },
+        ],
+      },
+      {
+        label: 'Tasks & Communication',
+        items: [
+          { id: 'tasks', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', label: 'Daily Tasks' },
+          { id: 'chat', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', label: 'Chat' },
         ],
       },
     ],

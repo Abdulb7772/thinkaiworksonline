@@ -21,6 +21,8 @@ import EmployeeRatings from '../(protected)/components/EmployeeRatings';
 import Attendance from '../(protected)/components/Attendance';
 import CreateEmployeeAccount from '../(protected)/components/CreateEmployeeAccount';
 import MeetingHistory from '../(protected)/components/MeetingHistory';
+import Tasks from '../(protected)/components/Tasks';
+import Chat from '../(protected)/components/Chat';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -82,6 +84,8 @@ export default function Dashboard() {
     ceo:              { comp: CEO,                    props: { data } },
     'create-employee':{ comp: CreateEmployeeAccount,  props: {} },
     'meeting-history':{ comp: MeetingHistory,         props: { onToast: showToast } },
+    'tasks':          { comp: Tasks,                  props: { onToast: showToast } },
+    'chat':           { comp: Chat,                   props: { onToast: showToast } },
   };
 
   const Section = sections[activePage]?.comp;
