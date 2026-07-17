@@ -59,8 +59,6 @@ const ROLE_NAV = {
       {
         label: 'Core',
         items: [
-          { id: 'overview',  icon: 'M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14h7v7H3z', label: 'Command Center' },
-          { id: 'upwork',    icon: 'M12 4v16m8-8H4', label: 'Upwork Intake', badge: { text: '3', cls: 'red' } },
           { id: 'meetings',  icon: 'M3 4h18v18H3zm13-2v4M8 2v4M3 10h18', label: 'Meetings', badge: { text: '2', cls: 'amber' } },
         ],
       },
@@ -90,13 +88,6 @@ const ROLE_NAV = {
           { id: 'attendance', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', label: 'Attendance' },
           { id: 'outreach',  icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', label: 'AI Outreach', badge: { text: 'Active', cls: 'green' } },
           { id: 'support',   icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', label: 'Customer Support', badge: { text: '4', cls: 'red' } },
-        ],
-      },
-      {
-        label: 'Finance & Growth',
-        items: [
-          { id: 'budget', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z', label: 'Budget & Revenue' },
-          { id: 'growth', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', label: 'Growth Engine' },
         ],
       },
       {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '@/lib/config';
 
 export default function Chat({ onToast }) {
@@ -11,37 +11,47 @@ export default function Chat({ onToast }) {
   const [role, setRole] = useState('admin');
   const [currentUser, setCurrentUser] = useState(null);
   const bottomRef = useRef(null);
+  const activeUserIdRef = useRef(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
     setRole(u.role);
-    setCurrentUser(u);
+    setCurrentUser({ ...u, _id: u.id });
+  }, []);
+
+  const fetchConversations = useCallback(async () => {
+    try {
+      const data = await api('/chat/');
+      setConversations(data.filter(c => c.lastMessage || c.user));
+    } catch {}
+  }, []);
+
+  const fetchMessages = useCallback(async (userId) => {
+    if (!userId) return;
+    try {
+      const data = await api(`/chat/${userId}`);
+      setMessages(data);
+    } catch {}
   }, []);
 
   useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        const data = await api('/chat/');
-        setConversations(data.filter(c => c.lastMessage || c.user));
-      } catch {}
-    };
     fetchConversations();
     const interval = setInterval(fetchConversations, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchConversations]);
+
+  useEffect(() => {
+    activeUserIdRef.current = activeUser?._id;
+  }, [activeUser]);
 
   useEffect(() => {
     if (!activeUser) return;
-    const fetchMessages = async () => {
-      try {
-        const data = await api(`/chat/${activeUser._id}`);
-        setMessages(data);
-      } catch {}
-    };
-    fetchMessages();
-    const interval = setInterval(fetchMessages, 5000);
+    fetchMessages(activeUser._id);
+    const interval = setInterval(() => {
+      fetchMessages(activeUserIdRef.current);
+    }, 5000);
     return () => clearInterval(interval);
-  }, [activeUser]);
+  }, [activeUser, fetchMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,13 +60,25 @@ export default function Chat({ onToast }) {
   const send = async (e) => {
     e.preventDefault();
     if (!text.trim() || !activeUser) return;
+    const msgText = text.trim();
+    setText('');
+
+    const optimistic = {
+      _id: 'opt-' + Date.now(),
+      sender: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+      receiver: { _id: activeUser._id, name: activeUser.name, email: activeUser.email },
+      message: msgText,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimistic]);
+
     try {
-      await api('/chat/', { method: 'POST', body: JSON.stringify({ receiver: activeUser._id, message: text.trim() }) });
-      setText('');
-      const data = await api(`/chat/${activeUser._id}`);
-      setMessages(data);
+      await api('/chat/', { method: 'POST', body: JSON.stringify({ receiver: activeUser._id, message: msgText }) });
+      fetchConversations();
+      fetchMessages(activeUser._id);
     } catch (err) {
       onToast?.(err.message, 'error');
+      setMessages(prev => prev.filter(m => m._id !== optimistic._id));
     }
   };
 
@@ -108,22 +130,25 @@ export default function Chat({ onToast }) {
                 {messages.length === 0 && (
                   <div style={{ textAlign: 'center', color: 'var(--text3)', padding: 40 }}>No messages yet. Say hello!</div>
                 )}
-                {messages.map(msg => (
-                  <div key={msg._id} style={{ display: 'flex', justifyContent: msg.sender?._id === currentUser?._id ? 'flex-end' : 'flex-start' }}>
-                    <div style={{
-                      maxWidth: '75%', padding: '10px 14px', borderRadius: 12, fontSize: 14, lineHeight: 1.4,
-                      background: msg.sender?._id === currentUser?._id ? 'var(--accent)' : 'var(--bg2)',
-                      color: msg.sender?._id === currentUser?._id ? '#fff' : 'var(--text1)',
-                      borderBottomRightRadius: msg.sender?._id === currentUser?._id ? 4 : 12,
-                      borderBottomLeftRadius: msg.sender?._id !== currentUser?._id ? 4 : 12,
-                    }}>
-                      <div>{msg.message}</div>
-                      <div style={{ fontSize: 11, marginTop: 4, opacity: 0.6 }}>
-                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {messages.map(msg => {
+                  const isMine = msg.sender?._id === currentUser?._id || msg.sender?.id === currentUser?.id;
+                  return (
+                    <div key={msg._id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                      <div style={{
+                        maxWidth: '75%', padding: '10px 14px', borderRadius: 12, fontSize: 14, lineHeight: 1.4,
+                        background: isMine ? 'var(--accent)' : 'var(--bg2)',
+                        color: isMine ? '#fff' : 'var(--text1)',
+                        borderBottomRightRadius: isMine ? 4 : 12,
+                        borderBottomLeftRadius: isMine ? 12 : 4,
+                      }}>
+                        <div>{msg.message}</div>
+                        <div style={{ fontSize: 11, marginTop: 4, opacity: 0.6 }}>
+                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={bottomRef} />
               </div>
               <form onSubmit={send} style={{ display: 'flex', gap: 8, padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
