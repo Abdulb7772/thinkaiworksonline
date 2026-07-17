@@ -23,6 +23,7 @@ import CreateEmployeeAccount from '../(protected)/components/CreateEmployeeAccou
 import MeetingHistory from '../(protected)/components/MeetingHistory';
 import Tasks from '../(protected)/components/Tasks';
 import Chat from '../(protected)/components/Chat';
+import Projects from '../(protected)/components/Projects';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -86,6 +87,7 @@ export default function Dashboard() {
     'meeting-history':{ comp: MeetingHistory,         props: { onToast: showToast } },
     'tasks':          { comp: Tasks,                  props: { onToast: showToast } },
     'chat':           { comp: Chat,                   props: { onToast: showToast } },
+    'projects':       { comp: Projects,               props: { onToast: showToast } },
   };
 
   const Section = sections[activePage]?.comp;
