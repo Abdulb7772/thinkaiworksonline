@@ -1,19 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 export default function Budget({ company, onToast, data }) {
   const budgetItems = data?.budget?.items || [];
   const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
-  const trendData = data?.revTrend || [];
   const totals = data?.budget?.totals || {};
-  const rev = totals.rev || 28400;
   const spend = totals.spend || 0;
-  const roi = totals.roi || (spend > 0 ? Math.round((rev / spend) * 100) + '%' : '—');
 
   const [vals, setVals] = useState(budgetItems.map(b => b.value || 0));
   const total = vals.reduce((a, b) => a + b, 0);
+
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const p = await api('/projects/');
+        setProjects(p);
+      } catch {} finally {
+        setLoadingProjects(false);
+      }
+    })();
+  }, []);
 
   const updateVal = (i, v) => {
     const next = [...vals];
@@ -21,8 +35,26 @@ export default function Budget({ company, onToast, data }) {
     setVals(next);
   };
 
-  const esRevenue = data?.overviewMetrics?.es?.[0]?.val || '$18,200';
-  const taiRevenue = data?.overviewMetrics?.tai?.[0]?.val || '$10,200';
+  const totalRevenue = projects.reduce((sum, p) => sum + (p.payment || 0), 0);
+  const rev = totalRevenue;
+  const roi = totals.roi || (spend > 0 ? Math.round((rev / spend) * 100) + '%' : '—');
+
+  const now = new Date();
+  const [dpMonth, setDpMonth] = useState(now.getMonth());
+  const [dpYear, setDpYear] = useState(now.getFullYear());
+
+  const daysInMonth = new Date(dpYear, dpMonth + 1, 0).getDate();
+  const dailyProfit = Array.from({ length: daysInMonth }, () => 0);
+  const maxProfit = Math.max(...dailyProfit, 1);
+
+  const prevMonth = () => {
+    if (dpMonth === 0) { setDpMonth(11); setDpYear(y => y - 1); }
+    else setDpMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (dpMonth === 11) { setDpMonth(0); setDpYear(y => y + 1); }
+    else setDpMonth(m => m + 1);
+  };
 
   return (
     <div className="page active" style={{display:'flex',flexDirection:'column',gap:22}}>
@@ -83,29 +115,30 @@ export default function Budget({ company, onToast, data }) {
           </div>
         </div>
         <div className="card">
-          <div className="card-title">Revenue Split — Both Companies</div>
-          <div style={{display:'flex',flexDirection:'column',gap:10}}>
-            <div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:4}}><span style={{color:'var(--text2)'}}>EcomSkyline</span><span style={{fontFamily:'var(--font-mono)',color:'var(--es)'}}>{esRevenue} · {rev > 0 ? Math.round((parseInt(String(esRevenue).replace(/[^0-9]/g,'')) / rev) * 100) : 64}%</span></div>
-              <div className="progress"><div className="progress-fill" style={{width:`${rev > 0 ? Math.round((parseInt(String(esRevenue).replace(/[^0-9]/g,'')) / rev) * 100) : 64}%`,background:'var(--es)'}}></div></div>
-            </div>
-            <div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:4}}><span style={{color:'var(--text2)'}}>ThinkAIWorks</span><span style={{fontFamily:'var(--font-mono)',color:'var(--tai)'}}>{taiRevenue} · {rev > 0 ? Math.round((parseInt(String(taiRevenue).replace(/[^0-9]/g,'')) / rev) * 100) : 36}%</span></div>
-              <div className="progress"><div className="progress-fill" style={{width:`${rev > 0 ? Math.round((parseInt(String(taiRevenue).replace(/[^0-9]/g,'')) / rev) * 100) : 36}%`,background:'var(--tai)'}}></div></div>
+          <div className="card-title" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span>Daily Profit — {MONTHS[dpMonth]} {dpYear}</span>
+            <div style={{display:'flex',gap:6}}>
+              <button className="btn btn-sm btn-ghost" onClick={prevMonth} style={{padding:'4px 10px',fontSize:16,lineHeight:1}}>&lsaquo;</button>
+              <button className="btn btn-sm btn-ghost" onClick={nextMonth} style={{padding:'4px 10px',fontSize:16,lineHeight:1}}>&rsaquo;</button>
             </div>
           </div>
-          <div style={{marginTop:18}}>
-            <div className="card-title" style={{marginBottom:12}}>Monthly Revenue Trend</div>
-            <div className="bar-chart" id="rev-trend-chart">
-              {trendData.map((v, i) => (
-                <div key={i} className="b-col">
-                  <div className="b-bar" style={{height:`${rev > 0 ? (v / rev) * 100 : 10}%`,background:i === trendData.length - 1 ? 'var(--es)' : 'var(--border2)',minHeight:4}}></div>
+          <div style={{marginTop:12}}>
+            {dpMonth === now.getMonth() && dpYear === now.getFullYear() && dailyProfit.every(v => v === 0) ? (
+              <div style={{textAlign:'center',padding:'30px 0',color:'var(--text3)',fontSize:13}}>Daily profit data will appear here once calculated</div>
+            ) : (
+              <>
+                <div className="bar-chart" style={{height:120}}>
+                  {dailyProfit.map((v, i) => (
+                    <div key={i} className="b-col" title={`Day ${i + 1}: $${v}`}>
+                      <div className="b-bar" style={{height:`${(v / maxProfit) * 100}%`,background:'var(--es)',minHeight:v > 0 ? 4 : 0,opacity:v > 0 ? 1 : 0.3}}></div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div style={{display:'flex',justifyContent:'space-between',marginTop:6,fontSize:9,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>
-              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-            </div>
+                <div style={{display:'flex',justifyContent:'space-between',marginTop:6,fontSize:9,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>
+                  <span>1</span><span>{Math.ceil(daysInMonth / 4)}</span><span>{Math.ceil(daysInMonth / 2)}</span><span>{Math.ceil(daysInMonth * 3 / 4)}</span><span>{daysInMonth}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

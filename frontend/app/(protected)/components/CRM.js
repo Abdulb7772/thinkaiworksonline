@@ -6,13 +6,17 @@ import AddClient from './AddClient';
 import ViewProfile from './ViewProfile';
 import { SkeletonTable } from './Skeleton';
 
-const stages = ['Discovery','Proposal','Negotiation','Active','Closed Won'];
+const projectStatuses = ['pending','project_started','employee_assigned','in_progress','working','testing','finishing_up','completed'];
+const statusLabels = {pending:'Pending',project_started:'Project Started',employee_assigned:'Employee Assigned',in_progress:'In Progress',working:'Working',testing:'Testing',finishing_up:'Finishing Up',completed:'Completed'};
 const stageColors = {'Discovery':'tb','Proposal':'ta','Negotiation':'ta','Active':'tg','Closed Won':'tg'};
 
 export default function CRM({ company, onToast, onAddLead, data }) {
   const [showAdd, setShowAdd] = useState(false);
   const [viewing, setViewing] = useState(null);
   const [clients, setClients] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [selectedLead, setSelectedLead] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchClients = async () => {
@@ -24,7 +28,21 @@ export default function CRM({ company, onToast, onAddLead, data }) {
     }
   };
 
-  useEffect(() => { fetchClients(); }, []);
+  const fetchProjects = async () => {
+    try {
+      const res = await api('/projects/');
+      setProjects(res);
+    } catch {}
+  };
+
+  const fetchLeads = async () => {
+    try {
+      const res = await api('/leads');
+      setLeads(res);
+    } catch {}
+  };
+
+  useEffect(() => { fetchClients(); fetchProjects(); fetchLeads(); }, []);
 
   const metrics = data?.crmMetrics || [];
 
@@ -67,25 +85,64 @@ export default function CRM({ company, onToast, onAddLead, data }) {
       </div>
 
       <div className="card">
-        <div className="card-title">Pipeline Board</div>
+        <div className="card-title">Pipeline Board — Projects</div>
         <div className="table-wrap">
-        <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,minWidth:640}}>
-          {stages.map(s => (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(8,1fr)',gap:12,minWidth:900}}>
+          {projectStatuses.map(s => (
             <div key={s}>
               <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:.8,color:'var(--text3)',marginBottom:8}}>
-                {s} <span style={{fontFamily:'var(--font-mono)'}}>({clients.filter(c => c.stage === s).length})</span>
+                {statusLabels[s]} <span style={{fontFamily:'var(--font-mono)'}}>({projects.filter(p => p.status === s).length})</span>
               </div>
-              {clients.filter(c => c.stage === s).map((c,i) => (
+              {projects.filter(p => p.status === s).map((p,i) => (
                 <div key={i} style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:10,marginBottom:6}}>
-                  <div style={{fontWeight:600,fontSize:12}}>{c.name}</div>
-                  <div style={{fontSize:11,color:'var(--text2)',marginTop:2}}>{c.service}</div>
-                  <div style={{fontFamily:'var(--font-mono)',fontSize:12,color:'var(--green)',marginTop:4}}>{c.value}</div>
+                  <div style={{fontWeight:600,fontSize:12}}>{p.title}</div>
+                  <div style={{fontSize:11,color:'var(--text2)',marginTop:2}}>{p.client || p.clientName || '—'}</div>
+                  <div style={{fontSize:11,color:'var(--text2)',marginTop:1}}>{p.employee || p.assignedTo || '—'}</div>
+                  <div style={{fontFamily:'var(--font-mono)',fontSize:10,color:'var(--text3)',marginTop:4}}>{p.date || p.createdAt || '—'}</div>
                 </div>
               ))}
             </div>
           ))}
         </div>
         </div>{/* /table-wrap */}
+      </div>
+
+      <div className="card">
+        <div className="card-title">Upwork Leads</div>
+        {selectedLead && (
+          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:16,marginBottom:16}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+              <strong>{selectedLead.name}</strong>
+              <button className="btn btn-ghost btn-sm" onClick={() => setSelectedLead(null)}>Close</button>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,fontSize:12}}>
+              <div><span style={{color:'var(--text2)'}}>Company:</span> {selectedLead.company || '—'}</div>
+              <div><span style={{color:'var(--text2)'}}>Service:</span> {selectedLead.service || '—'}</div>
+              <div><span style={{color:'var(--text2)'}}>Budget:</span> {selectedLead.budgetRange || '—'}</div>
+              <div><span style={{color:'var(--text2)'}}>Score:</span> {selectedLead.score || '—'}</div>
+              <div><span style={{color:'var(--text2)'}}>Status:</span> {selectedLead.status || '—'}</div>
+            </div>
+          </div>
+        )}
+        <div className="table-wrap"><table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Service</th><th>Budget</th><th>Score</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leads.map((l,i) => (
+              <tr key={i}>
+                <td><span style={{fontWeight:600}}>{l.name}</span></td>
+                <td style={{color:'var(--text2)'}}>{l.service}</td>
+                <td style={{fontFamily:'var(--font-mono)',color:'var(--green)'}}>{l.budgetRange || '—'}</td>
+                <td><span className={`tag ${Number(l.score) >= 7 ? 'tg' : Number(l.score) >= 4 ? 'ta' : 'tr'}`}>{l.score ?? '—'}</span></td>
+                <td style={{color:'var(--text2)'}}>{l.status || '—'}</td>
+                <td><button className="btn btn-ghost btn-sm" onClick={() => setSelectedLead(l)}>View</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
       </div>
 
       <div className="card">

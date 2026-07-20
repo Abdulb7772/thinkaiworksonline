@@ -48,9 +48,7 @@ export default function Employees({ company, onToast, data, onRefresh }) {
           <div className="pt">Employee Performance</div>
           <div className="ps">AI-scored · Real-time KPI tracking</div>
         </div>
-        <div style={{display:'flex',gap:8}}>
-          {userRole === 'admin' && <button className="btn btn-tai btn-sm" onClick={() => setShowAdd(true)}>+ Add Employee</button>}
-        </div>
+        <div style={{display:'flex',gap:8}}></div>
       </div>
 
       <div className="grid4">

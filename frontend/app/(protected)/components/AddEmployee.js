@@ -10,8 +10,14 @@ export default function AddEmployee({ editData, onClose, onSaved, onToast }) {
   const [form, setForm] = useState({
     name: editData?.name || '',
     email: editData?.email || '',
+    loginEmail: editData?.loginEmail || '',
+    password: '',
     role: editData?.role || '',
     subRole: editData?.subRole || '',
+    score: editData?.score ?? '',
+    rating: editData?.rating ?? '',
+    attendance: editData?.attendance ?? '',
+    status: editData?.status || '',
     company: 'ThinkAIWorks',
   });
   const [subRoleDraft, setSubRoleDraft] = useState(editData?.subRole || '');
@@ -83,9 +89,48 @@ export default function AddEmployee({ editData, onClose, onSaved, onToast }) {
             </div>
           </div>
 
+          <div className="form-row">
+            <div className="form-field">
+              <label>Login Email</label>
+              <input type="email" placeholder="login@example.com" value={form.loginEmail} onChange={set('loginEmail')} />
+            </div>
+            <div className="form-field">
+              <label>{isEdit ? 'New Password (leave blank to keep)' : 'Password'}</label>
+              <input type="password" placeholder="••••••••" value={form.password} onChange={set('password')} />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-field">
+              <label>AI Score</label>
+              <input type="number" min="0" max="100" placeholder="0–100" value={form.score} onChange={e => setForm({...form, score: e.target.value === '' ? '' : Number(e.target.value)})} />
+            </div>
+            <div className="form-field">
+              <label>Rating (1–5)</label>
+              <input type="number" min="1" max="5" step="0.1" placeholder="e.g. 4.5" value={form.rating} onChange={e => setForm({...form, rating: e.target.value === '' ? '' : Number(e.target.value)})} />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-field">
+              <label>Attendance %</label>
+              <input type="number" min="0" max="100" placeholder="0–100" value={form.attendance} onChange={e => setForm({...form, attendance: e.target.value === '' ? '' : Number(e.target.value)})} />
+            </div>
+            <div className="form-field">
+              <label>Status</label>
+              <select value={form.status} onChange={set('status')}>
+                <option value="">Select…</option>
+                <option value="Top">Top</option>
+                <option value="Strong">Strong</option>
+                <option value="Good">Good</option>
+                <option value="Risk">Risk</option>
+              </select>
+            </div>
+          </div>
+
           {isEdit && (
             <div style={{padding:'10px 14px',background:'var(--bg3)',borderRadius:'var(--r)',fontSize:12,color:'var(--text2)',marginTop:4}}>
-              AI score, trend, and status are calculated automatically.
+              Trend is calculated automatically. Leave password blank to keep current.
             </div>
           )}
 

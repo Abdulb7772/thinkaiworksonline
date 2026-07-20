@@ -8,9 +8,9 @@ const router = express.Router();
 router.post('/', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can create projects' });
-    const { title, description, clients, employees, startDate, completionDate } = req.body;
+    const { title, description, clients, employees, payment, startDate, completionDate } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
-    const project = await Project.create({ title, description, clients: clients || [], employees: employees || [], startDate, completionDate, createdBy: req.user._id });
+    const project = await Project.create({ title, description, clients: clients || [], employees: employees || [], payment: payment || 0, startDate, completionDate, createdBy: req.user._id });
     const populated = await Project.findById(project._id).populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email');
     res.status(201).json(populated);
   } catch (error) {
@@ -51,11 +51,12 @@ router.patch('/:id', protect, async (req, res, next) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const { title, description, clients, employees, status, startDate, completionDate } = req.body;
+    const { title, description, clients, employees, payment, status, startDate, completionDate } = req.body;
     if (title !== undefined && req.user.role === 'admin') project.title = title;
     if (description !== undefined) project.description = description;
     if (clients !== undefined && req.user.role === 'admin') project.clients = clients;
     if (employees !== undefined && req.user.role === 'admin') project.employees = employees;
+    if (payment !== undefined && req.user.role === 'admin') project.payment = payment;
     if (status !== undefined) project.status = status;
     if (startDate !== undefined && req.user.role === 'admin') project.startDate = startDate;
     if (completionDate !== undefined && req.user.role === 'admin') {

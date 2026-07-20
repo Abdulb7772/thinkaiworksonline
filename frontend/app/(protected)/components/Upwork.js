@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/config';
-import ViewProfile from './ViewProfile';
 import { SkeletonCard } from './Skeleton';
 
 const priorities = ['High', 'Medium', 'Low'];
 
 export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLead }) {
+  const router = useRouter();
   const [viewing, setViewing] = useState(null);
   const [employees, setEmployees] = useState([]);
   const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
@@ -15,6 +16,14 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
   useEffect(() => {
     api('/tasks/employees').then(setEmployees).catch(() => {});
   }, []);
+
+  const addToProject = (lead) => {
+    localStorage.setItem('projectPrefill', JSON.stringify({
+      title: lead.name,
+      description: `Service: ${lead.service || ''}\nBudget: ${lead.budget || lead.budgetRange || ''}\nBrief: ${lead.brief || ''}`,
+    }));
+    router.push('/dashboard?page=projects');
+  };
   const handleSubmit = async () => {
     const name = document.getElementById('cl-name')?.value?.trim();
     if (!name) { onToast('Enter a client name', 'error'); return; }
@@ -47,7 +56,31 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
   return (
     <div className="page active" style={{display:'flex'}}>
       {!data ? <SkeletonCard count={4} /> : (<>
-      {viewing && <ViewProfile item={viewing} onClose={() => setViewing(null)} />}
+      {viewing && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setViewing(null)}>
+          <div className="card" style={{ maxWidth: 420, width: '90%' }} onClick={e => e.stopPropagation()}>
+            <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Lead Details</span>
+              <button className="btn btn-sm btn-ghost" onClick={() => setViewing(null)} style={{ color: 'var(--text3)' }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
+              <div><strong>Name:</strong> {viewing.name}</div>
+              <div><strong>Service:</strong> {viewing.service || '—'}</div>
+              <div><strong>Budget:</strong> {viewing.budget || viewing.budgetRange || '—'}</div>
+              <div><strong>Score:</strong> {viewing.score || 0}%</div>
+              <div><strong>Status:</strong> {viewing.status || 'New'}</div>
+              <div><strong>Profile URL:</strong> {viewing.profileUrl || '—'}</div>
+              <div><strong>Brief:</strong> {viewing.brief || '—'}</div>
+            </div>
+            {userRole === 'admin' && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                <button className="btn btn-tai btn-sm" onClick={() => { addToProject(viewing); setViewing(null); }}>Add to Project</button>
+                <button className="btn btn-es btn-sm" onClick={() => { addToCRM(viewing); setViewing(null); }}>Add to CRM</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="ph">
         <div>
           <div className="pt">Upwork Client Intake</div>
@@ -132,7 +165,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
                   </div>
                   <div style={{display:'flex',gap:6,marginTop:10}}>
                     {userRole === 'admin' && <button className="btn btn-es btn-sm" onClick={() => addToCRM(l)}>Add to CRM</button>}
-                    <button className="btn btn-ghost btn-sm" onClick={() => setViewing(l)}>View Profile</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setViewing(l)}>View Details</button>
                   </div>
                 </div>
               ))}

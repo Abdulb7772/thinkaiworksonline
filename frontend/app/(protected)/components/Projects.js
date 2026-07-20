@@ -28,13 +28,22 @@ export default function Projects({ onToast }) {
   const [editProject, setEditProject] = useState(null);
   const [editStatus, setEditStatus] = useState('');
   const [detailProject, setDetailProject] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', client: '', employee: '', startDate: '', completionDate: '' });
+  const [form, setForm] = useState({ title: '', description: '', client: '', employee: '', payment: '', startDate: '', completionDate: '' });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
     setUser({ role: u.role || 'admin', id: u.id || '' });
+    const prefill = localStorage.getItem('projectPrefill');
+    if (prefill) {
+      try {
+        const p = JSON.parse(prefill);
+        setForm(f => ({ ...f, title: p.title || '', description: p.description || '', client: p.client || '', employee: p.employee || '' }));
+        setShowForm(true);
+      } catch {}
+      localStorage.removeItem('projectPrefill');
+    }
   }, []);
 
   const fetch = async () => {
@@ -65,6 +74,7 @@ export default function Projects({ onToast }) {
           description: form.description,
           clients: form.client ? [form.client] : [],
           employees: form.employee ? [form.employee] : [],
+          payment: Number(form.payment) || 0,
           startDate: form.startDate,
         }),
       });
@@ -94,6 +104,7 @@ export default function Projects({ onToast }) {
       }
       if (form.startDate !== (editProject.startDate || '')) body.startDate = form.startDate;
       if (form.completionDate !== (editProject.completionDate || '')) body.completionDate = form.completionDate;
+      if (Number(form.payment) !== (editProject.payment || 0)) body.payment = Number(form.payment) || 0;
       if (editStatus !== editProject.status) body.status = editStatus;
       if (Object.keys(body).length === 0) { onToast?.('No changes made', 'error'); setSaving(false); return; }
       await api(`/projects/${editProject._id}`, { method: 'PATCH', body: JSON.stringify(body) });
@@ -138,6 +149,7 @@ export default function Projects({ onToast }) {
       description: project.description || '',
       client: project.clients?.[0]?._id || '',
       employee: project.employees?.[0]?._id || '',
+      payment: project.payment || '',
       startDate: project.startDate || '',
       completionDate: project.completionDate || '',
     });
@@ -196,6 +208,10 @@ export default function Projects({ onToast }) {
               <div className="form-field">
                 <label>Start Date</label>
                 <input type="date" min={today()} value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} />
+              </div>
+              <div className="form-field">
+                <label>Payment ($)</label>
+                <input type="number" min="0" placeholder="0" value={form.payment} onChange={e => setForm({ ...form, payment: e.target.value })} />
               </div>
               <button type="submit" className="btn btn-tai" disabled={saving} style={{ alignSelf: 'flex-start' }}>
                 {saving ? 'Creating...' : 'Create Project'}
@@ -332,6 +348,10 @@ export default function Projects({ onToast }) {
                   <label>Completion Date</label>
                   <input type="date" min={today()} value={form.completionDate} onChange={e => setForm({ ...form, completionDate: e.target.value })} />
                 </div>
+              </div>
+              <div className="form-field">
+                <label>Payment ($)</label>
+                <input type="number" min="0" value={form.payment} onChange={e => setForm({ ...form, payment: e.target.value })} />
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
                 {STATUSES.map(s => (

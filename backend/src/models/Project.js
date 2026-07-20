@@ -6,6 +6,7 @@ const ProjectSchema = new mongoose.Schema({
   clients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   employees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   status: { type: String, enum: ['pending', 'project_started', 'employee_assigned', 'in_progress', 'working', 'testing', 'finishing_up', 'completed'], default: 'pending' },
+  payment: { type: Number, default: 0 },
   startDate: { type: String },
   completionDate: { type: String },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

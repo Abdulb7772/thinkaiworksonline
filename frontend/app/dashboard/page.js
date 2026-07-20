@@ -64,6 +64,9 @@ export default function Dashboard() {
     if (!token) { router.replace('/login'); return; }
     setIsChecking(false);
     fetchData();
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get('page');
+    if (page) setActivePage(page);
   }, [router]);
 
   const showToast = useCallback((msg, type = 'success') => {
