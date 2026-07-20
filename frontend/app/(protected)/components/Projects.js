@@ -13,6 +13,7 @@ export default function Projects({ onToast }) {
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({ title: '', description: '', clients: [], startDate: '', completionDate: '' });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -56,6 +57,19 @@ export default function Projects({ onToast }) {
       fetch();
     } catch (err) {
       onToast?.(err.message, 'error');
+    }
+  };
+
+  const deleteProject = async (id) => {
+    setDeleting(id);
+    try {
+      await api(`/projects/${id}`, { method: 'DELETE' });
+      onToast?.('Project deleted', 'success');
+      fetch();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -132,9 +146,16 @@ export default function Projects({ onToast }) {
                 {project.status.replace(/_/g, ' ')}
               </span>
             </div>
-            <button className="btn btn-sm btn-outline" onClick={() => setSelected(selected?._id === project._id ? null : project)}>
-              {selected?._id === project._id ? 'Hide' : 'Details'}
-            </button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {role === 'admin' && (
+                <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={() => deleteProject(project._id)} disabled={deleting === project._id}>
+                  {deleting === project._id ? '...' : '✕'}
+                </button>
+              )}
+              <button className="btn btn-sm btn-outline" onClick={() => setSelected(selected?._id === project._id ? null : project)}>
+                {selected?._id === project._id ? 'Hide' : 'Details'}
+              </button>
+            </div>
           </div>
 
           <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 8 }}>

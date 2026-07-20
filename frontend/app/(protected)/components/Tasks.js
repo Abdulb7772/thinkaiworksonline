@@ -9,6 +9,7 @@ export default function Tasks({ onToast }) {
   const [role, setRole] = useState('admin');
   const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '' });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -57,6 +58,19 @@ export default function Tasks({ onToast }) {
     }
   };
 
+  const deleteTask = async (id) => {
+    setDeleting(id);
+    try {
+      await api(`/tasks/${id}`, { method: 'DELETE' });
+      onToast?.('Task deleted', 'success');
+      fetch();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -85,13 +99,13 @@ export default function Tasks({ onToast }) {
               <select value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })} required>
                 <option value="">Select employee</option>
                 {employees.map(emp => (
-                  <option key={emp._id} value={emp._id}>{emp.name} ({emp.email})</option>
+                  <option key={emp._id} value={emp._id}>{emp.name} ({emp.notificationEmail || emp.email})</option>
                 ))}
               </select>
             </div>
             <div className="form-field">
               <label>Date *</label>
-              <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
+              <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} min={today} required />
             </div>
             <button type="submit" className="btn btn-tai" disabled={saving} style={{ alignSelf: 'flex-start' }}>
               {saving ? 'Assigning...' : 'Assign Task'}
@@ -119,11 +133,10 @@ export default function Tasks({ onToast }) {
                   <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : 'badge-amber'}`}>
                     {task.status === 'in_progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                   </span>
-                  {task.status === 'pending' && task.assignedTo?._id === JSON.parse(localStorage.getItem('user') || '{}')._id && (
-                    <button className="btn btn-sm btn-outline" onClick={() => updateStatus(task._id, 'in_progress')}>Start</button>
-                  )}
-                  {task.status === 'in_progress' && task.assignedTo?._id === JSON.parse(localStorage.getItem('user') || '{}')._id && (
-                    <button className="btn btn-sm btn-tai" onClick={() => updateStatus(task._id, 'done')}>Done</button>
+                  {role === 'admin' && (
+                    <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={() => deleteTask(task._id)} disabled={deleting === task._id}>
+                      {deleting === task._id ? '...' : '✕'}
+                    </button>
                   )}
                 </div>
               </div>

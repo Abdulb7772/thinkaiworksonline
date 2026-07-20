@@ -32,7 +32,7 @@ export const authOptions = {
         });
         if (!res.ok) {
           if (data.needsVerification && data.email) {
-            throw new Error(`VERIFY_NEEDED:${data.email}`);
+            throw new Error(`VERIFY_NEEDED:${data.email}|${data.sentTo || data.email}`);
           }
           throw new Error(data.error || 'Invalid credentials');
         }

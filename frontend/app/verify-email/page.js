@@ -9,6 +9,7 @@ export default function VerifyEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
+  const sentTo = searchParams.get('sentTo') || email;
 
   const [otp, setOtp] = useState(Array(6).fill(''));
   const [loading, setLoading] = useState(false);
@@ -167,7 +168,7 @@ export default function VerifyEmailPage() {
             </div>
           </div>
           <h1 className="auth-title">Verify your email</h1>
-          <p className="auth-subtitle" style={{ wordBreak: 'break-all' }}>Code sent to {email}</p>
+          <p className="auth-subtitle" style={{ wordBreak: 'break-all' }}>Code sent to {sentTo}</p>
 
           {success ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>

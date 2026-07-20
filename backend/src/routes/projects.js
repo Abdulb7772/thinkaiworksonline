@@ -65,6 +65,17 @@ router.patch('/:id', protect, async (req, res, next) => {
   }
 });
 
+router.delete('/:id', protect, async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can delete projects' });
+    const project = await Project.findByIdAndDelete(req.params.id);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    res.json({ message: 'Project deleted' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/customers/list', protect, async (req, res, next) => {
   try {
     const customers = await User.find({ role: 'customer' }, 'name email').sort({ name: 1 });

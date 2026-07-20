@@ -157,9 +157,11 @@ router.post('/resend-otp', resendLimiter, async (req, res, next) => {
       userAgent: req.headers['user-agent'],
     });
 
-    await sendOtpEmail({ to: normalizedEmail, otp });
+    const user = await User.findOne({ email: normalizedEmail });
+    const sendTo = user?.notificationEmail || user?.email || normalizedEmail;
+    await sendOtpEmail({ to: sendTo, otp });
 
-    res.json({ message: 'New verification code sent.' });
+    res.json({ message: 'New verification code sent.', sentTo: sendTo });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -196,8 +198,9 @@ router.post('/login', async (req, res, next) => {
         ip: req.ip || req.connection?.remoteAddress,
         userAgent: req.headers['user-agent'],
       });
-      await sendOtpEmail({ to: user.email, otp, name: user.name });
-      return res.status(401).json({ error: 'Please verify your email.', needsVerification: true, email: user.email });
+      const primaryEmail = user.notificationEmail || user.email;
+      await sendOtpEmail({ to: primaryEmail, otp, name: user.name });
+      return res.status(401).json({ error: 'Please verify your email.', needsVerification: true, email: user.email, sentTo: primaryEmail });
     }
 
     const token = signToken(user._id);

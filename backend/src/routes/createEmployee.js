@@ -58,7 +58,8 @@ router.post('/', protect, async (req, res, next) => {
       return res.status(400).json({ error: 'Login email already registered' });
     }
 
-    const user = await User.create({ name, email: normalizedLoginEmail, password, role: 'employee', emailVerified: true });
+    const normalizedRecipient = recipient.trim().toLowerCase();
+    const user = await User.create({ name, email: normalizedLoginEmail, notificationEmail: normalizedRecipient, password, role: 'employee', emailVerified: false });
 
     await Employee.create({ name, loginEmail: normalizedLoginEmail, email: recipient, role: 'Team', subRole: subRole || null });
 

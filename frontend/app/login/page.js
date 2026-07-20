@@ -50,8 +50,9 @@ export default function LoginPage() {
       setLoading(false);
       const msg = err.message;
       if (msg && msg.startsWith('VERIFY_NEEDED:')) {
-        const email = msg.slice('VERIFY_NEEDED:'.length);
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        const payload = msg.slice('VERIFY_NEEDED:'.length);
+        const [email, sentTo] = payload.split('|');
+        router.push(`/verify-email?email=${encodeURIComponent(email)}&sentTo=${encodeURIComponent(sentTo || email)}`);
         return;
       }
       showToast(msg, 'error');
