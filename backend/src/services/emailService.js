@@ -1,6 +1,4 @@
 const { Resend } = require('resend');
-const fs = require('fs');
-const path = require('path');
 
 let resendInstance = null;
 
@@ -53,6 +51,7 @@ const meetingHtml = ({ title, datetime, attendees, meetingLink, bodyContent, cre
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:580px;margin:0 auto;background:#0b0d17;border-radius:16px;border:1px solid #1e2340;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#141828 0%,#0b0d17 100%);padding:32px 36px 20px;text-align:center;border-bottom:1px solid #1e2340;">
+        <img src="https://www.thinkaiworks.online/img/logo.jpeg" alt="ThinkAI Works" style="width:80px;height:80px;border-radius:16px;margin:0 auto 12px;display:block;object-fit:cover;" />
         <h1 style="margin:0;color:#eceef5;font-size:22px;font-weight:700;letter-spacing:-0.3px;">ThinkAIWorks</h1>
         <p style="margin:4px 0 0;color:#5a6090;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Meeting Invitation</p>
       </div>
@@ -180,6 +179,7 @@ const sendMeetingFollowUp = async ({ title, datetime, attendees, type, clientEma
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:580px;margin:0 auto;background:#0b0d17;border-radius:16px;border:1px solid #1e2340;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#141828 0%,#0b0d17 100%);padding:32px 36px 20px;text-align:center;border-bottom:1px solid #1e2340;">
+        <img src="https://www.thinkaiworks.online/img/logo.jpeg" alt="ThinkAI Works" style="width:80px;height:80px;border-radius:16px;margin:0 auto 12px;display:block;object-fit:cover;" />
         <h1 style="margin:0;color:#eceef5;font-size:22px;font-weight:700;letter-spacing:-0.3px;">ThinkAIWorks</h1>
         <p style="margin:4px 0 0;color:#5a6090;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Meeting Follow-Up</p>
       </div>
@@ -256,13 +256,11 @@ const sendMeetingFollowUp2h = async ({ title, datetime, attendees, clientEmails,
 };
 
 const sendOtpEmail = async ({ to, otp, name }) => {
-  const logoPath = path.join(__dirname, '../../../frontend/public/img/logo.jpeg');
-  const imageData = fs.existsSync(logoPath) ? fs.readFileSync(logoPath).toString('base64') : '';
-  const logoDataUri = imageData ? `data:image/jpeg;base64,${imageData}` : `${process.env.APP_URL || 'http://localhost:3000'}/img/logo.jpeg`;
+  const logoUrl = 'https://www.thinkaiworks.online/img/logo.jpeg';
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#0c0e16;border-radius:16px;border:1px solid #242a40;">
       <div style="text-align:center;margin-bottom:28px;">
-        <img src="${logoDataUri}" alt="ThinkAI Works" style="width:80px;height:80px;border-radius:16px;margin:0 auto 12px;display:block;object-fit:cover;" />
+        <img src="${logoUrl}" alt="ThinkAI Works" style="width:80px;height:80px;border-radius:16px;margin:0 auto 12px;display:block;object-fit:cover;" />
         <h1 style="margin:0;color:#eceef5;font-size:22px;">ThinkAI Works</h1>
         <p style="margin:8px 0 0;color:#8890b0;font-size:14px;">Verify your email address</p>
       </div>
@@ -313,6 +311,7 @@ const sendMeetingCancelled = async ({ title, datetime, attendees, type, clientEm
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:580px;margin:0 auto;background:#0b0d17;border-radius:16px;border:1px solid #1e2340;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#141828 0%,#0b0d17 100%);padding:32px 36px 20px;text-align:center;border-bottom:1px solid #1e2340;">
+        <img src="https://www.thinkaiworks.online/img/logo.jpeg" alt="Think AI Works" style="width:80px;height:80px;border-radius:16px;margin:0 auto 12px;display:block;object-fit:cover;" />
         <h1 style="margin:0;color:#eceef5;font-size:22px;font-weight:700;letter-spacing:-0.3px;">ThinkAIWorks</h1>
         <p style="margin:4px 0 0;color:#5a6090;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Meeting Cancellation</p>
       </div>
