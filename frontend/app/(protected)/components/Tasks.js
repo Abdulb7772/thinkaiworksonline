@@ -10,6 +10,9 @@ export default function Tasks({ onToast }) {
   const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '' });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -119,31 +122,90 @@ export default function Tasks({ onToast }) {
         {tasks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--text3)' }}>No tasks yet</div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {tasks.map(task => (
-              <div key={task._id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text3)' }}>
-                    {task.assignedTo?.name} &middot; {task.date}
-                    {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {tasks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map(task => (
+                <div key={task._id} onClick={() => setSelectedTask(task)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)', transition: 'border-color .15s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text3)' }}>
+                      {task.assignedTo?.name} &middot; {task.date}
+                      {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : task.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`}>
+                      {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                    </span>
+                    {role === 'admin' && (
+                      <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={e => { e.stopPropagation(); deleteTask(task._id); }} disabled={deleting === task._id}>
+                        {deleting === task._id ? '...' : '✕'}
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : 'badge-amber'}`}>
-                    {task.status === 'in_progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                  </span>
-                  {role === 'admin' && (
-                    <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={() => deleteTask(task._id)} disabled={deleting === task._id}>
-                      {deleting === task._id ? '...' : '✕'}
-                    </button>
-                  )}
-                </div>
+              ))}
+            </div>
+            {tasks.length > PAGE_SIZE && (
+              <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:8,padding:'12px 0 4px'}}>
+                <button className="btn btn-ghost btn-sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>‹ Prev</button>
+                {Array.from({length:Math.ceil(tasks.length / PAGE_SIZE)},(_,i)=>i).map(p => (
+                  <button key={p} className={`btn btn-sm ${p === page ? 'btn-tai' : 'btn-ghost'}`} onClick={() => setPage(p)} style={{minWidth:30}}>{p + 1}</button>
+                ))}
+                <button className="btn btn-ghost btn-sm" disabled={page >= Math.ceil(tasks.length / PAGE_SIZE) - 1} onClick={() => setPage(p => p + 1)}>Next ›</button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
+
+      {selectedTask && (
+        <div className="modal-overlay" onClick={() => setSelectedTask(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-head">
+              <div className="modal-title">Task Details</div>
+              <button className="modal-close" onClick={() => setSelectedTask(null)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <div style={{ padding: '4px 0' }}>
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{selectedTask.title}</div>
+              <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
+                Assigned to <strong>{selectedTask.assignedTo?.name}</strong> &middot; Due {selectedTask.date}
+              </div>
+
+              {selectedTask.description && (
+                <div style={{ padding: '12px 14px', background: 'var(--bg3)', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, color: 'var(--text2)', marginBottom: 16, whiteSpace: 'pre-wrap' }}>
+                  {selectedTask.description}
+                </div>
+              )}
+
+              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: 'var(--text1)' }}>Status</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {['pending', 'in_progress', 'in_testing', 'done'].map(s => {
+                  const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
+                  const isAssigned = String(selectedTask.assignedTo?._id) === String(userId);
+                  const flow = ['pending', 'in_progress', 'in_testing', 'done'];
+                  const idx = flow.indexOf(selectedTask.status);
+                  const sIdx = flow.indexOf(s);
+                  const canClick = role === 'admin' || (isAssigned && sIdx === idx + 1);
+                  return (
+                    <button
+                      key={s}
+                      className={`btn btn-sm ${selectedTask.status === s ? 'btn-tai' : 'btn-outline'}`}
+                      onClick={canClick ? () => { updateStatus(selectedTask._id, s); setSelectedTask(null); } : undefined}
+                      style={{ opacity: selectedTask.status === s ? 1 : 0.55, cursor: canClick ? 'pointer' : 'not-allowed', textTransform: 'capitalize' }}
+                    >
+                      {s === 'in_progress' ? 'In Progress' : s === 'in_testing' ? 'In Testing' : s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

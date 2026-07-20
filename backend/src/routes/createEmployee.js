@@ -28,7 +28,7 @@ const sendEmployeeEmail = async ({ recipients, loginEmail, name, password }) => 
         </div>
         <p style="margin-bottom:24px;">Open the platform here:</p>
         <a href="${appUrl}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">Visit ThinkAIWorks</a>
-        <p style="margin-top:24px;color:#6b7280;font-size:13px;">If you didn’t expect this, contact your administrator.</p>
+        <p style="margin-top:24px;color:#6b7280;font-size:13px;">If you didn't expect this, contact your administrator.</p>
       </div>
     `,
     text: `Your ThinkAIWorks account has been created. Login Email: ${loginEmail}\nPassword: ${password}\nOpen: ${appUrl}`,

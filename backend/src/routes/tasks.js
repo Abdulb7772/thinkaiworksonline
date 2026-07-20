@@ -58,7 +58,7 @@ router.get('/', protect, async (req, res, next) => {
 router.patch('/:id', protect, async (req, res, next) => {
   try {
     const { status } = req.body;
-    if (!['pending', 'in_progress', 'done'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    if (!['pending', 'in_progress', 'in_testing', 'done'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
     if (req.user.role !== 'admin' && task.assignedTo.toString() !== req.user._id.toString()) {
