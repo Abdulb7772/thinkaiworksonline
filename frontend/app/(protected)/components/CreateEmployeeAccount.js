@@ -50,7 +50,7 @@ export default function CreateEmployeeAccount({ onToast }) {
       <div className="ph">
         <div>
           <div className="pt">Create Employee Account</div>
-          <div className="ps">Create a new employee account and email login credentials to the selected address</div>
+          <div className="ps">Create a new employee account — credentials will be sent to the primary email</div>
         </div>
       </div>
 
@@ -62,12 +62,12 @@ export default function CreateEmployeeAccount({ onToast }) {
             <input type="text" placeholder="e.g. John Doe" value={form.name} onChange={set('name')} required />
           </div>
           <div className="form-field">
-            <label>Login Email</label>
-            <input type="email" placeholder="john@thinkaiworks.com" value={form.loginEmail} onChange={set('loginEmail')} required />
+            <label>Primary Email</label>
+            <input type="email" placeholder="personal@email.com" value={form.notificationEmail} onChange={set('notificationEmail')} required />
           </div>
           <div className="form-field">
-            <label>Send Email To</label>
-            <input type="email" placeholder="personal@email.com" value={form.notificationEmail} onChange={set('notificationEmail')} required />
+            <label>Secondary Email</label>
+            <input type="email" placeholder="john@thinkaiworks.com" value={form.loginEmail} onChange={set('loginEmail')} required />
           </div>
           <div className="form-field">
             <label>Password</label>
