@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/config';
-import { SkeletonCard } from './Skeleton';
 
 const priorities = ['High', 'Medium', 'Low'];
 
@@ -55,7 +54,6 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
 
   return (
     <div className="page active" style={{display:'flex'}}>
-      {!data ? <SkeletonCard count={4} /> : (<>
       {viewing && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setViewing(null)}>
           <div className="card" style={{ maxWidth: 420, width: '90%' }} onClick={e => e.stopPropagation()}>
@@ -186,7 +184,6 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
           </div>
         </div>
       </div>
-    </>)}
     </div>
   );
 }
