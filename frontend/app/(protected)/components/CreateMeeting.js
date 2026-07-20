@@ -1,72 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '@/lib/config';
 
 const types = ['Internal', 'Video', 'Client Meeting'];
-
-const EmailChipInput = ({ listId, label, placeholder, emails, setEmails, options }) => {
-  const [draft, setDraft] = useState('');
-  const inputRef = useRef(null);
-
-  const addEmail = (email) => {
-    const e = email.trim();
-    if (e && /^\S+@\S+\.\S+$/.test(e) && !emails.includes(e)) {
-      setEmails([...emails, e]);
-    }
-    setDraft('');
-    inputRef.current?.focus();
-  };
-
-  const removeEmail = (idx) => setEmails(emails.filter((_, i) => i !== idx));
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (draft.trim()) { addEmail(draft); return; }
-    }
-    if (e.key === 'Backspace' && !draft && emails.length) {
-      removeEmail(emails.length - 1);
-    }
-  };
-
-  return (
-    <div className="form-field">
-      <label>{label}</label>
-      <input
-        ref={inputRef}
-        list={listId}
-        placeholder={placeholder}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={handleKeyDown}
-      />
-      <datalist id={listId}>
-        {options.map((o, i) => (
-          <option key={i} value={o.email} />
-        ))}
-      </datalist>
-      {emails.length > 0 && (
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:2}}>
-          {emails.map((e, i) => (
-            <span key={i} style={{
-              display:'inline-flex',alignItems:'center',gap:4,
-              padding:'3px 8px',background:'rgba(124,92,252,0.12)',
-              border:'1px solid rgba(124,92,252,0.25)',
-              borderRadius:'var(--r)',fontSize:12,color:'var(--tai)',
-            }}>
-              {e}
-              <button type="button" onClick={() => removeEmail(i)} style={{
-                background:'none',border:'none',color:'var(--text3)',
-                cursor:'pointer',padding:0,fontSize:14,lineHeight:1,
-              }}>&times;</button>
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default function CreateMeeting({ onClose, onSaved, onToast }) {
   const [form, setForm] = useState({
@@ -80,6 +17,8 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
   const [clientEmails, setClientEmails] = useState([]);
   const [attendeeEmails, setAttendeeEmails] = useState([]);
   const [contacts, setContacts] = useState({ clients: [], employees: [] });
+  const [clientDraft, setClientDraft] = useState('');
+  const [attendeeDraft, setAttendeeDraft] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -89,6 +28,44 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
     } catch {}
     api('/meetings/contacts').then(setContacts).catch(() => {});
   }, []);
+
+  const addEmail = (list, setList) => (email) => {
+    const e = email.trim();
+    if (e && /^\S+@\S+\.\S+$/.test(e) && !list.includes(e)) {
+      setList([...list, e]);
+    }
+  };
+
+  const removeEmail = (list, setList) => (idx) => setList(list.filter((_, i) => i !== idx));
+
+  const handleChipKey = (draft, setDraft, list, setList) => (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (draft.trim()) { addEmail(list, setList)(draft); setDraft(''); }
+    }
+    if (e.key === 'Backspace' && !draft && list.length) {
+      removeEmail(list, setList)(list.length - 1);
+    }
+  };
+
+  const ChipDisplay = ({ emails, onRemove }) => emails.length > 0 && (
+    <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:6}}>
+      {emails.map((e, i) => (
+        <span key={i} style={{
+          display:'inline-flex',alignItems:'center',gap:4,
+          padding:'3px 8px',background:'rgba(124,92,252,0.12)',
+          border:'1px solid rgba(124,92,252,0.25)',
+          borderRadius:'var(--r)',fontSize:12,color:'var(--tai)',
+        }}>
+          {e}
+          <button type="button" onClick={() => onRemove(i)} style={{
+            background:'none',border:'none',color:'var(--text3)',
+            cursor:'pointer',padding:0,fontSize:14,lineHeight:1,
+          }}>&times;</button>
+        </span>
+      ))}
+    </div>
+  );
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const now = new Date().toISOString().slice(0, 16);
@@ -209,27 +186,36 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
               </div>
             </div>
 
-            <EmailChipInput
-              listId="clientEmailList"
-              label="Client Email(s)"
-              placeholder="Type or select"
-              emails={clientEmails}
-              setEmails={setClientEmails}
-              options={contacts.clients}
-            />
-
-            <EmailChipInput
-              listId="attendeeEmailList"
-              label="Attendee Email(s)"
-              placeholder="Type or select"
-              emails={attendeeEmails}
-              setEmails={setAttendeeEmails}
-              options={contacts.employees}
-            />
-
-            <p style={{margin:'8px 0 0',fontSize:11,color:'var(--text3)'}}>
-              &#9432; Type an email and press Enter to add, or pick from suggestions. Press Backspace on empty input to remove the last email.
-            </p>
+            <div className="form-row" style={{marginTop:0}}>
+              <div className="form-field">
+                <label>Client(s)</label>
+                <input
+                  list="clientEmailList"
+                  placeholder="Type or select"
+                  value={clientDraft}
+                  onChange={e => setClientDraft(e.target.value)}
+                  onKeyDown={handleChipKey(clientDraft, setClientDraft, clientEmails, setClientEmails)}
+                />
+                <datalist id="clientEmailList">
+                  {contacts.clients.map((c, i) => <option key={i} value={c.email} />)}
+                </datalist>
+                <ChipDisplay emails={clientEmails} onRemove={removeEmail(clientEmails, setClientEmails)} />
+              </div>
+              <div className="form-field">
+                <label>Attendee(s)</label>
+                <input
+                  list="attendeeEmailList"
+                  placeholder="Type or select"
+                  value={attendeeDraft}
+                  onChange={e => setAttendeeDraft(e.target.value)}
+                  onKeyDown={handleChipKey(attendeeDraft, setAttendeeDraft, attendeeEmails, setAttendeeEmails)}
+                />
+                <datalist id="attendeeEmailList">
+                  {contacts.employees.map((e, i) => <option key={i} value={e.email} />)}
+                </datalist>
+                <ChipDisplay emails={attendeeEmails} onRemove={removeEmail(attendeeEmails, setAttendeeEmails)} />
+              </div>
+            </div>
           </div>
 
           {/* Actions */}
