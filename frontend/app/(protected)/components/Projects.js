@@ -253,16 +253,22 @@ export default function Projects({ onToast }) {
               <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--text1)' }}>Description</div>
               <div style={{ color: 'var(--text2)', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: 16 }}>{project.description || 'No description'}</div>
 
-              <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text1)' }}>Progress</div>
-              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                {STATUSES.map(s => {
+              <div style={{ fontWeight: 600, marginBottom: 12, color: 'var(--text1)' }}>Progress</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' }}>
+                {STATUSES.map((s, i) => {
                   const cur = STATUSES.indexOf(project.status);
-                  const idx = STATUSES.indexOf(s);
-                  const isClickable = user.role === 'customer';
+                  const done = i <= cur;
+                  const isLast = i === STATUSES.length - 1;
                   return (
-                    <button key={s} className={`btn btn-sm ${project.status === s ? 'btn-tai' : 'btn-outline'}`} onClick={() => isClickable && updateStatus(project._id, s)} style={{ fontSize: 10, textTransform: 'capitalize', opacity: idx <= cur ? 1 : 0.5, cursor: isClickable ? 'pointer' : 'default' }}>
-                      {STATUS_LABELS[s]}
-                    </button>
+                    <div key={s} style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: '50%', background: done ? 'var(--accent)' : 'var(--bg2)', border: `2px solid ${done ? 'var(--accent)' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={done ? '#fff' : 'var(--text3)'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">{done ? <polyline points="20 6 9 17 4 12" /> : <circle cx="12" cy="12" r="1" fill="var(--text3)" />}</svg>
+                        </div>
+                        <span style={{ fontSize: 9, color: done ? 'var(--accent)' : 'var(--text3)', fontWeight: project.status === s ? 700 : 400, whiteSpace: 'nowrap', maxWidth: 70, textAlign: 'center', lineHeight: 1.2 }}>{STATUS_LABELS[s]}</span>
+                      </div>
+                      {!isLast && <div style={{ width: 24, height: 2, background: i < cur ? 'var(--accent)' : 'var(--border)', margin: '0 2px', marginBottom: 18, transition: 'all 0.2s' }} />}
+                    </div>
                   );
                 })}
               </div>
