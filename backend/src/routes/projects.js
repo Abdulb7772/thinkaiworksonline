@@ -8,10 +8,10 @@ const router = express.Router();
 router.post('/', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can create projects' });
-    const { title, description, clients, startDate, completionDate } = req.body;
+    const { title, description, clients, employees, startDate, completionDate } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
-    const project = await Project.create({ title, description, clients: clients || [], startDate, completionDate, createdBy: req.user._id });
-    const populated = await Project.findById(project._id).populate('clients', 'name email').populate('createdBy', 'name email');
+    const project = await Project.create({ title, description, clients: clients || [], employees: employees || [], startDate, completionDate, createdBy: req.user._id });
+    const populated = await Project.findById(project._id).populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email');
     res.status(201).json(populated);
   } catch (error) {
     next(error);
@@ -20,12 +20,7 @@ router.post('/', protect, async (req, res, next) => {
 
 router.get('/', protect, async (req, res, next) => {
   try {
-    let projects;
-    if (req.user.role === 'admin') {
-      projects = await Project.find().populate('clients', 'name email').populate('createdBy', 'name email').sort({ createdAt: -1 });
-    } else {
-      projects = await Project.find({ clients: req.user._id }).populate('clients', 'name email').populate('createdBy', 'name email').sort({ createdAt: -1 });
-    }
+    projects = await Project.find().populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email').sort({ createdAt: -1 });
     res.json(projects);
   } catch (error) {
     next(error);
@@ -34,7 +29,7 @@ router.get('/', protect, async (req, res, next) => {
 
 router.get('/:id', protect, async (req, res, next) => {
   try {
-    const project = await Project.findById(req.params.id).populate('clients', 'name email').populate('createdBy', 'name email');
+    const project = await Project.findById(req.params.id).populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email');
     if (!project) return res.status(404).json({ error: 'Project not found' });
     if (req.user.role !== 'admin' && !project.clients.some(c => c._id.toString() === req.user._id.toString())) {
       return res.status(403).json({ error: 'Not authorized' });
@@ -47,18 +42,25 @@ router.get('/:id', protect, async (req, res, next) => {
 
 router.patch('/:id', protect, async (req, res, next) => {
   try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can update projects' });
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
-    const { title, description, clients, status, startDate, completionDate } = req.body;
-    if (title !== undefined) project.title = title;
+
+    // customers can only change status on projects they're assigned to
+    const isAssignedCustomer = req.user.role === 'customer' && project.clients.some(c => c.toString() === req.user._id.toString());
+    if (req.user.role !== 'admin' && !isAssignedCustomer) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const { title, description, clients, employees, status, startDate, completionDate } = req.body;
+    if (title !== undefined && req.user.role === 'admin') project.title = title;
     if (description !== undefined) project.description = description;
-    if (clients !== undefined) project.clients = clients;
+    if (clients !== undefined && req.user.role === 'admin') project.clients = clients;
+    if (employees !== undefined && req.user.role === 'admin') project.employees = employees;
     if (status !== undefined) project.status = status;
-    if (startDate !== undefined) project.startDate = startDate;
-    if (completionDate !== undefined) project.completionDate = completionDate;
+    if (startDate !== undefined && req.user.role === 'admin') project.startDate = startDate;
+    if (completionDate !== undefined && req.user.role === 'admin') project.completionDate = completionDate;
     await project.save();
-    const populated = await Project.findById(project._id).populate('clients', 'name email').populate('createdBy', 'name email');
+    const populated = await Project.findById(project._id).populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email');
     res.json(populated);
   } catch (error) {
     next(error);
