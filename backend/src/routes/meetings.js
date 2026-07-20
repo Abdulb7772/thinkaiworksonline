@@ -1,5 +1,8 @@
 const express = require('express');
 const Meeting = require('../models/Meeting');
+const User = require('../models/User');
+const Client = require('../models/Client');
+const Employee = require('../models/Employee');
 const { sendMeetingCreated, sendMeetingFollowUp, sendMeetingCancelled } = require('../services/emailService');
 const router = express.Router();
 
@@ -100,6 +103,27 @@ router.put('/:id/cancel', async (req, res, next) => {
       attendeeEmails: meeting.attendeeEmails, adminEmails: meeting.adminEmails,
       meetingLink: meeting.meetingLink,
     }).catch((err) => console.error('Cancellation email failed:', err.message));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/contacts', async (req, res, next) => {
+  try {
+    const employees = await Employee.find({}, 'name email loginEmail').lean();
+    const employeeContacts = employees.map(e => ({ name: e.name, email: e.loginEmail || e.email || '' })).filter(e => e.email);
+
+    const clients = await Client.find({}, 'name email').lean();
+    const clientContacts = clients.map(c => ({ name: c.name, email: c.email || '' })).filter(c => c.email);
+
+    const users = await User.find({ role: 'employee' }, 'name email').lean();
+    for (const u of users) {
+      if (!employeeContacts.find(e => e.email === u.email)) {
+        employeeContacts.push({ name: u.name, email: u.email });
+      }
+    }
+
+    res.json({ clients: clientContacts, employees: employeeContacts });
   } catch (error) {
     next(error);
   }

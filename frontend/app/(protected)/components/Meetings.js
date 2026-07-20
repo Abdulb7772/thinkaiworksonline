@@ -218,8 +218,6 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
           onClose={() => setShowCreate(false)}
           onSaved={onRefresh}
           onToast={onToast}
-          clients={data?.clients}
-          employees={data?.employees}
         />
       )}
 

@@ -68,7 +68,7 @@ const EmailChipInput = ({ listId, label, placeholder, emails, setEmails, options
   );
 };
 
-export default function CreateMeeting({ onClose, onSaved, onToast, clients, employees }) {
+export default function CreateMeeting({ onClose, onSaved, onToast }) {
   const [form, setForm] = useState({
     title: '',
     datetime: '',
@@ -79,6 +79,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
   });
   const [clientEmails, setClientEmails] = useState([]);
   const [attendeeEmails, setAttendeeEmails] = useState([]);
+  const [contacts, setContacts] = useState({ clients: [], employees: [] });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -86,13 +87,11 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
       const u = JSON.parse(localStorage.getItem('user') || '{}');
       if (u.email) setForm((f) => ({ ...f, creatorEmail: u.email }));
     } catch {}
+    api('/meetings/contacts').then(setContacts).catch(() => {});
   }, []);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const now = new Date().toISOString().slice(0, 16);
-
-  const clientsWithEmail = (clients || []).filter((c) => c.email);
-  const employeesWithEmail = (employees || []).filter((e) => e.email);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -216,7 +215,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
               placeholder="Type or select"
               emails={clientEmails}
               setEmails={setClientEmails}
-              options={clientsWithEmail}
+              options={contacts.clients}
             />
 
             <EmailChipInput
@@ -225,7 +224,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast, clients, empl
               placeholder="Type or select"
               emails={attendeeEmails}
               setEmails={setAttendeeEmails}
-              options={employeesWithEmail}
+              options={contacts.employees}
             />
 
             <p style={{margin:'8px 0 0',fontSize:11,color:'var(--text3)'}}>
