@@ -32,6 +32,7 @@ export default function Tasks({ onToast }) {
     } catch {} finally {
       setLoading(false);
     }
+  };
 
   useEffect(() => { fetch(); }, []);
 

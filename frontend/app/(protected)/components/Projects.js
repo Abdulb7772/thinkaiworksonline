@@ -59,6 +59,7 @@ export default function Projects({ onToast }) {
     } catch {} finally {
       setLoading(false);
     }
+  };
 
   useEffect(() => { fetch(); }, []);
 
