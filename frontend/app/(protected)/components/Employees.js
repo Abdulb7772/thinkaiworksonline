@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AddEmployee from './AddEmployee';
+import { SkeletonCard } from './Skeleton';
 
 const coColor = {es:'var(--es)',tai:'var(--tai)',both:'var(--gold)'};
 const coLabel = {es:'tes',tai:'ttai',both:'tb'};
@@ -41,6 +42,7 @@ export default function Employees({ company, onToast, data, onRefresh }) {
 
   return (
     <div className="page active" style={{display:'flex'}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">Employee Performance</div>
@@ -169,6 +171,7 @@ export default function Employees({ company, onToast, data, onRefresh }) {
           onToast={onToast}
         />
       )}
+    </>)}
     </div>
   );
 }

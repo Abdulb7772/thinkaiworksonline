@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/config';
 import ViewProfile from './ViewProfile';
+import { SkeletonCard } from './Skeleton';
 
 const services = ['Amazon FBA Management', 'Shopify Development', 'AI Automation', 'Email Marketing', 'PPC Advertising', 'Product Research', 'AI Chatbot Build', 'Data Analysis'];
 const budgetRanges = ['$500–$1,000', '$1,000–$3,000', '$3,000–$7,000', '$7,000+'];
@@ -43,6 +44,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
 
   return (
     <div className="page active" style={{display:'flex'}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       {viewing && <ViewProfile item={viewing} onClose={() => setViewing(null)} />}
       <div className="ph">
         <div>
@@ -152,6 +154,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
           </div>
         </div>
       </div>
+    </>)}
     </div>
   );
 }

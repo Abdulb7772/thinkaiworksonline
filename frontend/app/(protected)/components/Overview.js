@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/config';
 import AddClient from './AddClient';
+import { SkeletonMetrics, SkeletonTable, SkeletonCard } from './Skeleton';
 
 const chartLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'T'];
 
@@ -57,6 +58,9 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
         </div>
       </div>
 
+      {!data ? (
+        <div className="grid4"><SkeletonMetrics count={4} /></div>
+      ) : (<>
       {showAdd && (
         <AddClient
           onClose={() => setShowAdd(false)}
@@ -261,6 +265,7 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
           )}
         </div>
       )}
+      </>)}
     </div>
   );
 }

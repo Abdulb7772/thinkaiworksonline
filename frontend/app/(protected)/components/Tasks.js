@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/config';
+import { SkeletonCard } from './Skeleton';
 
 export default function Tasks({ onToast }) {
   const [tasks, setTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('admin');
   const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '' });
   const [saving, setSaving] = useState(false);
@@ -27,8 +29,9 @@ export default function Tasks({ onToast }) {
       ]);
       setTasks(t);
       setEmployees(e);
-    } catch {}
-  };
+    } catch {} finally {
+      setLoading(false);
+    }
 
   useEffect(() => { fetch(); }, []);
 
@@ -119,7 +122,9 @@ export default function Tasks({ onToast }) {
 
       <div className="card">
         <div className="card-title">{role === 'admin' ? 'All Tasks' : 'My Tasks'}</div>
-        {tasks.length === 0 ? (
+        {loading ? (
+          <SkeletonCard count={3} />
+        ) : tasks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--text3)' }}>No tasks yet</div>
         ) : (
           <>

@@ -419,3 +419,12 @@ td{padding:10px 12px;vertical-align:middle}
 
 /* Prevent body scroll when mobile drawer is open */
 body.sidebar-drawer-open{overflow:hidden}
+
+@keyframes sk-shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+.sk{background:var(--border);border-radius:var(--r);background:linear-gradient(90deg,var(--border) 25%,var(--border2) 50%,var(--border) 75%);background-size:400px 100%;animation:sk-shimmer 1.4s ease-in-out infinite}
+.sk-line{height:14px;width:100%;margin-bottom:10px}
+.sk-line:last-child{width:60%}
+.sk-block{height:100px;width:100%}
+.sk-circle{width:36px;height:36px;border-radius:50%}
+.sk-metric{height:80px;width:100%}
+.sk-card{height:120px;width:100%}

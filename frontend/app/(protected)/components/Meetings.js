@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/config';
 import CreateMeeting from './CreateMeeting';
+import { SkeletonCard } from './Skeleton';
 
 const weekdayHeaders = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 const days = Array.from({length:31},(_,i)=>i+1);
@@ -100,7 +101,9 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
             Upcoming Meetings
             <span className="tag tb">{meetings.length > 0 ? meetings.length + ' upcoming' : 'None'}</span>
           </div>
-          {meetings.length === 0 ? (
+          {!data ? (
+            <SkeletonCard count={3} />
+          ) : meetings.length === 0 ? (
             <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No meetings scheduled</div>
           ) : (
             <div style={{display:'flex',flexDirection:'column',gap:10}}>

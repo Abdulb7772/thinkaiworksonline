@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { SkeletonCard } from './Skeleton';
 
 export default function Budget({ company, onToast, data }) {
   const budgetItems = data?.budget?.items || [];
@@ -25,6 +26,7 @@ export default function Budget({ company, onToast, data }) {
 
   return (
     <div className="page active" style={{display:'flex',flexDirection:'column',gap:22}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">Budget & Revenue</div>
@@ -107,6 +109,7 @@ export default function Budget({ company, onToast, data }) {
           </div>
         </div>
       </div>
+    </>)}
     </div>
   );
 }

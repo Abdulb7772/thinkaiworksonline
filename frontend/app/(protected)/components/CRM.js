@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/config';
 import AddClient from './AddClient';
 import ViewProfile from './ViewProfile';
+import { SkeletonTable } from './Skeleton';
 
 const stages = ['Discovery','Proposal','Negotiation','Active','Closed Won'];
 const stageColors = {'Discovery':'tb','Proposal':'ta','Negotiation':'ta','Active':'tg','Closed Won':'tg'};
@@ -90,7 +91,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
       <div className="card">
         <div className="card-title">All Clients</div>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text3)', fontSize: 13 }}>Loading clients...</div>
+          <div style={{ padding: '20px 0' }}><SkeletonTable rows={4} /></div>
         ) : (
           <div className="table-wrap"><table>
             <thead>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/config';
+import { SkeletonCard } from './Skeleton';
 
 const STATUSES = ['pending', 'project_started', 'employee_assigned', 'in_progress', 'working', 'testing', 'finishing_up', 'completed'];
 const today = () => new Date().toISOString().split('T')[0];
@@ -21,6 +22,7 @@ export default function Projects({ onToast }) {
   const [projects, setProjects] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ role: 'admin', id: '' });
   const [showForm, setShowForm] = useState(false);
   const [editProject, setEditProject] = useState(null);
@@ -45,8 +47,9 @@ export default function Projects({ onToast }) {
       setProjects(p);
       setCustomers(c);
       setEmployees(e);
-    } catch {}
-  };
+    } catch {} finally {
+      setLoading(false);
+    }
 
   useEffect(() => { fetch(); }, []);
 
@@ -346,7 +349,9 @@ export default function Projects({ onToast }) {
         </div>
       )}
 
-      {projects.length === 0 && (
+      {loading ? (
+        <SkeletonCard count={3} />
+      ) : projects.length === 0 && (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text3)' }}>No projects yet</div>
       )}
     </div>

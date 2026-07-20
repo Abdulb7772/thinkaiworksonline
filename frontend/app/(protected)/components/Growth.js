@@ -1,5 +1,7 @@
 'use client';
 
+import { SkeletonCard } from './Skeleton';
+
 const esSuggestions = [
   {n:1,title:'Launch Tiered Retainer Packages',detail:'Offer Bronze/Silver/Gold FBA management tiers. Predictable MRR, easier upsell. Est. +$4k MRR.',impact:'High',effort:'Low',color:'var(--green)'},
   {n:2,title:'Expand to UK & EU Amazon Markets',detail:'Your FBA expertise translates directly to Amazon.co.uk and Amazon.de. 3x addressable market.',impact:'High',effort:'Medium',color:'var(--amber)'},
@@ -32,6 +34,7 @@ export default function Growth({ company, onToast, data }) {
 
   return (
     <div className="page active" style={{display:'flex'}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">Growth Engine</div>
@@ -118,6 +121,7 @@ export default function Growth({ company, onToast, data }) {
           ))}
         </div>
       </div>
+    </>)}
     </div>
   );
 }

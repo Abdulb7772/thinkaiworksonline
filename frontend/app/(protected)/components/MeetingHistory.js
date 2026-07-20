@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/config';
+import { SkeletonTable } from './Skeleton';
 
 export default function MeetingHistory({ company, onToast }) {
   const [meetings, setMeetings] = useState([]);
@@ -38,7 +39,7 @@ export default function MeetingHistory({ company, onToast }) {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text3)', fontSize: 13 }}>Loading...</div>
+        <div style={{ padding: '20px 0' }}><SkeletonTable rows={5} /></div>
       ) : meetings.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '40px 0' }}>
           <div style={{ color: 'var(--text3)', fontSize: 13 }}>No meeting history yet</div>

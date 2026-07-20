@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import emailjs from '@emailjs/browser';
 import { api } from '@/lib/config';
+import { SkeletonCard } from './Skeleton';
 
 const promptReplies = {
   'what is our biggest growth opportunity right now?': 'Shukriya for asking. ThinkAIWorks has the highest upside right now. Productizing the AI chatbot into a SaaS offer could lift MRR fast. EcomSkyline should keep tightening retainers so cash flow stays steady.',
@@ -295,6 +296,7 @@ export default function CEO({ company, onToast, data }) {
 
   return (
     <div className="page active" style={{display:'flex'}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">CEO — Muhammad Ali</div>
@@ -429,6 +431,7 @@ export default function CEO({ company, onToast, data }) {
           </div>
         </div>
       )}
+    </>)}
     </div>
   );
 }

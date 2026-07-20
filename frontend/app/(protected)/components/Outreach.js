@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import CreateCampaign from './CreateCampaign';
+import { SkeletonCard } from './Skeleton';
 
 export default function Outreach({ company, onToast, data, onRefresh }) {
   const [showLaunch, setShowLaunch] = useState(false);
@@ -16,6 +17,7 @@ export default function Outreach({ company, onToast, data, onRefresh }) {
 
   return (
     <div className="page active" style={{display:'flex',flexDirection:'column',gap:22}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">AI Outreach System</div>
@@ -95,6 +97,7 @@ export default function Outreach({ company, onToast, data, onRefresh }) {
           onToast={onToast}
         />
       )}
+    </>)}
     </div>
   );
 }

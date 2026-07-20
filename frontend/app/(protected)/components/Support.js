@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { api } from '@/lib/config';
 import CreateTicket from './CreateTicket';
+import { SkeletonCard } from './Skeleton';
 
 export default function Support({ company, onToast, data, onRefresh }) {
   const [showTicket, setShowTicket] = useState(false);
@@ -45,6 +46,7 @@ export default function Support({ company, onToast, data, onRefresh }) {
 
   return (
     <div className="page active" style={{display:'flex',flexDirection:'column',gap:22}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">Customer Support AI</div>
@@ -123,6 +125,7 @@ export default function Support({ company, onToast, data, onRefresh }) {
           onToast={onToast}
         />
       )}
+    </>)}
     </div>
   );
 }

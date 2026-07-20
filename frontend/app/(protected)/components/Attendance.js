@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/config';
+import { SkeletonCard } from './Skeleton';
 
 function todayStr() {
   const d = new Date();
@@ -236,6 +237,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
 
   return (
     <div className="page active" style={{display:'flex',flexDirection:'column',gap:22}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">Attendance</div>
@@ -339,6 +341,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
           <EmployeeCard employee={selfProfile} date={date} isToday={isToday} saving={saving} onToggle={handleToggle} onMarkAbsent={handleMarkAbsent} now={new Date()} />
         </div>
       )}
+    </>)}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { api } from '@/lib/config';
+import { SkeletonCard } from './Skeleton';
 
 const coColor = {es:'var(--es)',tai:'var(--tai)',both:'var(--gold)'};
 
@@ -79,6 +80,7 @@ export default function EmployeeRatings({ data, onToast, onRefresh }) {
 
   return (
     <div className="page active" style={{display:'flex'}}>
+      {!data ? <SkeletonCard count={4} /> : (<>
       <div className="ph">
         <div>
           <div className="pt">Employee Ratings</div>
@@ -117,6 +119,7 @@ export default function EmployeeRatings({ data, onToast, onRefresh }) {
           </table></div>
         )}
       </div>
+    </>)}
     </div>
   );
 }

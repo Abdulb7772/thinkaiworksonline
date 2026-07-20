@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '@/lib/config';
+import { SkeletonTable } from './Skeleton';
 
 export default function Chat({ onToast }) {
   const [conversations, setConversations] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [role, setRole] = useState('admin');
   const [currentUser, setCurrentUser] = useState(null);
@@ -23,7 +25,9 @@ export default function Chat({ onToast }) {
     try {
       const data = await api('/chat/');
       setConversations(data.filter(c => c.lastMessage || c.user));
-    } catch {}
+    } catch {} finally {
+      setLoading(false);
+    }
   }, []);
 
   const fetchMessages = useCallback(async (userId) => {
@@ -95,7 +99,9 @@ export default function Chat({ onToast }) {
         <div style={{ width: 260, borderRight: '1px solid var(--border)', flexShrink: 0 }}>
           <div style={{ padding: '14px 16px', fontWeight: 600, borderBottom: '1px solid var(--border)', fontSize: 13, color: 'var(--text2)' }}>CONTACTS</div>
           <div style={{ overflow: 'auto', maxHeight: 360 }}>
-            {conversations.length === 0 && (
+            {loading ? (
+              <div style={{ padding: 16 }}><SkeletonTable rows={4} /></div>
+            ) : conversations.length === 0 && (
               <div style={{ padding: 24, textAlign: 'center', color: 'var(--text3)', fontSize: 13 }}>No conversations yet</div>
             )}
             {conversations.map(c => (
