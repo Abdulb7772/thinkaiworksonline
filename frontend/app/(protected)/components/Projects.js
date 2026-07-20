@@ -86,6 +86,9 @@ export default function Projects({ onToast }) {
       if (form.description !== (editProject.description || '')) body.description = form.description;
       if (form.client !== (editProject.clients?.[0]?._id || '')) body.clients = form.client ? [form.client] : [];
       if (form.employee !== (editProject.employees?.[0]?._id || '')) body.employees = form.employee ? [form.employee] : [];
+      if (form.completionDate && form.startDate && form.completionDate < form.startDate) {
+        onToast?.('Completion date cannot be before start date', 'error'); setSaving(false); return;
+      }
       if (form.startDate !== (editProject.startDate || '')) body.startDate = form.startDate;
       if (form.completionDate !== (editProject.completionDate || '')) body.completionDate = form.completionDate;
       if (editStatus !== editProject.status) body.status = editStatus;

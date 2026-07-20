@@ -58,7 +58,13 @@ router.patch('/:id', protect, async (req, res, next) => {
     if (employees !== undefined && req.user.role === 'admin') project.employees = employees;
     if (status !== undefined) project.status = status;
     if (startDate !== undefined && req.user.role === 'admin') project.startDate = startDate;
-    if (completionDate !== undefined && req.user.role === 'admin') project.completionDate = completionDate;
+    if (completionDate !== undefined && req.user.role === 'admin') {
+      const effectiveStart = startDate !== undefined ? startDate : project.startDate;
+      if (effectiveStart && completionDate < effectiveStart) {
+        return res.status(400).json({ error: 'Completion date cannot be before start date' });
+      }
+      project.completionDate = completionDate;
+    }
     await project.save();
     const populated = await Project.findById(project._id).populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email');
     res.json(populated);
