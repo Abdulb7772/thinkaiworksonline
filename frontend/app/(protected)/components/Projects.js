@@ -236,14 +236,25 @@ export default function Projects({ onToast }) {
             {project.completionDate && <span>End: {project.completionDate}</span>}
           </div>
 
-          {/* Admin status controls */}
+          {/* Admin status stepper */}
           {user.role === 'admin' && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {STATUSES.map(s => (
-                <button key={s} className={`btn btn-sm ${project.status === s ? 'btn-tai' : 'btn-outline'}`} onClick={() => updateStatus(project._id, s)} style={{ fontSize: 11, textTransform: 'capitalize' }}>
-                  {STATUS_LABELS[s]}
-                </button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', marginTop: 8 }}>
+              {STATUSES.map((s, i) => {
+                const cur = STATUSES.indexOf(project.status);
+                const done = i <= cur;
+                const isLast = i === STATUSES.length - 1;
+                return (
+                  <div key={s} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => updateStatus(project._id, s)}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: done ? 'var(--accent)' : 'var(--bg2)', border: `2px solid ${done ? 'var(--accent)' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={done ? '#fff' : 'var(--text3)'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">{done ? <polyline points="20 6 9 17 4 12" /> : <circle cx="12" cy="12" r="1" fill="var(--text3)" />}</svg>
+                      </div>
+                      <span style={{ fontSize: 9, color: done ? 'var(--accent)' : 'var(--text3)', fontWeight: project.status === s ? 700 : 400, whiteSpace: 'nowrap', maxWidth: 70, textAlign: 'center', lineHeight: 1.2 }}>{STATUS_LABELS[s]}</span>
+                    </div>
+                    {!isLast && <div style={{ width: 24, height: 2, background: i < cur ? 'var(--accent)' : 'var(--border)', margin: '0 2px', marginBottom: 18, transition: 'all 0.2s' }} />}
+                  </div>
+                );
+              })}
             </div>
           )}
 
