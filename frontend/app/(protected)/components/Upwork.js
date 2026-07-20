@@ -1,18 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '@/lib/config';
 import ViewProfile from './ViewProfile';
 import { SkeletonCard } from './Skeleton';
 
-const services = ['Amazon FBA Management', 'Shopify Development', 'AI Automation', 'Email Marketing', 'PPC Advertising', 'Product Research', 'AI Chatbot Build', 'Data Analysis'];
-const budgetRanges = ['$500–$1,000', '$1,000–$3,000', '$3,000–$7,000', '$7,000+'];
 const priorities = ['High', 'Medium', 'Low'];
-const employees = ['Sarah K. (Lead Manager)', 'Omar H. (Dev Lead)', 'Zara T. (AI Specialist)', 'Bilal M. (Marketing)', 'Ayesha N. (Support)'];
 
 export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLead }) {
   const [viewing, setViewing] = useState(null);
+  const [employees, setEmployees] = useState([]);
   const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
+
+  useEffect(() => {
+    api('/tasks/employees').then(setEmployees).catch(() => {});
+  }, []);
   const handleSubmit = async () => {
     const name = document.getElementById('cl-name')?.value?.trim();
     if (!name) { onToast('Enter a client name', 'error'); return; }
@@ -76,9 +78,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
             <div className="form-row">
               <div className="form-field">
                 <label>Service Required</label>
-                <select id="cl-service">
-                  {services.map(s => <option key={s}>{s}</option>)}
-                </select>
+                <input type="text" id="cl-service" placeholder="e.g. Amazon FBA Management" />
               </div>
               <div className="form-field">
                 <label>Company (Assign To)</label>
@@ -91,9 +91,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
             <div className="form-row">
               <div className="form-field">
                 <label>Budget Range</label>
-                <select id="cl-budget">
-                  {budgetRanges.map(b => <option key={b}>{b}</option>)}
-                </select>
+                <input type="text" id="cl-budget" placeholder="e.g. $1,000–$3,000" />
               </div>
               <div className="form-field">
                 <label>Priority</label>
@@ -109,7 +107,8 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
             <div className="form-field">
               <label>Assign Employee</label>
               <select id="cl-assign">
-                {employees.map(e => <option key={e}>{e}</option>)}
+                <option value="">Select employee</option>
+                {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
               </select>
             </div>
           </div>

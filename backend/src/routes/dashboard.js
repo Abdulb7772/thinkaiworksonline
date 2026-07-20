@@ -39,9 +39,9 @@ const buildAppData = async () => {
   } catch {}
 
   const totalSpend = budgets.reduce((s, b) => s + (b.value || 0), 0);
-  const totalRev = clients.reduce((s, c) => s + (parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0), 0) || 28400;
-  const esRevenue = Math.round(totalRev * 0.64);
-  const taiRevenue = totalRev - esRevenue;
+  const totalRev = clients.reduce((s, c) => s + (parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0), 0);
+  const esRevenue = 0;
+  const taiRevenue = 0;
 
   return {
     overviewMetrics: {

@@ -70,7 +70,7 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
       )}
 
       <div className="grid4">
-        {metrics.filter(m => m.label !== 'Monthly Revenue').map((m, i) => (
+        {metrics.map((m, i) => (
           <div key={i} className={`metric ${m.co || 'tai'}`}>
             <div className="m-label">{m.label}</div>
             <div className="m-val">{m.val}</div>
