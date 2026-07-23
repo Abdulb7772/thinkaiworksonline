@@ -30,8 +30,18 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/img/logo.jpeg" />
         <link rel="apple-touch-icon" sizes="180x180" href="/img/logo.jpeg" />
       </head>
-      <body style={{ margin: 0 }}>
-        {pathname === '/' ? children : booted ? <SessionProvider>{children}</SessionProvider> : null}
+      <body style={{ margin: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <div style={{ flex: 1 }}>
+          {pathname === '/' ? children : booted ? <SessionProvider>{children}</SessionProvider> : null}
+        </div>
+        <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', background: '#0b0d17', borderTop: '1px solid #1e2340', fontFamily: 'Cabinet Grotesk, sans-serif' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src="/img/logo.jpeg" alt="ThinkAI Works" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover' }} />
+            <span style={{ color: '#eceef5', fontWeight: 600, fontSize: 15 }}>ThinkAI Works</span>
+          </div>
+          <div style={{ color: '#4a5070', fontSize: 13 }}>&copy; {new Date().getFullYear()} ThinkAI Works. All rights reserved.</div>
+          <div style={{ color: '#4a5070', fontSize: 11 }}>Created by Muhammad Abdul Basit</div>
+        </footer>
       </body>
     </html>
   );
