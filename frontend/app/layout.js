@@ -34,13 +34,13 @@ export default function RootLayout({ children }) {
         <div style={{ flex: 1 }}>
           {pathname === '/' ? children : booted ? <SessionProvider>{children}</SessionProvider> : null}
         </div>
-        <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', background: '#0b0d17', borderTop: '1px solid #1e2340', fontFamily: 'Cabinet Grotesk, sans-serif' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src="/img/logo.jpeg" alt="ThinkAI Works" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover' }} />
-            <span style={{ color: '#eceef5', fontWeight: 600, fontSize: 15 }}>ThinkAI Works</span>
+        <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', background: '#0b0d17', borderTop: '1px solid #1e2340', fontFamily: 'Cabinet Grotesk, sans-serif' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src="/img/logo.jpeg" alt="ThinkAIWorks" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }} />
+            <span style={{ color: '#eceef5', fontWeight: 600, fontSize: 13 }}>ThinkAIWorks</span>
           </div>
-          <div style={{ color: '#4a5070', fontSize: 13 }}>&copy; {new Date().getFullYear()} ThinkAI Works. All rights reserved.</div>
-          <div style={{ color: '#4a5070', fontSize: 11 }}>Created by Muhammad Abdul Basit</div>
+          <div style={{ color: '#4a5070', fontSize: 11 }}>&copy; {new Date().getFullYear()} ThinkAIWorks. All rights reserved.</div>
+          <div style={{ color: '#4a5070', fontSize: 9, textAlign: 'right', lineHeight: 1.3 }}>Created by<br />Muhammad Abdul Basit</div>
         </footer>
       </body>
     </html>
