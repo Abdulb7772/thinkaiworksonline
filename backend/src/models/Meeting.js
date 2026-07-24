@@ -6,7 +6,7 @@ const MeetingSchema = new mongoose.Schema({
   datetime: { type: Date },
   attendees: { type: String },
   type: { type: String },
-  company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks', 'Both'], default: 'EcomSkyline' },
+  company: { type: String, default: 'ThinkAIWorks' },
   clientEmails: { type: [String], default: [] },
   creatorEmail: { type: String, default: '' },
   attendeeEmails: { type: [String], default: [] },

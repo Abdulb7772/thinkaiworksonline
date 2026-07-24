@@ -5,7 +5,7 @@ const TicketSchema = new mongoose.Schema({
   client: { type: String },
   issue: { type: String },
   priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
-  company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks'], default: 'EcomSkyline' },
+  company: { type: String, default: 'ThinkAIWorks' },
   status: { type: String, enum: ['Open', 'In Progress', 'Closed'], default: 'Open' },
   createdAt: { type: Date, default: Date.now },
 });

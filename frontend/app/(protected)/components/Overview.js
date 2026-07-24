@@ -26,7 +26,7 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
     try {
       await api('/clients', {
         method: 'POST',
-        body: JSON.stringify({ name: lead.name, service: lead.service, stage: 'Discovery' }),
+        body: JSON.stringify({ name: lead.name, service: lead.service, company: 'ThinkAIWorks', stage: 'Discovery' }),
       });
       onToast?.(lead.name + ' added to CRM ✓', 'success');
     } catch (err) {

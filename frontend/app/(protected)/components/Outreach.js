@@ -46,7 +46,7 @@ export default function Outreach({ company, onToast, data, onRefresh }) {
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
                     <div>
                       <div style={{fontWeight:600,fontSize:13}}>{c.name}</div>
-                      <span className={`tag ${c.co==='es'?'tes':'ttai'}`} style={{marginTop:4}}>{c.co==='es'?'EcomSkyline':'ThinkAIWorks'}</span>
+                      <span className={`tag ttai`}>ThinkAIWorks</span>
                     </div>
                     <span className="tag tg">{c.status === 'active' ? 'Active' : c.status}</span>
                   </div>
@@ -61,15 +61,15 @@ export default function Outreach({ company, onToast, data, onRefresh }) {
           )}
         </div>
         <div className="card">
-          <div className="card-title">Sample Outreach Email — EcomSkyline</div>
+          <div className="card-title">Sample Outreach Email — ThinkAIWorks</div>
           <div className="email-preview">
             <div className="to">TO: Mark Hudson · Amazon Seller · mark@...  |  SCORE: 88% match</div>
-            <div className="subj">Subject: Scaling your Amazon FBA revenue — here's how we do it</div>
+            <div className="subj">Subject: Scaling your Amazon FBA revenue — here&apos;s how we do it</div>
             <div style={{color:'var(--text)'}}>Hi Mark,</div><br />
-            <div>I came across your store and noticed you're doing well in the kitchen niche. We've scaled 14 similar stores from $20k to $80k+ monthly revenue using our Amazon FBA system at EcomSkyline.</div><br />
+            <div>I came across your store and noticed you&apos;re doing well in the kitchen niche. We&apos;ve scaled 14 similar stores from $20k to $80k+ monthly revenue using our Amazon FBA system at ThinkAIWorks.</div><br />
             <div>Key things we handle: <span style={{color:'var(--es)'}}>inventory forecasting, PPC optimization, supplier negotiations, and listing SEO</span>.</div><br />
-            <div>Would a 20-minute strategy call make sense? I can show you exactly what we'd do for your store.</div><br />
-            <div style={{color:'var(--text3)'}}>— EcomSkyline Team, Powered by AI Outreach</div>
+            <div>Would a 20-minute strategy call make sense? I can show you exactly what we&apos;d do for your store.</div><br />
+            <div style={{color:'var(--text3)'}}>— ThinkAIWorks Team, Powered by AI Outreach</div>
           </div>
           <div style={{display:'flex',gap:8,marginTop:12}}>
             <button className="btn btn-ghost btn-sm">Edit</button>

@@ -48,7 +48,7 @@ export default function Dashboard() {
       setData(res);
       setLeads(res?.pendingLeads || []);
       setTickerItems(res?.tickerItems || [
-        'EcomSkyline revenue growing steadily',
+        'ThinkAIWorks revenue growing steadily',
         'ThinkAIWorks AI chatbot project active',
         'New leads in pipeline',
       ]);

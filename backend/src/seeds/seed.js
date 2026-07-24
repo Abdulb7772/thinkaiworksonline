@@ -17,7 +17,7 @@ const sampleLeads = [
     name: 'David Park',
     profileUrl: 'https://www.upwork.com/freelancers/~0123456789abcdef',
     service: 'Amazon FBA',
-    company: 'EcomSkyline',
+    company: 'ThinkAIWorks',
     budgetRange: '$3k–7k',
     priority: 'High',
     brief: 'Need end-to-end FBA management and PPC optimization.',
@@ -29,7 +29,7 @@ const sampleLeads = [
     name: 'Emma Richardson',
     profileUrl: 'https://www.upwork.com/freelancers/~fedcba9876543210',
     service: 'Shopify Development',
-    company: 'EcomSkyline',
+    company: 'ThinkAIWorks',
     budgetRange: '$1k–3k',
     priority: 'Medium',
     brief: 'Launch new brand site with CRO and post-purchase flows.',
@@ -54,8 +54,7 @@ const sampleLeads = [
 const sampleClients = [
   {
     name: 'David Park',
-    company: 'EcomSkyline',
-    service: 'Amazon FBA',
+    company: 'ThinkAIWorks',
     value: '$5,200',
     stage: 'Discovery',
     assignedTo: 'Sarah K.',
@@ -63,7 +62,7 @@ const sampleClients = [
   },
   {
     name: 'Emma Richardson',
-    company: 'EcomSkyline',
+    company: 'ThinkAIWorks',
     service: 'Shopify Dev',
     value: '$2,800',
     stage: 'Proposal',
@@ -88,7 +87,7 @@ const sampleMeetings = [
     datetime: new Date(Date.now() + 1 * 60 * 60 * 1000),
     attendees: 'Sarah K.',
     type: 'Video',
-    company: 'EcomSkyline',
+    company: 'ThinkAIWorks',
   },
   {
     title: 'Project Review — Emma R.',
@@ -96,7 +95,7 @@ const sampleMeetings = [
     datetime: new Date(Date.now() + 4 * 60 * 60 * 1000),
     attendees: 'Omar H., Muhammad Ali',
     type: 'Internal',
-    company: 'EcomSkyline',
+    company: 'ThinkAIWorks',
   },
   {
     title: 'AI Demo — Tariq Sultan',
@@ -109,22 +108,22 @@ const sampleMeetings = [
 ];
 
 const sampleEmployees = [
-  { name: 'Sarah K.', role: 'Lead Manager', company: 'EcomSkyline', score: 94, tasks: 42, rating: 4.9, attendance: 98, trend: 'up', status: 'Top' },
-  { name: 'Omar H.', role: 'Dev Lead', company: 'EcomSkyline', score: 86, tasks: 38, rating: 4.7, attendance: 95, trend: 'up', status: 'Strong' },
+  { name: 'Sarah K.', role: 'Lead Manager', company: 'ThinkAIWorks', score: 94, tasks: 42, rating: 4.9, attendance: 98, trend: 'up', status: 'Top' },
+  { name: 'Omar H.', role: 'Dev Lead', company: 'ThinkAIWorks', score: 86, tasks: 38, rating: 4.7, attendance: 95, trend: 'up', status: 'Strong' },
   { name: 'Zara T.', role: 'AI Specialist', company: 'ThinkAIWorks', score: 89, tasks: 35, rating: 4.8, attendance: 97, trend: 'up', status: 'Strong' },
-  { name: 'Bilal M.', role: 'Marketing', company: 'EcomSkyline', score: 78, tasks: 29, rating: 4.5, attendance: 92, trend: 'stable', status: 'Good' },
+  { name: 'Bilal M.', role: 'Marketing', company: 'ThinkAIWorks', score: 78, tasks: 29, rating: 4.5, attendance: 92, trend: 'stable', status: 'Good' },
   { name: 'Ayesha N.', role: 'Support', company: 'Both', score: 82, tasks: 56, rating: 4.6, attendance: 94, trend: 'up', status: 'Good' },
 ];
 
 const sampleTickets = [
-  { ticketId: '#T-441', client: 'Ali Hassan', issue: 'Invoice discrepancy — charged twice', priority: 'High', company: 'EcomSkyline', status: 'Open' },
-  { ticketId: '#T-442', client: 'Emma R.', issue: 'Project deliverable delayed by 2 days', priority: 'High', company: 'EcomSkyline', status: 'Open' },
+  { ticketId: '#T-441', client: 'Ali Hassan', issue: 'Invoice discrepancy — charged twice', priority: 'High', company: 'ThinkAIWorks', status: 'Open' },
+  { ticketId: '#T-442', client: 'Emma R.', issue: 'Project deliverable delayed by 2 days', priority: 'High', company: 'ThinkAIWorks', status: 'Open' },
   { ticketId: '#T-443', client: 'Jennifer Lee', issue: 'AI chatbot not responding on weekends', priority: 'Medium', company: 'ThinkAIWorks', status: 'In Progress' },
 ];
 
 const sampleCampaigns = [
-  { name: 'Amazon Sellers — FBA Mgmt', company: 'EcomSkyline', sent: 186, opens: '44%', replies: '9%', status: 'active' },
-  { name: 'Shopify Stores — Scaling', company: 'EcomSkyline', sent: 94, opens: '38%', replies: '7%', status: 'active' },
+  { name: 'Amazon Sellers — FBA Mgmt', company: 'ThinkAIWorks', sent: 186, opens: '44%', replies: '9%', status: 'active' },
+  { name: 'Shopify Stores — Scaling', company: 'ThinkAIWorks', sent: 94, opens: '38%', replies: '7%', status: 'active' },
   { name: 'SaaS Companies — AI Tools', company: 'ThinkAIWorks', sent: 106, opens: '51%', replies: '12%', status: 'active' },
 ];
 

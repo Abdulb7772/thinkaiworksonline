@@ -9,9 +9,12 @@ import { SkeletonTable } from './Skeleton';
 const projectStatuses = ['pending','project_started','employee_assigned','in_progress','working','testing','finishing_up','completed'];
 const statusLabels = {pending:'Pending',project_started:'Project Started',employee_assigned:'Employee Assigned',in_progress:'In Progress',working:'Working',testing:'Testing',finishing_up:'Finishing Up',completed:'Completed'};
 const stageColors = {'Discovery':'tb','Proposal':'ta','Negotiation':'ta','Active':'tg','Closed Won':'tg'};
+const clientStatuses = ['Active','Inactive','Lead','Prospect'];
+const clientStages = ['Discovery', 'Proposal', 'Negotiation', 'Active', 'Closed Won'];
 
 export default function CRM({ company, onToast, onAddLead, data }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [editClient, setEditClient] = useState(null);
   const [viewing, setViewing] = useState(null);
   const [clients, setClients] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -25,6 +28,41 @@ export default function CRM({ company, onToast, onAddLead, data }) {
       setClients(res);
     } catch {} finally {
       setLoading(false);
+    }
+  };
+
+  const deleteClient = async (id, name) => {
+    if (!confirm(`Remove ${name} from clients?`)) return;
+    try {
+      await api(`/clients/${id}`, { method: 'DELETE' });
+      onToast?.(`${name} removed`, 'success');
+      fetchClients();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    }
+  };
+
+  const updateStage = async (id, stage) => {
+    try {
+      await api(`/clients/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ stage }),
+      });
+      fetchClients();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    }
+  };
+
+  const updateStatus = async (id, status) => {
+    try {
+      await api(`/clients/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      });
+      fetchClients();
+    } catch (err) {
+      onToast?.(err.message, 'error');
     }
   };
 
@@ -48,9 +86,10 @@ export default function CRM({ company, onToast, onAddLead, data }) {
 
   return (
     <div className="page active" style={{display:'flex'}}>
-      {showAdd && (
+      {(showAdd || editClient) && (
         <AddClient
-          onClose={() => setShowAdd(false)}
+          editData={editClient}
+          onClose={() => { setShowAdd(false); setEditClient(null); }}
           onSaved={(c) => { fetchClients(); }}
           onToast={onToast}
           onAddLead={onAddLead}
@@ -153,20 +192,40 @@ export default function CRM({ company, onToast, onAddLead, data }) {
           <div className="table-wrap"><table>
             <thead>
               <tr>
-                <th>Client</th><th>Company</th><th>Service</th><th>Value</th><th>Stage</th><th>Assigned To</th><th>Last Contact</th><th>Action</th>
+                <th>Client</th><th>Service</th><th>Value</th><th>Stage</th><th>Status</th><th>Assigned To</th><th>Last Contact</th><th>Action</th>
               </tr>
             </thead>
             <tbody>
               {clients.map((c,i) => (
                 <tr key={i}>
                   <td><span style={{fontWeight:600}}>{c.name}</span></td>
-                  <td><span className={`tag ${(c.company || 'EcomSkyline') === 'EcomSkyline' ? 'tes' : 'ttai'}`}>{c.company || 'EcomSkyline'}</span></td>
                   <td style={{color:'var(--text2)'}}>{c.service}</td>
                   <td style={{fontFamily:'var(--font-mono)',color:'var(--green)'}}>{c.value || '—'}</td>
-                  <td><span className={`tag ${stageColors[c.stage] || 'tb'}`}>{c.stage || 'Discovery'}</span></td>
+                  <td>
+                    <select
+                      value={c.stage || 'Discovery'}
+                      onChange={(e) => updateStage(c._id, e.target.value)}
+                      style={{fontSize:11,padding:'3px 6px',borderRadius:'var(--r)',border:'1px solid var(--border)',background:'var(--bg2)',color:'var(--text)',cursor:'pointer',...(stageColors[c.stage] === 'tg' ? {borderColor:'var(--green)'} : stageColors[c.stage] === 'ta' ? {borderColor:'var(--amber)'} : {borderColor:'var(--blue)'})}}
+                    >
+                      {clientStages.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      value={c.status || 'Active'}
+                      onChange={(e) => updateStatus(c._id, e.target.value)}
+                      style={{fontSize:11,padding:'3px 6px',borderRadius:'var(--r)',border:'1px solid var(--border)',background:'var(--bg2)',color:'var(--text)',cursor:'pointer'}}
+                    >
+                      {clientStatuses.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </td>
                   <td style={{color:'var(--text2)'}}>{c.assignedTo || '—'}</td>
                   <td style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--text3)'}}>{c.lastContact || '—'}</td>
-                  <td><button className="btn btn-ghost btn-sm" onClick={() => setViewing(c)}>View</button></td>
+                  <td style={{display:'flex',gap:4}}>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setViewing(c)}>View</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditClient(c)}>Edit</button>
+                    <button className="btn btn-ghost btn-sm" style={{color:'var(--red)'}} onClick={() => deleteClient(c._id, c.name)}>Remove</button>
+                  </td>
                 </tr>
               ))}
             </tbody>

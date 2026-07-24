@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AddEmployee from './AddEmployee';
+import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
 
 const coColor = {es:'var(--es)',tai:'var(--tai)',both:'var(--gold)'};
@@ -22,6 +23,21 @@ export default function Employees({ company, onToast, data, onRefresh }) {
   const [editEmployee, setEditEmployee] = useState(null);
   const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
   const [page, setPage] = useState(0);
+  const [deleting, setDeleting] = useState(null);
+
+  const handleDelete = async (id, name) => {
+    if (!confirm(`Remove "${name}"? This cannot be undone.`)) return;
+    setDeleting(id);
+    try {
+      await api(`/employees/${id}`, { method: 'DELETE' });
+      onToast?.(`${name} removed`);
+      onRefresh();
+    } catch (err) {
+      onToast?.(err.message);
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const employees = (data?.employees || []).filter(e => e.score || e.tasks || e.rating || e.attendance || e.status);
   const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
@@ -142,6 +158,7 @@ export default function Employees({ company, onToast, data, onRefresh }) {
                     <td>
                       <span className={`tag ${statusCls[e.status] || 'ta'}`}>{e.status || 'Good'}</span>
                       {userRole === 'admin' && <button className="btn btn-ghost btn-sm" style={{marginLeft:6,padding:'2px 6px',fontSize:11}} onClick={() => setEditEmployee(e)}>✎</button>}
+                      {userRole === 'admin' && <button className="btn btn-ghost btn-sm" style={{marginLeft:2,padding:'2px 6px',fontSize:11,color:'var(--red)'}} onClick={() => handleDelete(e._id, e.name)} disabled={deleting === e._id}>✕</button>}
                     </td>
                   </tr>
                 ))}

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ClientSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String },
-  company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks'], default: 'EcomSkyline' },
+  company: { type: String, default: 'ThinkAIWorks' },
   service: { type: String },
   value: { type: String },
   stage: { type: String, default: 'Discovery' },

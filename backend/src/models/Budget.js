@@ -4,7 +4,7 @@ const BudgetSchema = new mongoose.Schema({
   label: { type: String, required: true },
   value: { type: Number, default: 0 },
   max: { type: Number, default: 0 },
-  company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks', 'Both'], default: 'Both' },
+  company: { type: String, default: 'ThinkAIWorks' },
   createdAt: { type: Date, default: Date.now },
 });
 

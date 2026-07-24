@@ -4,7 +4,7 @@ const LeadSchema = new mongoose.Schema({
   name: { type: String, required: true },
   profileUrl: { type: String },
   service: { type: String },
-  company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks'], default: 'EcomSkyline' },
+  company: { type: String, default: 'ThinkAIWorks' },
   budgetRange: { type: String },
   priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
   brief: { type: String },

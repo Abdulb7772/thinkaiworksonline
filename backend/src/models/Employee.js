@@ -8,7 +8,7 @@ const EmployeeSchema = new mongoose.Schema({
   email: { type: String },
   role: { type: String },
   subRole: { type: String },
-  company: { type: String, enum: ['EcomSkyline', 'ThinkAIWorks', 'Both'], default: 'ThinkAIWorks' },
+  company: { type: String, default: 'ThinkAIWorks' },
   score: { type: Number },
   tasks: { type: Number },
   rating: { type: Number },

@@ -5,15 +5,15 @@ import { api } from '@/lib/config';
 
 const stages = ['Discovery', 'Proposal', 'Negotiation', 'Active', 'Closed Won'];
 
-export default function AddClient({ onClose, onSaved, onToast, onAddLead }) {
+export default function AddClient({ editData, onClose, onSaved, onToast, onAddLead }) {
   const [form, setForm] = useState({
-    name: '',
-    company: 'ThinkAIWorks',
-    service: '',
-    value: '',
-    stage: 'Discovery',
-    assignedTo: '',
-    lastContact: '',
+    name: editData?.name || '',
+    company: editData?.company || 'ThinkAIWorks',
+    service: editData?.service || '',
+    value: editData?.value || '',
+    stage: editData?.stage || 'Discovery',
+    assignedTo: editData?.assignedTo || '',
+    lastContact: editData?.lastContact || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -24,13 +24,22 @@ export default function AddClient({ onClose, onSaved, onToast, onAddLead }) {
     if (!form.name) return;
     setSaving(true);
     try {
-      const client = await api('/clients', {
-        method: 'POST',
-        body: JSON.stringify(form),
-      });
-      onSaved?.(client);
-      onAddLead?.({ name: client.name, budget: client.value || '—', service: client.service || '—', stage: client.stage || 'Discovery', age: 'Just now' });
-      onToast?.('Client added successfully', 'success');
+      if (editData) {
+        await api(`/clients/${editData._id}`, {
+          method: 'PUT',
+          body: JSON.stringify(form),
+        });
+        onSaved?.();
+        onToast?.('Client updated', 'success');
+      } else {
+        const client = await api('/clients', {
+          method: 'POST',
+          body: JSON.stringify(form),
+        });
+        onSaved?.(client);
+        onAddLead?.({ name: client.name, budget: client.value || '—', service: client.service || '—', stage: client.stage || 'Discovery', age: 'Just now' });
+        onToast?.('Client added successfully', 'success');
+      }
       onClose();
     } catch (err) {
       onToast?.(err.message, 'error');
@@ -43,7 +52,7 @@ export default function AddClient({ onClose, onSaved, onToast, onAddLead }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <div className="modal-title">Add New Client</div>
+          <div className="modal-title">{editData ? 'Edit Client' : 'Add New Client'}</div>
           <button className="modal-close" onClick={onClose}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -96,7 +105,7 @@ export default function AddClient({ onClose, onSaved, onToast, onAddLead }) {
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
             <button type="submit" className="btn btn-es" disabled={saving || !form.name} style={{ flex: 1 }}>
-              {saving ? 'Saving...' : 'Add Client'}
+              {saving ? 'Saving...' : editData ? 'Update Client' : 'Add Client'}
             </button>
           </div>
         </form>

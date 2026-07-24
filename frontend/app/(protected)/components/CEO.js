@@ -6,10 +6,10 @@ import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
 
 const promptReplies = {
-  'what is our biggest growth opportunity right now?': 'Shukriya for asking. ThinkAIWorks has the highest upside right now. Productizing the AI chatbot into a SaaS offer could lift MRR fast. EcomSkyline should keep tightening retainers so cash flow stays steady.',
-  'how are both companies performing vs last month?': 'Combined MRR is moving up. EcomSkyline is still the bigger engine, while ThinkAIWorks is growing faster from a smaller base. The Budget and Revenue view will give you the exact numbers.',
+  'what is our biggest growth opportunity right now?': 'Shukriya for asking. ThinkAIWorks has the highest upside right now. Productizing the AI chatbot into a SaaS offer could lift MRR fast.',
+  'how are both companies performing vs last month?': 'Combined MRR is moving up. The Budget and Revenue view will give you the exact numbers.',
   'which employees need my attention?': 'Check the Employee Performance page for the people who need a nudge and the ones who are carrying the team. That page stays live with the latest scores and trends.',
-  'what should we prioritize this week?': 'Pipeline execution, client retention, and clearing anything blocking delivery. Close the strong leads first, keep support tight, and don’t let small issues pile up.',
+  'what should we prioritize this week?': 'Pipeline execution, client retention, and clearing anything blocking delivery. Close the strong leads first, keep support tight, and don\u2019t let small issues pile up.',
   'how can we reduce churn?': 'Faster onboarding, better client updates, and a day-14 success check-in. Small consistency there saves more revenue than big speeches.',
   'what marketing should we double down on?': 'Upwork outreach is still the cleanest ROI. LinkedIn can help for higher-ticket work, but only if we keep the message sharp and the follow-up fast.',
 };
@@ -22,9 +22,9 @@ const greetingReplies = [
 ];
 
 const refusalReplies = [
-  'Shukriya, but I only discuss EcomSkyline, ThinkAIWorks, and this app. Ask me about the project, team, leads, revenue, attendance, or progress.',
+  'Shukriya, but I only discuss ThinkAIWorks and this app. Ask me about the project, team, leads, revenue, attendance, or progress.',
   'I can only help with work-related things here. If you want, ask me about the business, the app, or current project progress.',
-  'I can’t help with that one. Keep it to the company or app and I’ll answer straight.',
+  'I can\u2019t help with that one. Keep it to the company or app and I\u2019ll answer straight.',
 ];
 
 const normalizeMessage = (message) => String(message || '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -49,7 +49,7 @@ const isBusinessMessage = (message) => {
   const normalized = normalizeMessage(message);
   if (!normalized) return false;
   return [
-    'thinkaiworks', 'ecomskyline', 'project', 'progress', 'status', 'update', 'ongoing', 'pipeline',
+    'thinkaiworks', 'project', 'progress', 'status', 'update', 'ongoing', 'pipeline',
     'lead', 'client', 'crm', 'revenue', 'mrr', 'budget', 'campaign', 'marketing', 'employee',
     'attendance', 'meeting', 'ticket', 'support', 'churn', 'growth', 'dashboard', 'team', 'company',
     'app', 'task', 'priority', 'roadmap', 'delivery', 'launch', 'performance'
@@ -57,8 +57,7 @@ const isBusinessMessage = (message) => {
 };
 
 const buildCeoContext = (data) => {
-  const activeThinkAIClients = data?.clients?.filter((client) => client.company === 'ThinkAIWorks' && client.stage === 'Active').length || 0;
-  const activeEcomClients = data?.clients?.filter((client) => client.company === 'EcomSkyline' || !client.company).length || 0;
+  const activeClients = data?.clients?.filter((client) => client.stage === 'Active').length || 0;
   const activeCampaigns = data?.campaigns?.filter((campaign) => campaign.status === 'active').length || 0;
   const urgentIssues = data?.tickets?.filter((ticket) => ticket.priority === 'High' && ticket.status === 'Open').length || 0;
   const openLeads = data?.crmMetrics?.[0]?.val || data?.pendingLeads?.length || 0;
@@ -67,8 +66,7 @@ const buildCeoContext = (data) => {
 
   return [
     `Revenue snapshot: ${revenue}`,
-    `ThinkAIWorks active clients: ${activeThinkAIClients}`,
-    `EcomSkyline active clients: ${activeEcomClients}`,
+    `Active clients: ${activeClients}`,
     `Open leads: ${openLeads}`,
     `Team size: ${teamSize}`,
     `Active campaigns: ${activeCampaigns}`,
@@ -174,13 +172,13 @@ const quickPrompts = [
 
 export default function CEO({ company, onToast, data }) {
   const [msgs, setMsgs] = useState([
-    { text: "Assalamu Alaikum! I'm Muhammad Ali, CEO of EcomSkyline and ThinkAIWorks. I have full visibility into both companies — revenue, team performance, pipeline, marketing, and growth strategy. What would you like to discuss today?", isAI: true },
+    { text: "Assalamu Alaikum! I'm Muhammad Ali, CEO of ThinkAIWorks. I have full visibility into the company — revenue, team performance, pipeline, marketing, and growth strategy. What would you like to discuss today?", isAI: true },
   ]);
   const [inp, setInp] = useState('');
   const defRef = useRef(0);
   const [showCeoModal, setShowCeoModal] = useState(false);
   const [modalMsgs, setModalMsgs] = useState([
-    { text: "Assalamu Alaikum! I'm Muhammad Ali, CEO of EcomSkyline and ThinkAIWorks. How can I advise you today?", isAI: true },
+    { text: "Assalamu Alaikum! I'm Muhammad Ali, CEO of ThinkAIWorks. How can I advise you today?", isAI: true },
   ]);
   const [modalInp, setModalInp] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
@@ -240,7 +238,7 @@ export default function CEO({ company, onToast, data }) {
         `Name: ${contactForm.name.trim()}`,
         `Email: ${contactForm.email.trim()}`,
         `Subject: ${contactForm.subject.trim()}`,
-        'Company: EcomSkyline & ThinkAIWorks',
+        'Company: ThinkAIWorks',
         '',
         'Message:',
         contactForm.message.trim(),
@@ -256,7 +254,7 @@ export default function CEO({ company, onToast, data }) {
           message: fullMessage,
           user_message: contactForm.message.trim(),
           to_name: 'Muhammad Ali',
-          company: 'EcomSkyline & ThinkAIWorks',
+          company: 'ThinkAIWorks',
           reply_to: contactForm.email.trim(),
           sent_at: new Date().toLocaleString(),
         },
@@ -318,7 +316,7 @@ export default function CEO({ company, onToast, data }) {
               <div className="ceo-chat-avatar">MA</div>
               <div>
                 <div style={{fontWeight:600,fontSize:13}}>Muhammad Ali</div>
-                <div style={{fontSize:11,color:'var(--text3)'}}>CEO · EcomSkyline & ThinkAIWorks</div>
+                <div style={{fontSize:11,color:'var(--text3)'}}>CEO · ThinkAIWorks</div>
               </div>
               <span className="tag ta" style={{marginLeft:'auto'}}>CEO Mode</span>
             </div>

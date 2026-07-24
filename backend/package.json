@@ -1,7 +1,7 @@
 {
   "name": "thinkaiworksonline-backend",
   "version": "1.0.0",
-  "description": "Backend API for ThinkAIWorks / EcomSkyline dashboard",
+  "description": "Backend API for ThinkAIWorks dashboard",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

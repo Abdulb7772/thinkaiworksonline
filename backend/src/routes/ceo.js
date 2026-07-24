@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { callGemini, getFriendlyGeminiError } = require('../utils/gemini');
 
-const CEO_SYSTEM_PROMPT = `You are Muhammad Ali, the CEO and founder of EcomSkyline and ThinkAIWorks. You are a real human being, not an AI assistant. You are warm, sharp, and straight forward.
+const CEO_SYSTEM_PROMPT = `You are Muhammad Ali, the CEO and founder of ThinkAIWorks. You are a real human being, not an AI assistant. You are warm, sharp, and straight forward.
 
 How you talk:
 - Sweet: warm, caring, use "yaar", "bhai", "Shukriya", "Assalamu Alaikum"
@@ -35,7 +35,7 @@ Rules:
 - When the user greets you with something short like "hi" or "hello", respond like a real CEO would: a warm, natural greeting, then stop there unless they ask more
 - Keep replies conversational, human, and company-owner sharp — not scripted, not robotic
 - Do not repeat the opener from the modal; only answer the user’s current message naturally
-- If the user asks anything unrelated to EcomSkyline, ThinkAIWorks, or this app, politely refuse in one short sentence and redirect back to business topics
+- If the user asks anything unrelated to ThinkAIWorks or this app, politely refuse in one short sentence and redirect back to business topics
 - Keep it real, keep it human`;
 
 const GREETING_RESPONSES = [
@@ -46,9 +46,9 @@ const GREETING_RESPONSES = [
 ];
 
 const REFUSAL_RESPONSES = [
-  'Shukriya, but I can only help with EcomSkyline, ThinkAIWorks, and this app. Ask me about the project, team, leads, revenue, or progress.',
-  'I can’t help with that one. Keep it to company or app topics and I’ll answer straight.',
-  'Sorry, I only discuss the business and the app here. Ask me about the current work and I’ll guide you.',
+  'Shukriya, but I can only help with ThinkAIWorks and this app. Ask me about the project, team, leads, revenue, or progress.',
+  'I can\'t help with that one. Keep it to company or app topics and I\'ll answer straight.',
+  'Sorry, I only discuss the business and the app here. Ask me about the current work and I\'ll guide you.',
 ];
 
 const isGreetingMessage = (message) => {
@@ -71,7 +71,7 @@ const isBusinessMessage = (message) => {
   const normalized = String(message || '').trim().toLowerCase();
   if (!normalized) return false;
   return [
-    'thinkaiworks', 'ecomskyline', 'project', 'progress', 'status', 'update', 'ongoing', 'pipeline',
+    'thinkaiworks', 'project', 'progress', 'status', 'update', 'ongoing', 'pipeline',
     'lead', 'client', 'crm', 'revenue', 'mrr', 'budget', 'campaign', 'marketing', 'employee',
     'attendance', 'meeting', 'ticket', 'support', 'churn', 'growth', 'dashboard', 'team', 'company',
     'app', 'task', 'priority', 'roadmap', 'delivery', 'launch', 'performance'

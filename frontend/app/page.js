@@ -50,7 +50,7 @@ export default function SplashScreen() {
         </div>
 
         <div className="splash-title">Command Hub</div>
-        <div className="splash-subtitle">ThinkAIWorks &middot; EcomSkyline</div>
+        <div className="splash-subtitle">ThinkAIWorks</div>
 
         <div className="splash-loader">
           <div className="splash-loader-track">

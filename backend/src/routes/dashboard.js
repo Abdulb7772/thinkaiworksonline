@@ -17,8 +17,8 @@ function normalizeAttendanceLog(log) {
 }
 
 const tickerItems = [
-  'EcomSkyline revenue growing steadily',
-  'ThinkAIWorks AI chatbot project active',
+  'ThinkAIWorks revenue growing steadily',
+  'AI chatbot project active',
   'New leads in pipeline',
 ];
 
@@ -47,19 +47,19 @@ const buildAppData = async () => {
     overviewMetrics: {
       es: [
         { label: 'Monthly Revenue', val: `$${esRevenue.toLocaleString()}`, delta: '↑ 22% MoM', cls: 'up', co: 'es' },
-        { label: 'Active Clients', val: String(clients.filter(c => c.company === 'EcomSkyline' || !c.company).length || 11), delta: '↑ 2 new', cls: 'up', co: '' },
-        { label: 'Upwork Leads', val: String(leads.filter(l => l.company === 'EcomSkyline' || !l.company).length || 28), delta: 'This month', cls: 'neutral', co: '' },
+        { label: 'Active Clients', val: String(clients.length || 11), delta: '↑ 2 new', cls: 'up', co: '' },
+        { label: 'Upwork Leads', val: String(leads.length || 28), delta: 'This month', cls: 'neutral', co: '' },
         { label: 'Avg Project Value', val: '$1,650', delta: '↑ $200', cls: 'up', co: '' },
       ],
       tai: [
         { label: 'Monthly Revenue', val: `$${taiRevenue.toLocaleString()}`, delta: '↑ 31% MoM', cls: 'up', co: 'tai' },
-        { label: 'Active Clients', val: String(clients.filter(c => c.company === 'ThinkAIWorks').length || 0), delta: 'Current total', cls: 'up', co: '' },
-        { label: 'AI Projects Live', val: String(clients.filter(c => c.company === 'ThinkAIWorks' && c.stage === 'Active').length || 0), delta: 'Active stage', cls: 'neutral', co: '' },
-        { label: 'Avg Project Value', val: (() => { const taiClients = clients.filter(c => c.company === 'ThinkAIWorks'); const vals = taiClients.map(c => parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0).filter(v => v > 0); return vals.length ? '$' + Math.round(vals.reduce((a, b) => a + b, 0) / vals.length).toLocaleString() : '$0'; })(), delta: 'Per project', cls: 'up', co: '' },
+        { label: 'Active Clients', val: String(clients.length || 0), delta: 'Current total', cls: 'up', co: '' },
+        { label: 'AI Projects Live', val: String(clients.filter(c => c.stage === 'Active').length || 0), delta: 'Active stage', cls: 'neutral', co: '' },
+        { label: 'Avg Project Value', val: (() => { const vals = clients.map(c => parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0).filter(v => v > 0); return vals.length ? '$' + Math.round(vals.reduce((a, b) => a + b, 0) / vals.length).toLocaleString() : '$0'; })(), delta: 'Per project', cls: 'up', co: '' },
       ],
     },
     clients: clients.map(c => ({
-      name: c.name, email: c.email || '', company: c.company || 'EcomSkyline', service: c.service || '',
+      name: c.name, email: c.email || '', company: c.company || 'ThinkAIWorks', service: c.service || '',
       value: c.value || '', stage: c.stage || 'Discovery', assignedTo: c.assignedTo || '', lastContact: c.lastContact || '',
     })),
     overviewLeads: leads.slice(0, 5).map(l => ({
@@ -172,7 +172,7 @@ router.post('/support/reply', async (req, res) => {
 router.post('/ceo/reply', async (req, res) => {
   const prompts = {
     'What is our biggest growth opportunity right now?': 'ThinkAIWorks has the highest upside. Productizing the AI chatbot into a SaaS model could add $8–12k MRR within 90 days.',
-    'How are both companies performing vs last month?': `Combined MRR is growing. EcomSkyline drives ~64% of revenue. ThinkAIWorks is growing faster from a smaller base.`,
+    'How are both companies performing vs last month?': `Combined MRR is growing. ThinkAIWorks is driving strong performance.`,
     'Which employees need my attention?': 'Check the Employee Performance page for at-risk team members and top performers.',
     'What should we prioritize this week?': 'Close high-probability leads, resolve urgent tickets, and move forward on key growth initiatives.',
     'How can we reduce churn?': 'Improve onboarding, weekly progress updates, and faster response times on support tickets.',

@@ -43,7 +43,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
     try {
       await api('/clients', {
         method: 'POST',
-        body: JSON.stringify({ name: lead.name, service: lead.service, stage: 'Discovery' }),
+        body: JSON.stringify({ name: lead.name, service: lead.service, company: 'ThinkAIWorks', stage: 'Discovery' }),
       });
       onRemoveLead?.(lead.name);
       onToast(lead.name + ' added to CRM pipeline ✓', 'success');

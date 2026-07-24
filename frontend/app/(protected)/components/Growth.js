@@ -17,7 +17,7 @@ const taiSuggestions = [
 ];
 
 const roadmap = [
-  {q:'Q3 Month 1',items:['Launch EcomSkyline tiered packages','Build ThinkAIWorks chatbot SaaS MVP','Hire 1 additional AI dev'],co:'both'},
+  {q:'Q3 Month 1',items:['Launch tiered service packages','Build ThinkAIWorks chatbot SaaS MVP','Hire 1 additional AI dev'],co:'both'},
   {q:'Q3 Month 2',items:['Expand FBA to UK market','Launch AI automation template store','Run first LinkedIn ad campaign'],co:'both'},
   {q:'Q3 Month 3',items:['Onboard first 5 SaaS chatbot subscribers','Target logistics niche with TAI','Review and adjust marketing budget'],co:'both'},
 ];
@@ -58,7 +58,7 @@ export default function Growth({ company, onToast, data }) {
       <div className="grid2">
         <div className="card">
           <div className="card-title">
-            EcomSkyline Growth Suggestions
+            ThinkAIWorks Growth Suggestions
             <span className="tag tes">AI-generated</span>
           </div>
           {esSuggestions.map((s,i) => (
