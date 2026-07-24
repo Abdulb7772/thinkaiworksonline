@@ -56,14 +56,20 @@ export default function AddEmployee({ editData, onClose, onSaved, onToast }) {
         </div>
 
         <form className="intake-form" onSubmit={handleSubmit}>
-          <div className="form-row">
-            <div className="form-field" style={{flex:2}}>
-              <label>Name *</label>
-              <input type="text" placeholder="e.g. John Doe" value={form.name} onChange={set('name')} required />
+          <div className="form-field">
+            <label>Name *</label>
+            <input type="text" placeholder="e.g. John Doe" value={form.name} onChange={set('name')} required />
+          </div>
+
+          <div style={{background:'var(--bg3)',borderRadius:'var(--r)',padding:14,marginTop:4}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:.8,color:'var(--text3)',marginBottom:8}}>Emails</div>
+            <div className="form-field" style={{marginBottom:10}}>
+              <label>Primary Email</label>
+              <input type="email" placeholder="john@thinkaiworks.com" value={form.email} onChange={set('email')} />
             </div>
             <div className="form-field">
-              <label>Email</label>
-              <input type="email" placeholder="john@thinkaiworks.com" value={form.email} onChange={set('email')} />
+              <label>Secondary Email</label>
+              <input type="email" placeholder="login@example.com" value={form.loginEmail} onChange={set('loginEmail')} />
             </div>
           </div>
 
@@ -91,12 +97,12 @@ export default function AddEmployee({ editData, onClose, onSaved, onToast }) {
 
           <div className="form-row">
             <div className="form-field">
-              <label>Login Email</label>
-              <input type="email" placeholder="login@example.com" value={form.loginEmail} onChange={set('loginEmail')} />
-            </div>
-            <div className="form-field">
               <label>{isEdit ? 'New Password (leave blank to keep)' : 'Password'}</label>
               <input type="password" placeholder="••••••••" value={form.password} onChange={set('password')} />
+            </div>
+            <div className="form-field">
+              <label>Role</label>
+              <input type="text" placeholder="e.g. Developer" value={form.role} onChange={set('role')} />
             </div>
           </div>
 

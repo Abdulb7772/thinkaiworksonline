@@ -182,6 +182,7 @@ router.put('/:id', async (req, res, next) => {
 
     const update = { score, status, trend, attendance };
     if (req.body.email !== undefined) update.email = req.body.email;
+    if (req.body.loginEmail !== undefined) update.loginEmail = req.body.loginEmail;
     if (req.body.name !== undefined) update.name = req.body.name;
     if (req.body.role !== undefined) update.role = req.body.role;
     if (req.body.subRole !== undefined) update.subRole = req.body.subRole;
