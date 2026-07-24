@@ -6,7 +6,8 @@ const getResend = () => {
   if (!resendInstance) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      throw new Error('RESEND_API_KEY is not set — add it to your Render environment variables (or .env for local dev)');
+      console.error('RESEND_API_KEY is not set — add it to your Render environment variables (or .env for local dev). Get a key at https://resend.com');
+      return null;
     }
     resendInstance = new Resend(apiKey);
   }
@@ -15,6 +16,10 @@ const getResend = () => {
 
 const sendEmail = async ({ to, subject, html, text }) => {
   const resend = getResend();
+  if (!resend) {
+    console.log(`📧 Would send email to ${Array.isArray(to) ? to.join(', ') : to} — subject: "${subject}" (no RESEND_API_KEY configured)`);
+    return { id: 'mock' };
+  }
   const from = process.env.EMAIL_FROM || 'noreply@thinkaiworks.online';
   const recipients = Array.isArray(to) ? to : [to];
   const recipientStr = recipients.join(', ');
