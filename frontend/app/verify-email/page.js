@@ -1,13 +1,11 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/config';
 import Link from 'next/link';
 
-export default function VerifyEmailPage() {
+function VerifyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
@@ -264,5 +262,21 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <div className="auth-container">
+          <div className="auth-card" style={{ textAlign: 'center' }}>
+            <p style={{ color: 'var(--text2)' }}>Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <VerifyForm />
+    </Suspense>
   );
 }
