@@ -1,24 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import '../styles/globals.css';
 import SessionProvider from '@/lib/SessionProvider';
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const [booted, setBooted] = useState(false);
-
-  useEffect(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-
-    import('next-auth/react')
-      .then(({ signOut }) => signOut({ redirect: false }))
-      .catch(() => {});
-
-    setBooted(true);
-  }, []);
 
   return (
     <html lang="en">
@@ -32,7 +19,7 @@ export default function RootLayout({ children }) {
       </head>
       <body style={{ margin: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <div style={{ flex: 1 }}>
-          {pathname === '/' ? children : booted ? <SessionProvider>{children}</SessionProvider> : null}
+          {pathname === '/' ? children : <SessionProvider>{children}</SessionProvider>}
         </div>
         <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', background: '#0b0d17', borderTop: '1px solid #1e2340', fontFamily: 'Cabinet Grotesk, sans-serif' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
