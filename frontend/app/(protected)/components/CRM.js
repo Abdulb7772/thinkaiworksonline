@@ -192,7 +192,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
           <div className="table-wrap"><table>
             <thead>
               <tr>
-                <th>Client</th><th>Service</th><th>Value</th><th>Stage</th><th>Status</th><th>Assigned To</th><th>Last Contact</th><th>Action</th>
+                <th>Client</th><th>Service</th><th>Value</th><th>Stage</th><th>Company</th><th>Assigned To</th><th>Last Contact</th><th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -210,15 +210,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
                       {clientStages.map(s => <option key={s}>{s}</option>)}
                     </select>
                   </td>
-                  <td>
-                    <select
-                      value={c.status || 'Active'}
-                      onChange={(e) => updateStatus(c._id, e.target.value)}
-                      style={{fontSize:11,padding:'3px 6px',borderRadius:'var(--r)',border:'1px solid var(--border)',background:'var(--bg2)',color:'var(--text)',cursor:'pointer'}}
-                    >
-                      {clientStatuses.map(s => <option key={s}>{s}</option>)}
-                    </select>
-                  </td>
+                  <td style={{color:'var(--tai)',fontWeight:600}}>ThinkAIWorks</td>
                   <td style={{color:'var(--text2)'}}>{c.assignedTo || '—'}</td>
                   <td style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--text3)'}}>{c.lastContact || '—'}</td>
                   <td style={{display:'flex',gap:4}}>
