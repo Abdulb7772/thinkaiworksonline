@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import CreateCampaign from './CreateCampaign';
 import { SkeletonCard } from './Skeleton';
+import Paginated from './Paginated';
 
 export default function Outreach({ company, onToast, data, onRefresh }) {
   const [showLaunch, setShowLaunch] = useState(false);
@@ -41,7 +42,8 @@ export default function Outreach({ company, onToast, data, onRefresh }) {
             <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No campaigns yet</div>
           ) : (
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {campaigns.map((c,i) => (
+              <Paginated items={campaigns}>
+                {(pagedCampaigns) => pagedCampaigns.map((c,i) => (
                 <div key={i} style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:14}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
                     <div>
@@ -57,6 +59,7 @@ export default function Outreach({ company, onToast, data, onRefresh }) {
                   </div>
                 </div>
               ))}
+              </Paginated>
             </div>
           )}
         </div>

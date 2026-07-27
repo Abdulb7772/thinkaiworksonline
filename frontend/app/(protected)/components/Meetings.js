@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { api } from '@/lib/config';
 import CreateMeeting from './CreateMeeting';
 import { SkeletonCard } from './Skeleton';
+import Paginated from './Paginated';
 
 const weekdayHeaders = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 const days = Array.from({length:31},(_,i)=>i+1);
@@ -107,7 +108,8 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
             <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No meetings scheduled</div>
           ) : (
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
-              {meetings.map((m, i) => {
+              <Paginated items={meetings}>
+                {(pagedMeetings) => pagedMeetings.map((m, i) => {
                 const past = isMeetingPast(m.datetime);
                 const isDeleting = deletingId === m._id;
                 return (
@@ -211,6 +213,7 @@ export default function Meetings({ company, onToast, data, onRefresh }) {
                   </div>
                 );
               })}
+              </Paginated>
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/config';
+import Paginated from './Paginated';
 
 const priorities = ['High', 'Medium', 'Low'];
 
@@ -152,7 +153,8 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
               <span className="nbadge red">{leads.length}</span>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {leads.map((l,i) => (
+              <Paginated items={leads}>
+                {(pagedLeads) => pagedLeads.map((l,i) => (
                 <div key={i} style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:12}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                     <div>
@@ -167,6 +169,7 @@ export default function Upwork({ company, onToast, leads, onAddLead, onRemoveLea
                   </div>
                 </div>
               ))}
+              </Paginated>
             </div>
           </div>
 

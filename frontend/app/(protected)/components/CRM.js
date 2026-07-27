@@ -5,6 +5,7 @@ import { api } from '@/lib/config';
 import AddClient from './AddClient';
 import ViewProfile from './ViewProfile';
 import { SkeletonTable } from './Skeleton';
+import Paginated from './Paginated';
 
 const projectStatuses = ['pending','project_started','employee_assigned','in_progress','working','testing','finishing_up','completed'];
 const statusLabels = {pending:'Pending',project_started:'Project Started',employee_assigned:'Employee Assigned',in_progress:'In Progress',working:'Working',testing:'Testing',finishing_up:'Finishing Up',completed:'Completed'};
@@ -170,7 +171,8 @@ export default function CRM({ company, onToast, onAddLead, data }) {
             </tr>
           </thead>
           <tbody>
-            {leads.map((l,i) => (
+            <Paginated items={leads}>
+              {(pagedLeads) => pagedLeads.map((l,i) => (
               <tr key={i}>
                 <td><span style={{fontWeight:600}}>{l.name}</span></td>
                 <td style={{color:'var(--text2)'}}>{l.service}</td>
@@ -180,6 +182,7 @@ export default function CRM({ company, onToast, onAddLead, data }) {
                 <td><button className="btn btn-ghost btn-sm" onClick={() => setSelectedLead(l)}>View</button></td>
               </tr>
             ))}
+            </Paginated>
           </tbody>
         </table></div>
       </div>
@@ -196,7 +199,8 @@ export default function CRM({ company, onToast, onAddLead, data }) {
               </tr>
             </thead>
             <tbody>
-              {clients.map((c,i) => (
+              <Paginated items={clients}>
+                {(pagedClients) => pagedClients.map((c,i) => (
                 <tr key={i}>
                   <td><span style={{fontWeight:600}}>{c.name}</span></td>
                   <td style={{color:'var(--text2)'}}>{c.service}</td>
@@ -219,9 +223,10 @@ export default function CRM({ company, onToast, onAddLead, data }) {
                     <button className="btn btn-ghost btn-sm" style={{color:'var(--red)'}} onClick={() => deleteClient(c._id, c.name)}>Remove</button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table></div>
+            ))}
+            </Paginated>
+          </tbody>
+        </table></div>
         )}
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
+import Paginated from './Paginated';
 
 function uploadFile(file) {
   return new Promise((resolve, reject) => {
@@ -283,7 +284,8 @@ export default function Projects({ onToast }) {
         </div>
       )}
 
-      {projects.map(project => (
+      <Paginated items={projects}>
+        {(pagedProjects) => pagedProjects.map(project => (
         <div key={project._id} className="card">
           <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
@@ -381,6 +383,7 @@ export default function Projects({ onToast }) {
 
         </div>
       ))}
+      </Paginated>
 
       {/* Admin edit modal */}
       {editProject && (

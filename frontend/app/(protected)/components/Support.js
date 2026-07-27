@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { api } from '@/lib/config';
 import CreateTicket from './CreateTicket';
 import { SkeletonCard } from './Skeleton';
+import Paginated from './Paginated';
 
 export default function Support({ company, onToast, data, onRefresh }) {
   const [showTicket, setShowTicket] = useState(false);
@@ -73,7 +74,8 @@ export default function Support({ company, onToast, data, onRefresh }) {
             <div style={{textAlign:'center',padding:'20px 0',color:'var(--text3)',fontSize:13}}>No tickets</div>
           ) : (
             <div>
-              {tickets.map((t,i) => (
+              <Paginated items={tickets}>
+                {(pagedTickets) => pagedTickets.map((t,i) => (
                 <div key={i} className="alert-row">
                   <div className="alert-icon" style={{background:t.priority==='High'?'rgba(255,79,109,.1)':t.priority==='Medium'?'rgba(255,170,44,.1)':'rgba(74,158,255,.1)'}}>{priorityIcon(t.priority)}</div>
                   <div style={{flex:1}}>
@@ -90,6 +92,7 @@ export default function Support({ company, onToast, data, onRefresh }) {
                   </div>
                 </div>
               ))}
+              </Paginated>
             </div>
           )}
         </div>

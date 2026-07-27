@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/config';
 import { SkeletonTable } from './Skeleton';
+import Paginated from './Paginated';
 
 export default function MeetingHistory({ company, onToast }) {
   const [meetings, setMeetings] = useState([]);
@@ -58,7 +59,8 @@ export default function MeetingHistory({ company, onToast }) {
                 </tr>
               </thead>
               <tbody>
-                {meetings.map((m, i) => {
+                <Paginated items={meetings}>
+                  {(pagedMeetings) => pagedMeetings.map((m, i) => {
                   const isCancelled = !!m.cancelledAt;
                   return (
                     <tr key={m._id || i} style={{ borderBottom: '1px solid var(--border2)' }}>
@@ -80,6 +82,7 @@ export default function MeetingHistory({ company, onToast }) {
                     </tr>
                   );
                 })}
+                </Paginated>
               </tbody>
             </table>
           </div>
