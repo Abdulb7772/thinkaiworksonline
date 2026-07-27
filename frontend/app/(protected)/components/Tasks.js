@@ -60,14 +60,13 @@ export default function Tasks({ onToast }) {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.assignedTo || !form.date) {
+    if (!form.title || !form.assignedTo || !form.date || !form.projectId) {
       onToast?.('Please fill all required fields', 'error');
       return;
     }
     setSaving(true);
     try {
-      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, files: formFiles };
-      if (form.projectId) body.project = form.projectId;
+      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, files: formFiles, project: form.projectId };
       await api('/tasks/', { method: 'POST', body: JSON.stringify(body) });
       onToast?.('Task assigned', 'success');
       setForm({ title: '', description: '', assignedTo: '', date: '', projectId: '' });
@@ -162,9 +161,9 @@ export default function Tasks({ onToast }) {
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} min={today} required />
             </div>
             <div className="form-field">
-              <label>Project</label>
-              <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })}>
-                <option value="">No project</option>
+              <label>Project *</label>
+              <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })} required>
+                <option value="">Select project</option>
                 {projects.map(p => (
                   <option key={p._id} value={p._id}>{p.title}</option>
                 ))}
@@ -203,18 +202,17 @@ export default function Tasks({ onToast }) {
             {(() => {
               const grouped = {};
               for (const t of tasks) {
-                const key = t.project?._id || 'unassigned';
+                const key = t.project?._id || 'unknown';
                 if (!grouped[key]) grouped[key] = { project: t.project, tasks: [] };
                 grouped[key].tasks.push(t);
               }
-              const sorted = Object.entries(grouped).sort(([a], [b]) => a === 'unassigned' ? 1 : b === 'unassigned' ? -1 : 0);
-              return sorted.map(([key, group]) => (
+              return Object.entries(grouped).map(([key, group]) => (
                 <div key={key} style={{ marginBottom: 24 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text2)', marginBottom: 10, padding: '0 4px' }}>
                     {group.project ? (
                       <><span style={{color:'var(--accent)'}}>◆</span> {group.project.title}</>
                     ) : (
-                      <span style={{color:'var(--text3)'}}>Unassigned</span>
+                      <span style={{color:'var(--text3)'}}>Other</span>
                     )}
                     <span style={{ fontWeight: 400, fontSize: 12, color: 'var(--text3)', marginLeft: 8 }}>{group.tasks.length} task{group.tasks.length > 1 ? 's' : ''}</span>
                   </div>

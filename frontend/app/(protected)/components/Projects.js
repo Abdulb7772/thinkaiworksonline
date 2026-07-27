@@ -38,6 +38,7 @@ const STATUS_LABELS = {
 
 export default function Projects({ onToast }) {
   const [projects, setProjects] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +47,7 @@ export default function Projects({ onToast }) {
   const [editProject, setEditProject] = useState(null);
   const [editStatus, setEditStatus] = useState('');
   const [detailProject, setDetailProject] = useState(null);
+  const [expandedTasks, setExpandedTasks] = useState({});
   const [form, setForm] = useState({ title: '', description: '', client: '', employee: '', payment: '', startDate: '', completionDate: '' });
   const [projectFiles, setProjectFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
@@ -69,14 +71,16 @@ export default function Projects({ onToast }) {
 
   const fetch = async () => {
     try {
-      const [p, c, e] = await Promise.all([
+      const [p, c, e, t] = await Promise.all([
         api('/projects/'),
         api('/projects/customers/list'),
         api('/tasks/employees'),
+        api('/tasks/'),
       ]);
       setProjects(p);
       setCustomers(c);
       setEmployees(e);
+      setAllTasks(t);
     } catch {} finally {
       setLoading(false);
     }
@@ -353,6 +357,33 @@ export default function Projects({ onToast }) {
             </div>
           )}
 
+          {/* Admin tasks toggle */}
+          {user.role === 'admin' && (
+            <div style={{ marginTop: 12 }}>
+              <button className="btn btn-sm btn-ghost" onClick={() => setExpandedTasks(prev => ({ ...prev, [project._id]: !prev[project._id] }))} style={{ fontSize: 12, color: 'var(--text2)' }}>
+                {expandedTasks[project._id] ? '▲ Hide Tasks' : '▼ Show Tasks'} ({allTasks.filter(t => t.project?._id === project._id || t.project === project._id).length})
+              </button>
+              {expandedTasks[project._id] && (
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {allTasks.filter(t => t.project?._id === project._id || t.project === project._id).map(task => (
+                    <div key={task._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--bg2)', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 500 }}>{task.title}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{task.assignedTo?.name} &middot; {task.date}</div>
+                      </div>
+                      <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : task.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`} style={{ fontSize: 10 }}>
+                        {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                      </span>
+                    </div>
+                  ))}
+                  {allTasks.filter(t => t.project?._id === project._id || t.project === project._id).length === 0 && (
+                    <div style={{ fontSize: 12, color: 'var(--text3)', padding: '8px 0' }}>No tasks assigned to this project yet</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Assigned customer / employee detail */}
           {(user.role === 'customer' || user.role === 'employee') && isAssigned(project) && detailProject?._id === project._id && (
             <div style={{ marginTop: 16, padding: 14, background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)' }}>
@@ -378,6 +409,29 @@ export default function Projects({ onToast }) {
                   );
                 })}
               </div>
+
+              {/* Employee tasks for this project */}
+              {user.role === 'employee' && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text1)' }}>Tasks</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {allTasks.filter(t => (t.project?._id === project._id || t.project === project._id)).map(task => (
+                      <div key={task._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--bg3)', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 500 }}>{task.title}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text3)' }}>{task.date}</div>
+                        </div>
+                        <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : task.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`} style={{ fontSize: 10 }}>
+                          {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                        </span>
+                      </div>
+                    ))}
+                    {allTasks.filter(t => (t.project?._id === project._id || t.project === project._id)).length === 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--text3)' }}>No tasks assigned</div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
