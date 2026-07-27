@@ -8,6 +8,7 @@ import Sidebar from '../(protected)/components/Sidebar';
 import Ticker from '../(protected)/components/Ticker';
 import Toast from '../(protected)/components/Toast';
 import Overview from '../(protected)/components/Overview';
+import DashboardHome from '../(protected)/components/DashboardHome';
 import Upwork from '../(protected)/components/Upwork';
 import CRM from '../(protected)/components/CRM';
 import Meetings from '../(protected)/components/Meetings';
@@ -74,7 +75,7 @@ export default function Dashboard() {
   }, []);
 
   const sections = {
-    overview:         { comp: Overview,               props: { data, leads, onAddLead: addLead } },
+    overview:         { comp: DashboardHome,         props: { data, leads, onAddLead: addLead, onToast: showToast } },
     upwork:           { comp: Upwork,                 props: { leads, onAddLead: addLead, onRemoveLead: removeLead } },
     crm:              { comp: CRM,                    props: { data, onAddLead: addLead } },
     meetings:         { comp: Meetings,               props: { data, onRefresh: fetchData } },

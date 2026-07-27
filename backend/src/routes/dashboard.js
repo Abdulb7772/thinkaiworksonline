@@ -77,6 +77,10 @@ const buildAppData = async () => {
     performers: employees.slice(0, 3).map(e => ({
       name: e.name, role: e.role || 'Team', score: e.score || 0, co: e.company === 'ThinkAIWorks' ? 'tai' : 'es',
     })),
+    projects: projects.map(p => ({
+      _id: p._id, title: p.title, status: p.status, payment: p.payment,
+      employees: p.employees, clients: p.clients, startDate: p.startDate, completionDate: p.completionDate,
+    })),
     pendingLeads: leads.slice(0, 5).map(l => ({
       name: l.name, budget: l.budgetRange || 'N/A', service: l.service || 'N/A',
       score: l.score || 0, age: l.createdAt ? `${Math.round((Date.now() - new Date(l.createdAt)) / 3600000)}h ago` : 'new',
