@@ -7,6 +7,7 @@ const apiRoutes = require('./routes');
 const { startMeetingReminderJob } = require('./jobs/meetingReminder');
 const { startMeetingFollowUpJob } = require('./jobs/meetingFollowUp');
 const { startTaskReminderJob } = require('./jobs/taskReminder');
+const { startTaskReminder2hJob } = require('./jobs/taskReminder2h');
 const { startDailyProgressJob } = require('./jobs/dailyProgress');
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -60,6 +61,7 @@ const startServer = async () => {
   startMeetingReminderJob();
   startMeetingFollowUpJob();
   startTaskReminderJob();
+  startTaskReminder2hJob();
   startDailyProgressJob();
   const tryListen = (p) => {
     server = app.listen(p);

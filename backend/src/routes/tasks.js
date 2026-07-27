@@ -10,11 +10,11 @@ const router = express.Router();
 router.post('/', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can assign tasks' });
-    const { title, description, assignedTo, date, files, project } = req.body;
+    const { title, description, assignedTo, date, dueTime, files, project } = req.body;
     if (!title || !assignedTo || !date || !project) return res.status(400).json({ error: 'title, assignedTo, date, and project required' });
     const employee = await User.findById(assignedTo);
     if (!employee || employee.role !== 'employee') return res.status(400).json({ error: 'Invalid employee' });
-    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, files: files || [], project });
+    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, dueTime, files: files || [], project });
 
     const to = employee.notificationEmail || employee.email;
     sendEmail({
@@ -28,12 +28,12 @@ router.post('/', protect, async (req, res, next) => {
           <div style="background:#fff;padding:18px;border-radius:12px;border:1px solid #e2e8f0;margin:20px 0;">
             <p style="margin:0 0 8px;"><strong>Task:</strong> ${title}</p>
             ${description ? `<p style="margin:0 0 8px;"><strong>Description:</strong> ${description}</p>` : ''}
-            <p style="margin:0;"><strong>Due:</strong> ${date}</p>
+            <p style="margin:0;"><strong>Due:</strong> ${date}${dueTime ? ' at ' + dueTime : ''}</p>
           </div>
           <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">View Tasks</a>
         </div>
       `,
-      text: `New task assigned: ${title}. Due: ${date}. ${description ? `Description: ${description}` : ''}`,
+      text: `New task assigned: ${title}. Due: ${date}${dueTime ? ' at ' + dueTime : ''}. ${description ? `Description: ${description}` : ''}`,
     }).catch(err => console.error('Task assignment email failed:', err.message));
 
     res.status(201).json(task);
@@ -58,7 +58,7 @@ router.get('/', protect, async (req, res, next) => {
 
 router.patch('/:id', protect, async (req, res, next) => {
   try {
-    const { status, files, comment } = req.body;
+    const { status, files, comment, dueTime } = req.body;
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
     if (req.user.role !== 'admin' && task.assignedTo.toString() !== req.user._id.toString()) {
@@ -67,6 +67,11 @@ router.patch('/:id', protect, async (req, res, next) => {
     if (status) {
       if (!['pending', 'in_progress', 'in_testing', 'done'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
       task.status = status;
+    }
+    if (dueTime !== undefined) {
+      task.dueTime = dueTime;
+      task.reminder2hSent = false;
+      task.reminderEodSent = false;
     }
     if (files !== undefined) {
       if (task.files) {

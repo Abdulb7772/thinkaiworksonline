@@ -185,6 +185,10 @@ export default function CEO({ company, onToast, data }) {
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [contactLoading, setContactLoading] = useState(false);
   const modalEnd = useRef(null);
+  const chatEnd = useRef(null);
+
+  useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+  useEffect(() => { modalEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [modalMsgs]);
 
   const combinedMrr = data?.overviewMetrics?.es?.[0]?.val || '$—';
   const activeClients = data?.overviewMetrics?.es?.[1]?.val || '—';
@@ -327,6 +331,7 @@ export default function CEO({ company, onToast, data }) {
                   <div className="msg-bubble">{m.text}</div>
                 </div>
               ))}
+              <div ref={chatEnd} />
             </div>
             <div className="chat-input-area">
               <input

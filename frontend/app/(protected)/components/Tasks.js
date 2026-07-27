@@ -27,7 +27,7 @@ export default function Tasks({ onToast }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('admin');
-  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '', projectId: '' });
+  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '', dueTime: '', projectId: '' });
   const [formFiles, setFormFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
@@ -66,10 +66,10 @@ export default function Tasks({ onToast }) {
     }
     setSaving(true);
     try {
-      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, files: formFiles, project: form.projectId };
+      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, dueTime: form.dueTime || undefined, files: formFiles, project: form.projectId };
       await api('/tasks/', { method: 'POST', body: JSON.stringify(body) });
       onToast?.('Task assigned', 'success');
-      setForm({ title: '', description: '', assignedTo: '', date: '', projectId: '' });
+      setForm({ title: '', description: '', assignedTo: '', date: '', dueTime: '', projectId: '' });
       setFormFiles([]);
       fetch();
     } catch (err) {
@@ -161,6 +161,10 @@ export default function Tasks({ onToast }) {
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} min={today} required />
             </div>
             <div className="form-field">
+              <label>Due Time</label>
+              <input type="time" value={form.dueTime} onChange={e => setForm({ ...form, dueTime: e.target.value })} />
+            </div>
+            <div className="form-field">
               <label>Project *</label>
               <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })} required>
                 <option value="">Select project</option>
@@ -222,7 +226,7 @@ export default function Tasks({ onToast }) {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
                           <div style={{ fontSize: 13, color: 'var(--text3)' }}>
-                            {task.assignedTo?.name} &middot; {task.date}
+                            {task.assignedTo?.name} &middot; {task.date}{task.dueTime ? ' ' + task.dueTime : ''}
                             {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
                           </div>
                         </div>
@@ -259,7 +263,7 @@ export default function Tasks({ onToast }) {
             <div style={{ padding: '4px 0' }}>
               <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{selectedTask.title}</div>
               <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
-                Assigned to <strong>{selectedTask.assignedTo?.name}</strong> &middot; Due {selectedTask.date}
+                Assigned to <strong>{selectedTask.assignedTo?.name}</strong> &middot; Due {selectedTask.date}{selectedTask.dueTime ? ' ' + selectedTask.dueTime : ''}
               </div>
 
               {selectedTask.description && (
