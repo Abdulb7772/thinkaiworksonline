@@ -16,6 +16,7 @@ const ROLE_NAV = {
         label: 'Core',
         items: [
           { id: 'overview',  icon: 'M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14h7v7H3z', label: 'Command Center' },
+          { id: 'dashboard', icon: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8', label: 'Dashboard' },
           { id: 'upwork',    icon: 'M12 4v16m8-8H4', label: 'Upwork Intake', badge: { text: '3', cls: 'red' } },
           { id: 'crm',       icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0', label: 'CRM Pipeline', badge: { text: '12', cls: 'blue' } },
           { id: 'meetings',  icon: 'M3 4h18v18H3zm13-2v4M8 2v4M3 10h18', label: 'Meetings', badge: { text: '2', cls: 'amber' } },
@@ -86,6 +87,7 @@ const ROLE_NAV = {
       {
         label: 'Intelligence',
         items: [
+          { id: 'dashboard', icon: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8', label: 'Dashboard' },
           { id: 'employees', icon: 'M12 8a4 4 0 100-8 4 4 0 000 8zm-8 12c0-4 3.58-7 8-7s8 3 8 7', label: 'Employee Performance' },
           { id: 'attendance', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', label: 'Attendance' },
           { id: 'outreach',  icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', label: 'AI Outreach', badge: { text: 'Active', cls: 'green' } },

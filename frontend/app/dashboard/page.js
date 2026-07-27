@@ -75,7 +75,8 @@ export default function Dashboard() {
   }, []);
 
   const sections = {
-    overview:         { comp: DashboardHome,         props: { data, leads, onAddLead: addLead, onToast: showToast } },
+    overview:         { comp: Overview,               props: { data, leads, onAddLead: addLead } },
+    dashboard:        { comp: DashboardHome,         props: { data, onToast: showToast } },
     upwork:           { comp: Upwork,                 props: { leads, onAddLead: addLead, onRemoveLead: removeLead } },
     crm:              { comp: CRM,                    props: { data, onAddLead: addLead } },
     meetings:         { comp: Meetings,               props: { data, onRefresh: fetchData } },
