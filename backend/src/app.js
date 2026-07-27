@@ -20,7 +20,7 @@ if (!mongoUri) {
 }
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use('/api', apiRoutes);
 
 app.get('/', (req, res) => res.json({ message: 'ThinkAIWorks Dashboard API' }));
