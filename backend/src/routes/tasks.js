@@ -10,11 +10,11 @@ const router = express.Router();
 router.post('/', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can assign tasks' });
-    const { title, description, assignedTo, date, files } = req.body;
+    const { title, description, assignedTo, date, files, project } = req.body;
     if (!title || !assignedTo || !date) return res.status(400).json({ error: 'title, assignedTo, and date required' });
     const employee = await User.findById(assignedTo);
     if (!employee || employee.role !== 'employee') return res.status(400).json({ error: 'Invalid employee' });
-    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, files: files || [] });
+    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, files: files || [], project: project || undefined });
 
     const to = employee.notificationEmail || employee.email;
     sendEmail({
@@ -46,9 +46,9 @@ router.get('/', protect, async (req, res, next) => {
   try {
     let tasks;
     if (req.user.role === 'admin') {
-      tasks = await Task.find().populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('comments.user', 'name').sort({ createdAt: -1 });
+      tasks = await Task.find().populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name').sort({ createdAt: -1 });
     } else {
-      tasks = await Task.find({ assignedTo: req.user._id }).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('comments.user', 'name').sort({ createdAt: -1 });
+      tasks = await Task.find({ assignedTo: req.user._id }).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name').sort({ createdAt: -1 });
     }
     res.json(tasks);
   } catch (error) {
@@ -82,7 +82,7 @@ router.patch('/:id', protect, async (req, res, next) => {
       task.comments.push({ text: comment, user: req.user._id });
     }
     await task.save();
-    const populated = await Task.findById(task._id).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('comments.user', 'name');
+    const populated = await Task.findById(task._id).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name');
     res.json(populated);
   } catch (error) {
     next(error);

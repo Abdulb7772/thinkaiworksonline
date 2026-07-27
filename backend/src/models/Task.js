@@ -7,6 +7,7 @@ const TaskSchema = new mongoose.Schema({
   assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, enum: ['pending', 'in_progress', 'in_testing', 'done'], default: 'pending' },
   date: { type: String, required: true },
+  project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
   files: [{ url: String, public_id: String, name: String }],
   comments: [{ text: String, user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, createdAt: { type: Date, default: Date.now } }],
 }, { timestamps: true });

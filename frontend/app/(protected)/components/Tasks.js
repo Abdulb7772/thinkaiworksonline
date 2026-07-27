@@ -24,18 +24,17 @@ function uploadFile(file) {
 export default function Tasks({ onToast }) {
   const [tasks, setTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('admin');
-  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '' });
+  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '', projectId: '' });
   const [formFiles, setFormFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [page, setPage] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const fileRef = useRef(null);
-  const PAGE_SIZE = 5;
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -44,12 +43,14 @@ export default function Tasks({ onToast }) {
 
   const fetch = async () => {
     try {
-      const [t, e] = await Promise.all([
+      const [t, e, p] = await Promise.all([
         api('/tasks/'),
         api('/tasks/employees'),
+        api('/projects/'),
       ]);
       setTasks(t);
       setEmployees(e);
+      setProjects(p);
     } catch {} finally {
       setLoading(false);
     }
@@ -65,11 +66,11 @@ export default function Tasks({ onToast }) {
     }
     setSaving(true);
     try {
-      const body = { ...form, files: formFiles };
-      if (formFiles.length) body.files = formFiles;
+      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, files: formFiles };
+      if (form.projectId) body.project = form.projectId;
       await api('/tasks/', { method: 'POST', body: JSON.stringify(body) });
       onToast?.('Task assigned', 'success');
-      setForm({ title: '', description: '', assignedTo: '', date: '' });
+      setForm({ title: '', description: '', assignedTo: '', date: '', projectId: '' });
       setFormFiles([]);
       fetch();
     } catch (err) {
@@ -161,6 +162,15 @@ export default function Tasks({ onToast }) {
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} min={today} required />
             </div>
             <div className="form-field">
+              <label>Project</label>
+              <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })}>
+                <option value="">No project</option>
+                {projects.map(p => (
+                  <option key={p._id} value={p._id}>{p.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field">
               <label>Files</label>
               <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
               {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
@@ -190,38 +200,50 @@ export default function Tasks({ onToast }) {
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--text3)' }}>No tasks yet</div>
         ) : (
           <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {tasks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map(task => (
-                <div key={task._id} onClick={() => setSelectedTask(task)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)', transition: 'border-color .15s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text3)' }}>
-                      {task.assignedTo?.name} &middot; {task.date}
-                      {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : task.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`}>
-                      {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                    </span>
-                    {role === 'admin' && (
-                      <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={e => { e.stopPropagation(); deleteTask(task._id); }} disabled={deleting === task._id}>
-                        {deleting === task._id ? '...' : '✕'}
-                      </button>
+            {(() => {
+              const grouped = {};
+              for (const t of tasks) {
+                const key = t.project?._id || 'unassigned';
+                if (!grouped[key]) grouped[key] = { project: t.project, tasks: [] };
+                grouped[key].tasks.push(t);
+              }
+              const sorted = Object.entries(grouped).sort(([a], [b]) => a === 'unassigned' ? 1 : b === 'unassigned' ? -1 : 0);
+              return sorted.map(([key, group]) => (
+                <div key={key} style={{ marginBottom: 24 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text2)', marginBottom: 10, padding: '0 4px' }}>
+                    {group.project ? (
+                      <><span style={{color:'var(--accent)'}}>◆</span> {group.project.title}</>
+                    ) : (
+                      <span style={{color:'var(--text3)'}}>Unassigned</span>
                     )}
+                    <span style={{ fontWeight: 400, fontSize: 12, color: 'var(--text3)', marginLeft: 8 }}>{group.tasks.length} task{group.tasks.length > 1 ? 's' : ''}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {group.tasks.map(task => (
+                      <div key={task._id} onClick={() => setSelectedTask(task)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)', transition: 'border-color .15s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
+                          <div style={{ fontSize: 13, color: 'var(--text3)' }}>
+                            {task.assignedTo?.name} &middot; {task.date}
+                            {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : task.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`}>
+                            {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                          </span>
+                          {role === 'admin' && (
+                            <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={e => { e.stopPropagation(); deleteTask(task._id); }} disabled={deleting === task._id}>
+                              {deleting === task._id ? '...' : '✕'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-            {tasks.length > PAGE_SIZE && (
-              <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:8,padding:'12px 0 4px'}}>
-                <button className="btn btn-ghost btn-sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>‹ Prev</button>
-                {Array.from({length:Math.ceil(tasks.length / PAGE_SIZE)},(_,i)=>i).map(p => (
-                  <button key={p} className={`btn btn-sm ${p === page ? 'btn-tai' : 'btn-ghost'}`} onClick={() => setPage(p)} style={{minWidth:30}}>{p + 1}</button>
-                ))}
-                <button className="btn btn-ghost btn-sm" disabled={page >= Math.ceil(tasks.length / PAGE_SIZE) - 1} onClick={() => setPage(p => p + 1)}>Next ›</button>
-              </div>
-            )}
+              ));
+            })()}
           </>
         )}
       </div>
