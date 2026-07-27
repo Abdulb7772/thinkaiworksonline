@@ -184,9 +184,11 @@ export default function CEO({ company, onToast, data }) {
   const [modalLoading, setModalLoading] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [contactLoading, setContactLoading] = useState(false);
-  const modalEnd = useRef(null);
+  const chatMsgRef = useRef(null);
+  const modalMsgRef = useRef(null);
 
-  useEffect(() => { modalEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [modalMsgs]);
+  useEffect(() => { if (chatMsgRef.current) chatMsgRef.current.scrollTop = chatMsgRef.current.scrollHeight; }, [msgs]);
+  useEffect(() => { if (modalMsgRef.current) modalMsgRef.current.scrollTop = modalMsgRef.current.scrollHeight; }, [modalMsgs]);
 
   const combinedMrr = data?.overviewMetrics?.es?.[0]?.val || '$—';
   const activeClients = data?.overviewMetrics?.es?.[1]?.val || '—';
@@ -322,7 +324,7 @@ export default function CEO({ company, onToast, data }) {
               </div>
               <span className="tag ta" style={{marginLeft:'auto'}}>CEO Mode</span>
             </div>
-            <div className="chat-messages" style={{paddingBottom:8}}>
+            <div className="chat-messages" ref={chatMsgRef} style={{paddingBottom:8}}>
               {msgs.map((m,i) => (
                 <div key={i} className={`chat-msg ${m.isAI ? 'ai' : 'user'}`}>
                   {m.isAI && <div className="msg-who">Muhammad Ali</div>}
@@ -414,14 +416,13 @@ export default function CEO({ company, onToast, data }) {
               <button className="modal-close" onClick={() => setShowCeoModal(false)}>✕</button>
             </div>
             <div className="chat-container" style={{height:400,borderRadius:'var(--r)'}}>
-              <div className="chat-messages" style={{paddingBottom:8}}>
+              <div className="chat-messages" ref={modalMsgRef} style={{paddingBottom:8}}>
                 {modalMsgs.map((m,i) => (
                   <div key={i} className={`chat-msg ${m.isAI ? 'ai' : 'user'}`}>
                     {m.isAI && <div className="msg-who">Muhammad Ali</div>}
                     <div className="msg-bubble">{m.text}</div>
                   </div>
                 ))}
-                <div ref={modalEnd} />
               </div>
               <div className="chat-input-area">
                 <input className="chat-inp" placeholder="Ask Muhammad Ali anything..." value={modalInp} onChange={e => setModalInp(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') sendModalMsg(); }} />

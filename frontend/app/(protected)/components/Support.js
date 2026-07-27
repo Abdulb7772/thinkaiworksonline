@@ -14,9 +14,9 @@ export default function Support({ company, onToast, data, onRefresh }) {
   ]);
   const [inp, setInp] = useState('');
   const [loading, setLoading] = useState(false);
-  const chatEnd = useRef(null);
+  const chatMsgRef = useRef(null);
 
-  useEffect(() => { chatEnd.current?.scrollIntoView({ behavior:'smooth' }); }, [msgs]);
+  useEffect(() => { if (chatMsgRef.current) chatMsgRef.current.scrollTop = chatMsgRef.current.scrollHeight; }, [msgs]);
 
   const openCount = tickets.filter(t => t.status === 'Open').length;
 
@@ -104,14 +104,13 @@ export default function Support({ company, onToast, data, onRefresh }) {
               <div><div style={{fontWeight:600,fontSize:13}}>ThinkAIWorks Support AI</div><div style={{fontSize:11,color:'var(--text3)'}}>Powered by AI · 24/7</div></div>
               <span className="tag tg" style={{marginLeft:'auto'}}>Online</span>
             </div>
-            <div className="chat-messages" id="support-chat-msgs">
+            <div className="chat-messages" ref={chatMsgRef} id="support-chat-msgs">
               {msgs.map((m,i) => (
                 <div key={i} className={`chat-msg ${m.isAI ? 'ai' : 'user'}`}>
                   {m.isAI && <div className="msg-who">Support AI</div>}
                   <div className="msg-bubble" style={m.isAI ? {background:'var(--surface2)'} : {}}>{m.text}</div>
                 </div>
               ))}
-              <div ref={chatEnd} />
             </div>
             <div className="chat-input-area">
               <input className="chat-inp" placeholder="Type a support message..." value={inp} onChange={e => setInp(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') sendMsg(); }} />
