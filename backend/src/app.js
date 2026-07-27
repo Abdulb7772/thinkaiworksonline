@@ -7,6 +7,7 @@ const apiRoutes = require('./routes');
 const { startMeetingReminderJob } = require('./jobs/meetingReminder');
 const { startMeetingFollowUpJob } = require('./jobs/meetingFollowUp');
 const { startTaskReminderJob } = require('./jobs/taskReminder');
+const { startDailyProgressJob } = require('./jobs/dailyProgress');
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -59,6 +60,7 @@ const startServer = async () => {
   startMeetingReminderJob();
   startMeetingFollowUpJob();
   startTaskReminderJob();
+  startDailyProgressJob();
   const tryListen = (p) => {
     server = app.listen(p);
     server.on('listening', () => console.log(`Server running on port ${p}`));
