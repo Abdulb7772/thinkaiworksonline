@@ -4,16 +4,36 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '@/lib/config';
 import { SkeletonTable } from './Skeleton';
 
+function uploadFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await api('/upload', {
+          method: 'POST',
+          body: JSON.stringify({ file: reader.result, name: file.name }),
+        });
+        resolve(res);
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function Chat({ onToast }) {
   const [conversations, setConversations] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
+  const [chatFiles, setChatFiles] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   const [role, setRole] = useState('admin');
   const [currentUser, setCurrentUser] = useState(null);
   const bottomRef = useRef(null);
   const activeUserIdRef = useRef(null);
+  const fileRef = useRef(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -63,26 +83,47 @@ export default function Chat({ onToast }) {
 
   const send = async (e) => {
     e.preventDefault();
-    if (!text.trim() || !activeUser) return;
+    if ((!text.trim() && chatFiles.length === 0) || !activeUser) return;
     const msgText = text.trim();
+    const filesToSend = chatFiles;
     setText('');
+    setChatFiles([]);
 
     const optimistic = {
       _id: 'opt-' + Date.now(),
       sender: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
       receiver: { _id: activeUser._id, name: activeUser.name, email: activeUser.email },
       message: msgText,
+      files: filesToSend,
       createdAt: new Date().toISOString(),
     };
     setMessages(prev => [...prev, optimistic]);
 
     try {
-      await api('/chat/', { method: 'POST', body: JSON.stringify({ receiver: activeUser._id, message: msgText }) });
+      await api('/chat/', { method: 'POST', body: JSON.stringify({ receiver: activeUser._id, message: msgText, files: filesToSend }) });
       fetchConversations();
       fetchMessages(activeUser._id);
     } catch (err) {
       onToast?.(err.message, 'error');
       setMessages(prev => prev.filter(m => m._id !== optimistic._id));
+    }
+  };
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingFiles(true);
+    try {
+      for (const f of files) {
+        const uploaded = await uploadFile(f);
+        setChatFiles(prev => [...prev, uploaded]);
+      }
+      onToast?.(`${files.length} file(s) uploaded`, 'success');
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setUploadingFiles(false);
+      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
@@ -147,7 +188,17 @@ export default function Chat({ onToast }) {
                         borderBottomRightRadius: isMine ? 4 : 12,
                         borderBottomLeftRadius: isMine ? 12 : 4,
                       }}>
-                        <div>{msg.message}</div>
+                        {msg.message && <div>{msg.message}</div>}
+                        {msg.files?.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: msg.message ? 8 : 0 }}>
+                            {msg.files.map((f, i) => (
+                              <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:12, color:'inherit', textDecoration:'underline', opacity:0.9 }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                {f.name}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                         <div style={{ fontSize: 11, marginTop: 4, opacity: 0.6 }}>
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -157,15 +208,32 @@ export default function Chat({ onToast }) {
                 })}
                 <div ref={bottomRef} />
               </div>
-              <form onSubmit={send} style={{ display: 'flex', gap: 8, padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-                <input
-                  type="text"
-                  placeholder="Type a message..."
-                  value={text}
-                  onChange={e => setText(e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                <button type="submit" className="btn btn-tai" disabled={!text.trim()}>Send</button>
+              <form onSubmit={send} style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--border)' }}>
+                {chatFiles.length > 0 && (
+                  <div style={{ display: 'flex', gap: 6, padding: '8px 16px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
+                    {chatFiles.map((f, i) => (
+                      <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, background:'var(--bg3)', padding:'4px 10px', borderRadius:'var(--r)' }}>
+                        {f.name}
+                        <button type="button" style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', padding:0, fontSize:12, lineHeight:1 }} onClick={() => setChatFiles(prev => prev.filter((_, j) => j !== i))}>✕</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 8, padding: '12px 16px' }}>
+                  <input
+                    type="text"
+                    placeholder="Type a message..."
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <label style={{ cursor:'pointer', display:'flex', alignItems:'center', color:'var(--text2)', fontSize:20 }} title="Attach file">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{ display:'none' }} />
+                  </label>
+                  {uploadingFiles && <span style={{ fontSize:11, color:'var(--text3)', alignSelf:'center' }}>...</span>}
+                  <button type="submit" className="btn btn-tai" disabled={!text.trim() && chatFiles.length === 0}>Send</button>
+                </div>
               </form>
             </>
           )}

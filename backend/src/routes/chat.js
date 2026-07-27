@@ -7,9 +7,9 @@ const router = express.Router();
 
 router.post('/', protect, async (req, res, next) => {
   try {
-    const { receiver, message, taskId } = req.body;
+    const { receiver, message, taskId, files } = req.body;
     if (!receiver || !message) return res.status(400).json({ error: 'receiver and message required' });
-    const chat = await Chat.create({ sender: req.user._id, receiver, message, taskId });
+    const chat = await Chat.create({ sender: req.user._id, receiver, message, taskId, files });
     const populated = await Chat.findById(chat._id).populate('sender', 'name email').populate('receiver', 'name email');
     res.status(201).json(populated);
   } catch (error) {
