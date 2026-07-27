@@ -47,7 +47,7 @@ export default function DashboardHome({ data, onToast }) {
         </div>
       </div>
 
-      {isAdmin && (<><div className="grid4">
+      <div className="grid4">
         <div className="metric"><div className="m-label">Pending</div><div className="m-val">{pending.length}</div><div className="m-delta neutral">{pending.length > 0 ? 'Needs action' : 'All clear'}</div></div>
         <div className="metric"><div className="m-label">In Progress</div><div className="m-val">{inProgress.length}</div><div className="m-delta up">{inProgress.length > 0 ? 'Working' : 'None'}</div></div>
         <div className="metric"><div className="m-label">Completed Today</div><div className="m-val">{completed.filter(t => t.date === todayStr).length}</div><div className="m-delta up">{completed.length > 0 ? 'Done' : 'No completions'}</div></div>
@@ -189,7 +189,6 @@ export default function DashboardHome({ data, onToast }) {
           </div>
         </div>
       )}
-      </>)}
     </div>
   );
 }

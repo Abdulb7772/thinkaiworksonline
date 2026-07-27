@@ -63,6 +63,8 @@ export default function Dashboard() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { router.replace('/login'); return; }
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (u.role === 'employee') setActivePage('dashboard');
     setIsChecking(false);
     fetchData();
     const params = new URLSearchParams(window.location.search);
