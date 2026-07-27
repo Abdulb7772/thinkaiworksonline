@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/config';
+import { useState } from 'react';
 import { SkeletonCard } from './Skeleton';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -11,33 +10,17 @@ export default function Budget({ company, onToast, data }) {
   const userRole = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}').role || 'admin') : 'admin';
   const totals = data?.budget?.totals || {};
   const spend = totals.spend || 0;
+  const rev = data?.budget?.projectRevenue || 0;
 
   const [vals, setVals] = useState(budgetItems.map(b => b.value || 0));
   const total = vals.reduce((a, b) => a + b, 0);
-
-  const [projects, setProjects] = useState([]);
-  const [loadingProjects, setLoadingProjects] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const p = await api('/projects/');
-        setProjects(p);
-      } catch {} finally {
-        setLoadingProjects(false);
-      }
-    })();
-  }, []);
+  const roi = totals.roi || (spend > 0 ? Math.round((rev / spend) * 100) + '%' : '—');
 
   const updateVal = (i, v) => {
     const next = [...vals];
     next[i] = Number(v);
     setVals(next);
   };
-
-  const totalRevenue = projects.reduce((sum, p) => sum + (p.payment || 0), 0);
-  const rev = totalRevenue;
-  const roi = totals.roi || (spend > 0 ? Math.round((rev / spend) * 100) + '%' : '—');
 
   const now = new Date();
   const [dpMonth, setDpMonth] = useState(now.getMonth());

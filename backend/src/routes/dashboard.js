@@ -7,6 +7,7 @@ const Ticket = require('../models/Ticket');
 const Campaign = require('../models/Campaign');
 const Budget = require('../models/Budget');
 const User = require('../models/User');
+const Project = require('../models/Project');
 const router = express.Router();
 
 function normalizeAttendanceLog(log) {
@@ -23,10 +24,10 @@ const tickerItems = [
 ];
 
 const buildAppData = async () => {
-  let leads = [], clients = [], meetings = [], employees = [], tickets = [], campaigns = [], budgets = [], customers = [];
+  let leads = [], clients = [], meetings = [], employees = [], tickets = [], campaigns = [], budgets = [], customers = [], projects = [];
 
   try {
-    [leads, clients, meetings, employees, tickets, campaigns, budgets, customers] = await Promise.all([
+    [leads, clients, meetings, employees, tickets, campaigns, budgets, customers, projects] = await Promise.all([
       Lead.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Client.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Meeting.find().sort({ datetime: 1 }).lean().catch(() => []),
@@ -35,11 +36,13 @@ const buildAppData = async () => {
       Campaign.find().sort({ createdAt: -1 }).lean().catch(() => []),
       Budget.find().sort({ createdAt: -1 }).lean().catch(() => []),
       User.find({ role: 'customer' }).sort({ name: 1 }).lean().catch(() => []),
+      Project.find().lean().catch(() => []),
     ]);
   } catch {}
 
   const totalSpend = budgets.reduce((s, b) => s + (b.value || 0), 0);
   const totalRev = clients.reduce((s, c) => s + (parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0), 0);
+  const projectRevenue = projects.reduce((s, p) => s + (p.payment || 0), 0);
   const esRevenue = 0;
   const taiRevenue = 0;
 
@@ -107,6 +110,7 @@ const buildAppData = async () => {
     budget: {
       items: budgets.map(b => ({ label: b.label, value: b.value, max: b.max })),
       totals: { spend: totalSpend, profit: totalRev - totalSpend, roi: totalSpend ? `${Math.round((totalRev / totalSpend) * 100)}%` : '0%', rev: totalRev },
+      projectRevenue,
     },
     revTrend: (() => { const step = Math.round(totalRev / 6); return Array.from({length:6},(_,i)=>step * (i + 1)); })(),
     customers: customers.map(c => ({
