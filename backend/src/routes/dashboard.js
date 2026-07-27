@@ -57,8 +57,8 @@ const buildAppData = async () => {
       tai: [
         { label: 'Monthly Revenue', val: `$${taiRevenue.toLocaleString()}`, delta: '↑ 31% MoM', cls: 'up', co: 'tai' },
         { label: 'Active Clients', val: String(clients.length || 0), delta: 'Current total', cls: 'up', co: '' },
-        { label: 'AI Projects Live', val: String(clients.filter(c => c.stage === 'Active').length || 0), delta: 'Active stage', cls: 'neutral', co: '' },
-        { label: 'Avg Project Value', val: (() => { const vals = clients.map(c => parseInt(String(c.value || '0').replace(/[^0-9]/g, '')) || 0).filter(v => v > 0); return vals.length ? '$' + Math.round(vals.reduce((a, b) => a + b, 0) / vals.length).toLocaleString() : '$0'; })(), delta: 'Per project', cls: 'up', co: '' },
+        { label: 'Live Projects', val: String(projects.filter(p => p.status !== 'completed').length || 0), delta: 'Ongoing', cls: 'neutral', co: '' },
+        { label: 'Total Projects', val: String(projects.length || 0), delta: 'All time', cls: 'up', co: '' },
       ],
     },
     clients: clients.map(c => ({
