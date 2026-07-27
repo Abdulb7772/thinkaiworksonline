@@ -111,12 +111,12 @@ export default function Support({ company, onToast, data, onRefresh }) {
                   <div className="msg-bubble" style={m.isAI ? {background:'var(--surface2)'} : {}}>{m.text}</div>
                 </div>
               ))}
+              <div ref={chatEnd} />
             </div>
             <div className="chat-input-area">
               <input className="chat-inp" placeholder="Type a support message..." value={inp} onChange={e => setInp(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') sendMsg(); }} />
               <button className="btn btn-es btn-sm" onClick={sendMsg} disabled={loading}>{loading ? '...' : 'Send'}</button>
             </div>
-            <div ref={chatEnd} />
           </div>
         </div>
       </div>
