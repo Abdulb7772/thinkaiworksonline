@@ -2,6 +2,7 @@ const express = require('express');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { destroyFile } = require('../utils/cloudinary');
 
 const router = express.Router();
 
@@ -51,7 +52,7 @@ router.patch('/:id', protect, async (req, res, next) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const { title, description, clients, employees, payment, status, startDate, completionDate } = req.body;
+    const { title, description, clients, employees, payment, status, startDate, completionDate, files } = req.body;
     if (title !== undefined && req.user.role === 'admin') project.title = title;
     if (description !== undefined) project.description = description;
     if (clients !== undefined && req.user.role === 'admin') project.clients = clients;
@@ -66,6 +67,7 @@ router.patch('/:id', protect, async (req, res, next) => {
       }
       project.completionDate = completionDate;
     }
+    if (files !== undefined && req.user.role === 'admin') project.files = files;
     await project.save();
     const populated = await Project.findById(project._id).populate('clients', 'name email').populate('employees', 'name email').populate('createdBy', 'name email');
     res.json(populated);
@@ -77,8 +79,12 @@ router.patch('/:id', protect, async (req, res, next) => {
 router.delete('/:id', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can delete projects' });
-    const project = await Project.findByIdAndDelete(req.params.id);
+    const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
+    for (const f of project.files || []) {
+      destroyFile(f.public_id).catch(() => {});
+    }
+    await Project.findByIdAndDelete(req.params.id);
     res.json({ message: 'Project deleted' });
   } catch (error) {
     next(error);

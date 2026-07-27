@@ -1,8 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
+
+function uploadFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await api('/upload', {
+          method: 'POST',
+          body: JSON.stringify({ file: reader.result, name: file.name }),
+        });
+        resolve(res);
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 const STATUSES = ['pending', 'project_started', 'employee_assigned', 'in_progress', 'working', 'testing', 'finishing_up', 'completed'];
 const today = () => new Date().toISOString().split('T')[0];
@@ -29,8 +46,11 @@ export default function Projects({ onToast }) {
   const [editStatus, setEditStatus] = useState('');
   const [detailProject, setDetailProject] = useState(null);
   const [form, setForm] = useState({ title: '', description: '', client: '', employee: '', payment: '', startDate: '', completionDate: '' });
+  const [projectFiles, setProjectFiles] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const fileRef = useRef(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -77,10 +97,12 @@ export default function Projects({ onToast }) {
           employees: form.employee ? [form.employee] : [],
           payment: Number(form.payment) || 0,
           startDate: form.startDate,
+          files: projectFiles,
         }),
       });
       onToast?.('Project created', 'success');
       setForm({ title: '', description: '', client: '', employee: '', startDate: '', completionDate: '' });
+      setProjectFiles([]);
       setShowForm(false);
       fetch();
     } catch (err) {
@@ -107,6 +129,7 @@ export default function Projects({ onToast }) {
       if (form.completionDate !== (editProject.completionDate || '')) body.completionDate = form.completionDate;
       if (Number(form.payment) !== (editProject.payment || 0)) body.payment = Number(form.payment) || 0;
       if (editStatus !== editProject.status) body.status = editStatus;
+      if (JSON.stringify(projectFiles) !== JSON.stringify(editProject.files || [])) body.files = projectFiles;
       if (Object.keys(body).length === 0) { onToast?.('No changes made', 'error'); setSaving(false); return; }
       await api(`/projects/${editProject._id}`, { method: 'PATCH', body: JSON.stringify(body) });
       onToast?.('Project updated', 'success');
@@ -145,6 +168,7 @@ export default function Projects({ onToast }) {
   const openEdit = (project) => {
     setEditProject(project);
     setEditStatus(project.status);
+    setProjectFiles(project.files || []);
     setForm({
       title: project.title,
       description: project.description || '',
@@ -156,7 +180,29 @@ export default function Projects({ onToast }) {
     });
   };
 
-  const closeEdit = () => { setEditProject(null); setEditStatus(''); };
+  const closeEdit = () => { setEditProject(null); setEditStatus(''); setProjectFiles([]); };
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingFiles(true);
+    try {
+      for (const f of files) {
+        const uploaded = await uploadFile(f);
+        setProjectFiles(prev => [...prev, uploaded]);
+      }
+      onToast?.(`${files.length} file(s) uploaded`, 'success');
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setUploadingFiles(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const removeFile = (idx) => {
+    setProjectFiles(prev => prev.filter((_, i) => i !== idx));
+  };
 
   const isAssigned = (project) => {
     if (user.role === 'customer') return project.clients?.some(c => (c._id || c) === user.id);
@@ -214,6 +260,21 @@ export default function Projects({ onToast }) {
                 <label>Payment ($)</label>
                 <input type="number" min="0" placeholder="0" value={form.payment} onChange={e => setForm({ ...form, payment: e.target.value })} />
               </div>
+              <div className="form-field">
+                <label>Files</label>
+                <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
+                {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
+                {projectFiles.length > 0 && (
+                  <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>
+                    {projectFiles.map((f,i) => (
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:6,fontSize:12}}>
+                        <span style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.name}</span>
+                        <button type="button" className="btn btn-sm btn-ghost" style={{color:'var(--red)',padding:'2px 6px',fontSize:10}} onClick={() => removeFile(i)}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button type="submit" className="btn btn-tai" disabled={saving} style={{ alignSelf: 'flex-start' }}>
                 {saving ? 'Creating...' : 'Create Project'}
               </button>
@@ -255,6 +316,18 @@ export default function Projects({ onToast }) {
             {project.startDate && <span>Start: {project.startDate} &middot; </span>}
             {project.completionDate && <span>End: {project.completionDate}</span>}
           </div>
+
+          {/* Files */}
+          {project.files?.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+              {project.files.map((f, i) => (
+                <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:12, color:'var(--tai)', textDecoration:'none', padding:'4px 10px', background:'var(--bg3)', borderRadius:'var(--r)', border:'1px solid var(--border)' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  {f.name}
+                </a>
+              ))}
+            </div>
+          )}
 
           {/* Admin status stepper */}
           {user.role === 'admin' && (
@@ -353,6 +426,25 @@ export default function Projects({ onToast }) {
               <div className="form-field">
                 <label>Payment ($)</label>
                 <input type="number" min="0" value={form.payment} onChange={e => setForm({ ...form, payment: e.target.value })} />
+              </div>
+              <div className="form-field">
+                <label>Files</label>
+                <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
+                {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
+                {projectFiles.length > 0 && (
+                  <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>
+                    {projectFiles.map((f,i) => (
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:6,fontSize:12}}>
+                        {f.url ? (
+                          <a href={f.url} target="_blank" rel="noopener noreferrer" style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textDecoration:'none'}}>{f.name}</a>
+                        ) : (
+                          <span style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.name}</span>
+                        )}
+                        <button type="button" className="btn btn-sm btn-ghost" style={{color:'var(--red)',padding:'2px 6px',fontSize:10}} onClick={() => removeFile(i)}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
                 {STATUSES.map(s => (

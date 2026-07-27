@@ -1,8 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
+
+function uploadFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await api('/upload', {
+          method: 'POST',
+          body: JSON.stringify({ file: reader.result, name: file.name }),
+        });
+        resolve(res);
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function Tasks({ onToast }) {
   const [tasks, setTasks] = useState([]);
@@ -10,10 +27,14 @@ export default function Tasks({ onToast }) {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('admin');
   const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '' });
+  const [formFiles, setFormFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [page, setPage] = useState(0);
+  const [commentText, setCommentText] = useState('');
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const fileRef = useRef(null);
   const PAGE_SIZE = 5;
 
   useEffect(() => {
@@ -44,15 +65,40 @@ export default function Tasks({ onToast }) {
     }
     setSaving(true);
     try {
-      await api('/tasks/', { method: 'POST', body: JSON.stringify(form) });
+      const body = { ...form, files: formFiles };
+      if (formFiles.length) body.files = formFiles;
+      await api('/tasks/', { method: 'POST', body: JSON.stringify(body) });
       onToast?.('Task assigned', 'success');
       setForm({ title: '', description: '', assignedTo: '', date: '' });
+      setFormFiles([]);
       fetch();
     } catch (err) {
       onToast?.(err.message, 'error');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingFiles(true);
+    try {
+      for (const f of files) {
+        const uploaded = await uploadFile(f);
+        setFormFiles(prev => [...prev, uploaded]);
+      }
+      onToast?.(`${files.length} file(s) uploaded`, 'success');
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setUploadingFiles(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const removeFormFile = (idx) => {
+    setFormFiles(prev => prev.filter((_, i) => i !== idx));
   };
 
   const updateStatus = async (id, status) => {
@@ -114,6 +160,21 @@ export default function Tasks({ onToast }) {
               <label>Date *</label>
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} min={today} required />
             </div>
+            <div className="form-field">
+              <label>Files</label>
+              <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
+              {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
+              {formFiles.length > 0 && (
+                <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>
+                  {formFiles.map((f,i) => (
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:6,fontSize:12}}>
+                      <span style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.name}</span>
+                      <button type="button" className="btn btn-sm btn-ghost" style={{color:'var(--red)',padding:'2px 6px',fontSize:10}} onClick={() => removeFormFile(i)}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <button type="submit" className="btn btn-tai" disabled={saving} style={{ alignSelf: 'flex-start' }}>
               {saving ? 'Assigning...' : 'Assign Task'}
             </button>
@@ -167,7 +228,7 @@ export default function Tasks({ onToast }) {
 
       {selectedTask && (
         <div className="modal-overlay" onClick={() => setSelectedTask(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div className="modal-head">
               <div className="modal-title">Task Details</div>
               <button className="modal-close" onClick={() => setSelectedTask(null)}>
@@ -186,6 +247,74 @@ export default function Tasks({ onToast }) {
                   {selectedTask.description}
                 </div>
               )}
+
+              {/* Files */}
+              {selectedTask.files?.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: 'var(--text1)' }}>Files</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {selectedTask.files.map((f, i) => (
+                      <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, color:'var(--tai)', textDecoration:'none', padding:'6px 10px', background:'var(--bg3)', borderRadius:'var(--r)' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        {f.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add file button for admin or assigned employee */}
+              {(role === 'admin' || String(selectedTask.assignedTo?._id) === String(JSON.parse(localStorage.getItem('user') || '{}').id)) && (
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize:12, fontWeight:600, color:'var(--text3)', display:'block', marginBottom:6 }}>Add File</label>
+                  <input type="file" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const uploaded = await uploadFile(file);
+                      const res = await api(`/tasks/${selectedTask._id}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ files: [...(selectedTask.files || []), uploaded] }),
+                      });
+                      setSelectedTask(res);
+                      setTasks(prev => prev.map(t => t._id === res._id ? res : t));
+                      onToast?.('File added', 'success');
+                    } catch (err) { onToast?.(err.message, 'error'); }
+                    e.target.value = '';
+                  }} style={{fontSize:12}} />
+                </div>
+              )}
+
+              {/* Comments */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: 'var(--text1)' }}>Comments</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+                  {(selectedTask.comments || []).map((c, i) => (
+                    <div key={i} style={{ padding: '8px 12px', background: 'var(--bg3)', borderRadius: 8, fontSize: 13 }}>
+                      <div style={{ fontWeight: 600, fontSize: 11, color: 'var(--tai)', marginBottom: 2 }}>{c.user?.name || 'Unknown'}</div>
+                      <div style={{ color: 'var(--text2)' }}>{c.text}</div>
+                    </div>
+                  ))}
+                  {(!selectedTask.comments || selectedTask.comments.length === 0) && (
+                    <div style={{ fontSize: 12, color: 'var(--text3)' }}>No comments yet</div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input type="text" placeholder="Write a comment..." value={commentText} onChange={e => setCommentText(e.target.value)} style={{ flex: 1, padding:'8px 12px', borderRadius:'var(--r)', border:'1px solid var(--border)', background:'var(--bg2)', color:'var(--text)', fontSize:13 }} />
+                  <button className="btn btn-sm btn-tai" disabled={!commentText.trim()} onClick={async () => {
+                    if (!commentText.trim()) return;
+                    try {
+                      const res = await api(`/tasks/${selectedTask._id}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ comment: commentText.trim() }),
+                      });
+                      setSelectedTask(res);
+                      setTasks(prev => prev.map(t => t._id === res._id ? res : t));
+                      setCommentText('');
+                    } catch (err) { onToast?.(err.message, 'error'); }
+                  }}>Send</button>
+                </div>
+              </div>
 
               <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: 'var(--text1)' }}>Status</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
