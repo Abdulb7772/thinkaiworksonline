@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import emailjs from '@emailjs/browser';
 import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
