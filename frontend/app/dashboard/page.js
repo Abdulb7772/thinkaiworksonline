@@ -65,11 +65,12 @@ export default function Dashboard() {
     if (!token) { router.replace('/login'); return; }
     const u = JSON.parse(localStorage.getItem('user') || '{}');
     if (u.role === 'employee') setActivePage('dashboard');
+    if (u.role === 'customer') setActivePage('meetings');
     setIsChecking(false);
     fetchData();
     const params = new URLSearchParams(window.location.search);
     const page = params.get('page');
-    if (page) setActivePage(page);
+    if (page && !(u.role === 'customer' && page === 'overview')) setActivePage(page);
   }, [router]);
 
   const showToast = useCallback((msg, type = 'success') => {
