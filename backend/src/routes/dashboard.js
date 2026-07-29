@@ -98,7 +98,7 @@ const buildAppData = async () => {
       type: m.type || 'Internal', co: m.company ? m.company.toLowerCase().slice(0, 3) === 'thi' ? 'tai' : 'es' : 'es', attendees: m.attendees || '',
     })),
     employees: employees.map(e => ({
-      _id: e._id, name: e.name, email: e.email || '', initials: e.name.split(' ').map(p => p[0]).join('').slice(0, 2),
+      _id: e._id, name: e.name, email: e.email || '', loginEmail: e.loginEmail || '', initials: e.name.split(' ').map(p => p[0]).join('').slice(0, 2),
       role: e.role || 'Team', subRole: e.subRole || null, co: e.company === 'ThinkAIWorks' ? 'tai' : e.company === 'Both' ? 'both' : 'es',
       score: e.score || 0, tasks: e.tasks || 0, rating: e.rating || 0,
       attendance: e.attendance || 0, attendanceLog: normalizeAttendanceLog(e.attendanceLog), trend: e.trend || 'stable', status: e.status || 'Good',

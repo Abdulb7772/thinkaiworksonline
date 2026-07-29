@@ -46,8 +46,8 @@ function getEntryForDate(log, date) {
 
 async function upsertSelfAttendance(req, res, next) {
   try {
-    const { attendanceLog = {}, email, name, role, subRole, company } = req.body || {};
-    const userEmail = (email || req.user?.email || '').trim().toLowerCase();
+    const { attendanceLog = {}, email, loginEmail, name, role, subRole, company } = req.body || {};
+    const userEmail = (loginEmail || req.user?.email || email || '').trim().toLowerCase();
     const userName = (name || req.user?.name || '').trim();
     if (!userEmail) return res.status(400).json({ error: 'Email is required' });
 

@@ -159,6 +159,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
   const employees = data?.employees || [];
 
   const currentEmployee = employees.find(e =>
+    (e.loginEmail && e.loginEmail.toLowerCase() === (user.email || '').toLowerCase()) ||
     (e.email && e.email.toLowerCase() === (user.email || '').toLowerCase()) ||
     (e.name && user.name && e.name.toLowerCase() === user.name.toLowerCase())
   );
@@ -167,6 +168,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
     _id: currentEmployee?._id || user.email || user.name || 'self',
     name: currentEmployee?.name || user.name || user.email || 'My Attendance',
     email: currentEmployee?.email || user.email || '',
+    loginEmail: currentEmployee?.loginEmail || user.email || '',
     role: currentEmployee?.role || user.role || 'Team',
     company: currentEmployee?.company || 'ThinkAIWorks',
     attendanceLog: currentEmployee?.attendanceLog,
@@ -194,6 +196,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
       await api('/employees/self-attendance', {
         method: 'PUT',
         body: JSON.stringify({
+          loginEmail: emp.loginEmail || user.email,
           email: emp.email || user.email,
           name: emp.name || user.name,
           role: emp.role || user.role,
@@ -216,6 +219,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
       await api('/employees/self-attendance', {
         method: 'PUT',
         body: JSON.stringify({
+          loginEmail: emp.loginEmail || user.email,
           email: emp.email || user.email,
           name: emp.name || user.name,
           role: emp.role || user.role,
