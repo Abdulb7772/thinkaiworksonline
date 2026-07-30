@@ -28,7 +28,7 @@ router.post('/', protect, (req, res, next) => {
       const { originalname, buffer, mimetype } = req.file;
       console.log(`[upload] received name=${originalname} mimetype=${mimetype} size=${buffer.length}`);
 
-      const result = await uploadBuffer(buffer, originalname);
+      const result = await uploadBuffer(buffer, originalname, mimetype);
       res.json({ success: true, ...result });
     } catch (error) {
       console.error(`[upload] error: ${error.message}`);
