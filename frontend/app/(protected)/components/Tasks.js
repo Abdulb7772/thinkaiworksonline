@@ -27,7 +27,7 @@ export default function Tasks({ onToast }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('admin');
-  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '', dueTime: '', projectId: '' });
+  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '', dueTime: '', priority: 'medium', projectId: '' });
   const [formFiles, setFormFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
@@ -66,10 +66,10 @@ export default function Tasks({ onToast }) {
     }
     setSaving(true);
     try {
-      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, dueTime: form.dueTime || undefined, files: formFiles, project: form.projectId };
+      const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, dueTime: form.dueTime || undefined, priority: form.priority, files: formFiles, project: form.projectId };
       await api('/tasks/', { method: 'POST', body: JSON.stringify(body) });
       onToast?.('Task assigned', 'success');
-      setForm({ title: '', description: '', assignedTo: '', date: '', dueTime: '', projectId: '' });
+      setForm({ title: '', description: '', assignedTo: '', date: '', dueTime: '', priority: 'medium', projectId: '' });
       setFormFiles([]);
       fetch();
     } catch (err) {
@@ -146,6 +146,15 @@ export default function Tasks({ onToast }) {
             <div className="form-field">
               <label>Description</label>
               <textarea placeholder="Optional details" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
+            </div>
+            <div className="form-field">
+              <label>Priority</label>
+              <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
             </div>
             <div className="form-field">
               <label>Assign To *</label>

@@ -6,6 +6,7 @@ const TaskSchema = new mongoose.Schema({
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, enum: ['pending', 'in_progress', 'in_testing', 'done'], default: 'pending' },
+  priority: { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'medium' },
   date: { type: String, required: true },
   dueTime: { type: String },
   reminder2hSent: { type: Boolean, default: false },

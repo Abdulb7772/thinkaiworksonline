@@ -10,11 +10,11 @@ const router = express.Router();
 router.post('/', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can assign tasks' });
-    const { title, description, assignedTo, date, dueTime, files, project } = req.body;
+    const { title, description, assignedTo, date, dueTime, files, project, priority } = req.body;
     if (!title || !assignedTo || !date || !project) return res.status(400).json({ error: 'title, assignedTo, date, and project required' });
     const employee = await User.findById(assignedTo);
     if (!employee || employee.role !== 'employee') return res.status(400).json({ error: 'Invalid employee' });
-    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, dueTime, files: files || [], project });
+    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, dueTime, files: files || [], project, priority: priority || 'medium' });
 
     const to = employee.notificationEmail || employee.email;
     sendEmail({
