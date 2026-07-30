@@ -42,7 +42,7 @@ function uploadBuffer(buffer, name) {
       }
 
       let url = result.secure_url;
-      if (result.resource_type === 'raw' && result.format === 'pdf') {
+      if (result.resource_type === 'raw') {
         url = result.secure_url.replace('/upload/', '/upload/fl_inline/');
       }
 
