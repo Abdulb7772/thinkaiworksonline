@@ -1,5 +1,6 @@
 const express = require('express');
 const Client = require('../models/Client');
+const User = require('../models/User');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
@@ -15,6 +16,15 @@ router.post('/', async (req, res, next) => {
   try {
     const client = new Client(req.body);
     await client.save();
+
+    const email = (req.body.email || '').trim().toLowerCase();
+    if (email) {
+      const existingUser = await User.findOne({ email });
+      if (!existingUser) {
+        await User.create({ name: req.body.name || email, email, role: 'customer' }).catch(() => {});
+      }
+    }
+
     res.status(201).json(client);
   } catch (error) {
     next(error);
