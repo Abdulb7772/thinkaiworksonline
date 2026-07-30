@@ -12,8 +12,16 @@ const uploadBase64 = async (base64, name) => {
     public_id: `${Date.now()}-${name.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}`,
     resource_type: 'auto',
   });
-  // ponytail: fl_inline forces browser to display instead of download for raw files
-  const url = result.secure_url.replace('/upload/', '/upload/fl_inline/');
+
+  console.log(`[upload] file=${name} detected_type=${result.resource_type} format=${result.format} url=${result.secure_url} public_id=${result.public_id}`);
+
+  // ponytail: image/video serve inline by default; raw serves as attachment
+  // only add fl_inline for raw PDFs so they open in browser instead of downloading
+  let url = result.secure_url;
+  if (result.resource_type === 'raw' && result.format === 'pdf') {
+    url = result.secure_url.replace('/upload/', '/upload/fl_inline/');
+  }
+
   return {
     url,
     public_id: result.public_id,

@@ -31,9 +31,13 @@ const EXT_MAP = {
 };
 
 export function getFileType(file) {
-  if (file.resource_type && file.resource_type !== 'raw') return file.resource_type;
   const ext = (file.name || file.original_filename || '').split('.').pop()?.toLowerCase();
-  return EXT_MAP[ext] || 'other';
+  const mappedType = EXT_MAP[ext];
+  // Use extension first (e.g. PDF uploaded as 'image' type by Cloudinary auto)
+  if (mappedType) return mappedType;
+  // Fall back to Cloudinary resource_type for types not in EXT_MAP
+  if (file.resource_type && file.resource_type !== 'raw') return file.resource_type;
+  return 'other';
 }
 
 export function canPreview(type) {
@@ -45,6 +49,15 @@ export function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+export function getCloudinaryFileUrl(file) {
+  let url = file?.url || file?.secure_url || '';
+  // ponytail: legacy files may have fl_inline incorrectly inserted into image/video
+  // delivery paths, which causes HTTP 400. Strip fl_inline from non-raw paths.
+  url = url.replace('/image/upload/fl_inline/', '/image/upload/');
+  url = url.replace('/video/upload/fl_inline/', '/video/upload/');
+  return url;
 }
 
 export function openFileInNewTab(url) {

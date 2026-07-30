@@ -1,5 +1,5 @@
 'use client';
-import { getFileType, canPreview, formatFileSize } from '../utils/files';
+import { getFileType, formatFileSize, getCloudinaryFileUrl } from '../utils/files';
 
 const FILE_ICONS = {
   image: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
@@ -16,29 +16,29 @@ const FILE_ICONS = {
 
 export default function FileViewer({ file, context }) {
   const type = getFileType(file);
-  const preview = canPreview(type);
+  const fileUrl = getCloudinaryFileUrl(file);
   const sizeStr = formatFileSize(file.bytes);
 
   if (type === 'image') {
     return (
-      <a href={file.url} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', maxWidth: context === 'chat' ? 240 : 300 }}>
-        <img src={file.url} alt={file.name} loading="lazy" style={{ width:'100%', borderRadius:8, border:'1px solid var(--border)', display:'block' }} />
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', maxWidth: context === 'chat' ? 240 : 300 }}>
+        <img src={fileUrl} alt={file.name} loading="lazy" style={{ width:'100%', borderRadius:8, border:'1px solid var(--border)', display:'block' }} />
       </a>
     );
   }
 
   if (type === 'video') {
     return (
-      <video controls preload="metadata" style={{ maxWidth: context === 'chat' ? 240 : '100%', maxHeight:360, borderRadius:8, border:'1px solid var(--border)', display:'block' }} src={file.url}>
-        <a href={file.url} target="_blank" rel="noopener noreferrer">Open video</a>
+      <video controls preload="metadata" style={{ maxWidth: context === 'chat' ? 240 : '100%', maxHeight:360, borderRadius:8, border:'1px solid var(--border)', display:'block' }} src={fileUrl}>
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer">Open video</a>
       </video>
     );
   }
 
   if (type === 'audio') {
     return (
-      <audio controls preload="metadata" style={{ maxWidth:260, display:'block', height:40 }} src={file.url}>
-        <a href={file.url} target="_blank" rel="noopener noreferrer">Open audio</a>
+      <audio controls preload="metadata" style={{ maxWidth:260, display:'block', height:40 }} src={fileUrl}>
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer">Open audio</a>
       </audio>
     );
   }
@@ -46,12 +46,12 @@ export default function FileViewer({ file, context }) {
   if (type === 'pdf') {
     return (
       <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-        <object data={file.url} type="application/pdf" style={{ width:'100%', height: context === 'chat' ? 300 : 500, borderRadius:8, border:'1px solid var(--border)' }}>
-          <iframe src={file.url} style={{ width:'100%', height:'100%', border:'none' }} title={file.name}>
-            <p>PDF cannot be displayed. <a href={file.url} target="_blank" rel="noopener noreferrer">Open in new tab</a></p>
+        <object data={fileUrl} type="application/pdf" style={{ width:'100%', height: context === 'chat' ? 300 : 500, borderRadius:8, border:'1px solid var(--border)' }}>
+          <iframe src={fileUrl} style={{ width:'100%', height:'100%', border:'none' }} title={file.name}>
+            <p>PDF cannot be displayed. <a href={fileUrl} target="_blank" rel="noopener noreferrer">Open in new tab</a></p>
           </iframe>
         </object>
-        <a href={file.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-tai" style={{ alignSelf:'flex-start', textDecoration:'none', fontSize:12, padding:'6px 14px' }}>Open in New Tab</a>
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-tai" style={{ alignSelf:'flex-start', textDecoration:'none', fontSize:12, padding:'6px 14px' }}>Open in New Tab</a>
       </div>
     );
   }
@@ -63,8 +63,8 @@ export default function FileViewer({ file, context }) {
         <div style={{ fontSize:12, fontWeight:500, color:'var(--text1)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{file.name}</div>
         {sizeStr && <div style={{ fontSize:10, color:'var(--text3)' }}>{sizeStr}</div>}
       </div>
-      <a href={file.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline" style={{ fontSize:10, padding:'3px 8px', textDecoration:'none' }}>Open</a>
-      <a href={file.url} download={file.name} className="btn btn-sm btn-ghost" style={{ fontSize:10, padding:'3px 8px', textDecoration:'none' }}>Download</a>
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline" style={{ fontSize:10, padding:'3px 8px', textDecoration:'none' }}>Open</a>
+      <a href={fileUrl} download={file.name} className="btn btn-sm btn-ghost" style={{ fontSize:10, padding:'3px 8px', textDecoration:'none' }}>Download</a>
     </div>
   );
 }
