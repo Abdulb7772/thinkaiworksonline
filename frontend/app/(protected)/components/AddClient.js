@@ -8,6 +8,7 @@ const stages = ['Discovery', 'Proposal', 'Negotiation', 'Active', 'Closed Won'];
 export default function AddClient({ editData, onClose, onSaved, onToast, onAddLead }) {
   const [form, setForm] = useState({
     name: editData?.name || '',
+    email: editData?.email || '',
     company: editData?.company || 'ThinkAIWorks',
     service: editData?.service || '',
     value: editData?.value || '',
@@ -64,6 +65,12 @@ export default function AddClient({ editData, onClose, onSaved, onToast, onAddLe
               <label>Client Name *</label>
               <input type="text" placeholder="e.g. John Doe" value={form.name} onChange={set('name')} required />
             </div>
+            <div className="form-field">
+              <label>Email</label>
+              <input type="email" placeholder="john@example.com" value={form.email} onChange={set('email')} />
+            </div>
+          </div>
+          <div className="form-row">
             <div className="form-field">
               <label>Company</label>
               <div style={{padding:'9px 12px',background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:'var(--r)',fontSize:13,color:'var(--tai)'}}>

@@ -18,11 +18,11 @@ router.post('/', async (req, res, next) => {
     await client.save();
 
     const email = (req.body.email || '').trim().toLowerCase();
-    if (email) {
-      const existingUser = await User.findOne({ email });
-      if (!existingUser) {
-        await User.create({ name: req.body.name || email, email, role: 'customer' }).catch(() => {});
-      }
+    const name = req.body.name || email || 'Client';
+    const userEmail = email || `client-${client._id}@client.thinkaiworks.online`;
+    const existingUser = await User.findOne({ email: userEmail });
+    if (!existingUser) {
+      await User.create({ name, email: userEmail, role: 'customer' }).catch(() => {});
     }
 
     res.status(201).json(client);

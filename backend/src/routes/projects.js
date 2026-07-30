@@ -95,13 +95,17 @@ router.delete('/:id', protect, async (req, res, next) => {
 router.get('/customers/list', protect, async (req, res, next) => {
   try {
     // Sync: ensure every Client has a corresponding User record
-    const allClientEmails = await Client.find({ email: { $exists: true, $ne: '' } }).select('email name').lean();
-    const existingUserEmails = new Set((await User.find({ role: 'customer' }).select('email').lean()).map(u => u.email?.toLowerCase()));
-    for (const c of allClientEmails) {
+    const allClients = await Client.find({}).select('email name').lean();
+    const existingUsers = await User.find({ role: 'customer' }).select('email').lean();
+    const existingEmails = new Set(existingUsers.map(u => u.email?.toLowerCase()));
+    const existingNames = new Set(existingUsers.map(u => u.name?.toLowerCase()));
+    for (const c of allClients) {
       const email = (c.email || '').toLowerCase();
-      if (email && !existingUserEmails.has(email)) {
+      if (email && !existingEmails.has(email)) {
         await User.create({ name: c.name || email, email, role: 'customer' }).catch(() => {});
-        existingUserEmails.add(email);
+        existingEmails.add(email);
+      } else if (!email && !existingNames.has((c.name || '').toLowerCase())) {
+        await User.create({ name: c.name || 'Client', email: `client-${c._id}@client.thinkaiworks.online`, role: 'customer' }).catch(() => {});
       }
     }
 
