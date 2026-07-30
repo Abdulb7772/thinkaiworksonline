@@ -2,7 +2,20 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+const ALLOWED_MIMES = ['image/jpeg','image/png','image/webp','image/gif','application/pdf'];
+const ALLOWED_EXTS = ['jpg','jpeg','png','webp','gif','pdf'];
+
+export function isAllowedFile(file) {
+  if (ALLOWED_MIMES.includes(file.type)) return true;
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  return ALLOWED_EXTS.includes(ext);
+}
+
 export async function uploadFile(file) {
+  if (!isAllowedFile(file)) {
+    throw new Error('Only images and PDF files are allowed.');
+  }
+
   const formData = new FormData();
   formData.append('file', file);
 
@@ -17,34 +30,18 @@ export async function uploadFile(file) {
   });
 
   const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error || 'Upload failed');
+  if (!res.ok) throw new Error(data?.message || data?.error || 'Upload failed');
   return data;
 }
 
 const EXT_MAP = {
-  jpg:'image',jpeg:'image',png:'image',gif:'image',webp:'image',svg:'image',
-  mp4:'video',mpg:'video',mpeg:'video',mov:'video',avi:'video',webm:'video',
-  mp3:'audio',wav:'audio',wma:'audio',ogg:'audio',
+  jpg:'image',jpeg:'image',png:'image',gif:'image',webp:'image',
   pdf:'pdf',
-  doc:'document',docx:'document',
-  xls:'spreadsheet',xlsx:'spreadsheet',
-  ppt:'presentation',pptx:'presentation',
-  txt:'text',csv:'text',
-  zip:'archive',rar:'archive',gz:'archive','7z':'archive',
 };
 
 export function getFileType(file) {
   const ext = (file.name || file.original_filename || '').split('.').pop()?.toLowerCase();
-  const mappedType = EXT_MAP[ext];
-  // Use extension first (e.g. PDF uploaded as 'image' type by Cloudinary auto)
-  if (mappedType) return mappedType;
-  // Fall back to Cloudinary resource_type for types not in EXT_MAP
-  if (file.resource_type && file.resource_type !== 'raw') return file.resource_type;
-  return 'other';
-}
-
-export function canPreview(type) {
-  return ['image','video','pdf','audio'].includes(type);
+  return EXT_MAP[ext] || 'other';
 }
 
 export function formatFileSize(bytes) {
@@ -52,21 +49,4 @@ export function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
-}
-
-export function getCloudinaryFileUrl(file) {
-  let url = file?.url || file?.secure_url || '';
-  // ponytail: legacy files may have fl_inline incorrectly inserted into image/video
-  // delivery paths, which causes HTTP 400. Strip fl_inline from non-raw paths.
-  url = url.replace('/image/upload/fl_inline/', '/image/upload/');
-  url = url.replace('/video/upload/fl_inline/', '/video/upload/');
-  return url;
-}
-
-export function openFileInNewTab(url) {
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  a.click();
 }

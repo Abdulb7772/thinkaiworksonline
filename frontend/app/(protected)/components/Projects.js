@@ -276,13 +276,13 @@ export default function Projects({ onToast }) {
               </div>
               <div className="form-field">
                 <label>Files</label>
-                <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
+                <input type="file" ref={fileRef} onChange={handleFileSelect} accept="image/*,.pdf" multiple style={{fontSize:12}} />
                 {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
                 {projectFiles.length > 0 && (
                   <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>
                     {projectFiles.map((f,i) => (
                       <div key={i} style={{display:'flex',alignItems:'center',gap:6,fontSize:12}}>
-                        <span style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.name}</span>
+                        <span style={{flex:1,minWidth:0}}><FileViewer file={f} /></span>
                         <button type="button" className="btn btn-sm btn-ghost" style={{color:'var(--red)',padding:'2px 6px',fontSize:10}} onClick={() => removeFile(i)}>✕</button>
                       </div>
                     ))}
@@ -513,7 +513,7 @@ export default function Projects({ onToast }) {
               </div>
               <div className="form-field">
                 <label>Files</label>
-                <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
+                <input type="file" ref={fileRef} onChange={handleFileSelect} accept="image/*,.pdf" multiple style={{fontSize:12}} />
                 {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
                 {projectFiles.length > 0 && (
                   <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>

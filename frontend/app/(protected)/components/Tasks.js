@@ -206,7 +206,7 @@ export default function Tasks({ onToast }) {
             </div>
             <div className="form-field">
               <label>Files</label>
-              <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{fontSize:12}} />
+              <input type="file" ref={fileRef} onChange={handleFileSelect} accept="image/*,.pdf" multiple style={{fontSize:12}} />
               {uploadingFiles && <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Uploading...</div>}
               {formFiles.length > 0 && (
                 <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>
@@ -322,7 +322,7 @@ export default function Tasks({ onToast }) {
               {(role === 'admin' || (selectedTask.assignedTo || []).some(a => String(a._id || a) === String(JSON.parse(localStorage.getItem('user') || '{}').id))) && (
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ fontSize:12, fontWeight:600, color:'var(--text3)', display:'block', marginBottom:6 }}>Add File</label>
-                  <input type="file" onChange={async (e) => {
+                  <input type="file" accept="image/*,.pdf" onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     try {

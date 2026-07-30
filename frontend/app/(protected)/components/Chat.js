@@ -211,7 +211,7 @@ export default function Chat({ onToast }) {
                   />
                   <label style={{ cursor:'pointer', display:'flex', alignItems:'center', color:'var(--text2)', fontSize:20 }} title="Attach file">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                    <input type="file" ref={fileRef} onChange={handleFileSelect} multiple style={{ display:'none' }} />
+                    <input type="file" ref={fileRef} onChange={handleFileSelect} accept="image/*,.pdf" multiple style={{ display:'none' }} />
                   </label>
                   {uploadingFiles && <span style={{ fontSize:11, color:'var(--text3)', alignSelf:'center' }}>...</span>}
                   <button type="submit" className="btn btn-tai" disabled={!text.trim() && chatFiles.length === 0}>Send</button>
