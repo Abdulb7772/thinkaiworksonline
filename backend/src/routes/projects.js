@@ -1,6 +1,7 @@
 const express = require('express');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const Client = require('../models/Client');
 const { protect } = require('../middleware/auth');
 const { destroyFile } = require('../utils/cloudinary');
 
@@ -93,6 +94,17 @@ router.delete('/:id', protect, async (req, res, next) => {
 
 router.get('/customers/list', protect, async (req, res, next) => {
   try {
+    // Sync: ensure every Client has a corresponding User record
+    const allClientEmails = await Client.find({ email: { $exists: true, $ne: '' } }).select('email name').lean();
+    const existingUserEmails = new Set((await User.find({ role: 'customer' }).select('email').lean()).map(u => u.email?.toLowerCase()));
+    for (const c of allClientEmails) {
+      const email = (c.email || '').toLowerCase();
+      if (email && !existingUserEmails.has(email)) {
+        await User.create({ name: c.name || email, email, role: 'customer' }).catch(() => {});
+        existingUserEmails.add(email);
+      }
+    }
+
     const customers = await User.find({ role: 'customer' }, 'name email').sort({ name: 1 });
     res.json(customers);
   } catch (error) {
