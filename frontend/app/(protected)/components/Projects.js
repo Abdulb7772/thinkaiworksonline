@@ -4,23 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
 import Paginated from './Paginated';
-
-function uploadFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const res = await api('/upload', {
-          method: 'POST',
-          body: JSON.stringify({ file: reader.result, name: file.name }),
-        });
-        resolve(res);
-      } catch (err) { reject(err); }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+import { uploadFile } from '../utils/files';
+import FileViewer from './FileViewer';
 
 const STATUSES = ['pending', 'project_started', 'employee_assigned', 'in_progress', 'working', 'testing', 'finishing_up', 'completed'];
 const today = () => new Date().toISOString().split('T')[0];
@@ -347,14 +332,10 @@ export default function Projects({ onToast }) {
             {project.completionDate && <span>End: {project.completionDate}</span>}
           </div>
 
-          {/* Files */}
           {project.files?.length > 0 && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
               {project.files.map((f, i) => (
-                <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:12, color:'var(--tai)', textDecoration:'none', padding:'4px 10px', background:'var(--bg3)', borderRadius:'var(--r)', border:'1px solid var(--border)' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  {f.name}
-                </a>
+                <FileViewer key={i} file={f} />
               ))}
             </div>
           )}
@@ -538,11 +519,7 @@ export default function Projects({ onToast }) {
                   <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:4}}>
                     {projectFiles.map((f,i) => (
                       <div key={i} style={{display:'flex',alignItems:'center',gap:6,fontSize:12}}>
-                        {f.url ? (
-                          <a href={f.url} target="_blank" rel="noopener noreferrer" style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textDecoration:'none'}}>{f.name}</a>
-                        ) : (
-                          <span style={{color:'var(--tai)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.name}</span>
-                        )}
+                        <span style={{flex:1,minWidth:0}}><FileViewer file={f} /></span>
                         <button type="button" className="btn btn-sm btn-ghost" style={{color:'var(--red)',padding:'2px 6px',fontSize:10}} onClick={() => removeFile(i)}>✕</button>
                       </div>
                     ))}

@@ -83,7 +83,7 @@ router.delete('/:id', protect, async (req, res, next) => {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
     for (const f of project.files || []) {
-      destroyFile(f.public_id).catch(() => {});
+      destroyFile(f.public_id, f.resource_type).catch(() => {});
     }
     await Project.findByIdAndDelete(req.params.id);
     res.json({ message: 'Project deleted' });

@@ -9,7 +9,7 @@ const ProjectSchema = new mongoose.Schema({
   payment: { type: Number, default: 0 },
   startDate: { type: String },
   completionDate: { type: String },
-  files: [{ url: String, public_id: String, name: String }],
+  files: [{ url: String, public_id: String, name: String, resource_type: String, format: String, bytes: Number, original_filename: String }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 

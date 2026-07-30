@@ -88,7 +88,7 @@ router.patch('/:id', protect, async (req, res, next) => {
       if (task.files) {
         for (const f of task.files) {
           if (!files.some(nf => nf.public_id === f.public_id)) {
-            destroyFile(f.public_id).catch(() => {});
+            destroyFile(f.public_id, f.resource_type).catch(() => {});
           }
         }
       }
@@ -158,7 +158,7 @@ router.delete('/:id', protect, async (req, res, next) => {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
     for (const f of task.files || []) {
-      destroyFile(f.public_id).catch(() => {});
+      destroyFile(f.public_id, f.resource_type).catch(() => {});
     }
     await Task.findByIdAndDelete(req.params.id);
     res.json({ message: 'Task deleted' });

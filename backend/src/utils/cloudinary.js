@@ -14,11 +14,19 @@ const uploadBase64 = async (base64, name) => {
   });
   // ponytail: fl_inline forces browser to display instead of download for raw files
   const url = result.secure_url.replace('/upload/', '/upload/fl_inline/');
-  return { url, public_id: result.public_id, name };
+  return {
+    url,
+    public_id: result.public_id,
+    name,
+    resource_type: result.resource_type,
+    format: result.format,
+    bytes: result.bytes,
+    original_filename: result.original_filename,
+  };
 };
 
-const destroyFile = async (publicId) => {
-  await cloudinary.uploader.destroy(publicId);
+const destroyFile = async (publicId, resourceType = 'image') => {
+  await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
 };
 
 module.exports = { uploadBase64, destroyFile };
