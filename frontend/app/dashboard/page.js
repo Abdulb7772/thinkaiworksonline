@@ -104,8 +104,9 @@ export default function Dashboard() {
 
   return (
     <>
+      <Ticker items={tickerItems} />
+
       <div className="shell">
-        <Ticker items={tickerItems} />
         <Topbar
           activePage={activePage}
           onNavigate={setActivePage}
