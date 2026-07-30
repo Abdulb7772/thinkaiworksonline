@@ -87,6 +87,31 @@ router.patch('/:id', protect, async (req, res, next) => {
       task.comments.push({ text: comment, user: req.user._id });
     }
     await task.save();
+
+    if (req.user.role === 'employee' && (status || comment)) {
+      const admin = await User.findById(task.assignedBy);
+      if (admin) {
+        const updates = [];
+        if (status) updates.push(`Status changed to "${status}"`);
+        if (comment) updates.push(`Comment: "${comment}"`);
+        sendEmail({
+          to: admin.notificationEmail || admin.email,
+          subject: `Task Update: "${task.title}"`,
+          html: `
+            <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
+              <h1 style="margin:0 0 16px;color:#111;font-size:20px;">Task Updated by ${req.user.name}</h1>
+              <div style="background:#fff;padding:18px;border-radius:12px;border:1px solid #e2e8f0;margin:20px 0;">
+                <p style="margin:0 0 8px;"><strong>Task:</strong> ${task.title}</p>
+                ${updates.map(u => `<p style="margin:0 0 4px;">${u}</p>`).join('')}
+              </div>
+              <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">View in Dashboard</a>
+            </div>
+          `,
+          text: `${req.user.name} updated "${task.title}": ${updates.join('. ')}`,
+        }).catch(err => console.error('Task update email failed:', err.message));
+      }
+    }
+
     const populated = await Task.findById(task._id).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name');
     res.json(populated);
   } catch (error) {
