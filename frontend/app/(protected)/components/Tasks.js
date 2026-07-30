@@ -27,19 +27,23 @@ export default function Tasks({ onToast }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('admin');
-  const [form, setForm] = useState({ title: '', description: '', assignedTo: '', date: '', dueTime: '', priority: 'medium', projectId: '' });
+  const [form, setForm] = useState({ title: '', description: '', assignedTo: [], date: '', dueTime: '', priority: 'medium', projectId: '' });
   const [formFiles, setFormFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '', assignedTo: [], date: '', dueTime: '', priority: 'medium', projectId: '' });
   const fileRef = useRef(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem('user') || '{}');
     if (u.role) setRole(u.role);
   }, []);
+
+  const toArr = (v) => Array.isArray(v) ? v : v ? [v] : [];
 
   const fetch = async () => {
     try {
@@ -48,7 +52,7 @@ export default function Tasks({ onToast }) {
         api('/tasks/employees'),
         api('/projects/'),
       ]);
-      setTasks(t);
+      setTasks(t.map(task => ({ ...task, assignedTo: toArr(task.assignedTo) })));
       setEmployees(e);
       setProjects(p);
     } catch {} finally {
@@ -60,7 +64,7 @@ export default function Tasks({ onToast }) {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.assignedTo || !form.date || !form.projectId) {
+    if (!form.title || !form.assignedTo.length || !form.date || !form.projectId) {
       onToast?.('Please fill all required fields', 'error');
       return;
     }
@@ -69,7 +73,7 @@ export default function Tasks({ onToast }) {
       const body = { title: form.title, description: form.description, assignedTo: form.assignedTo, date: form.date, dueTime: form.dueTime || undefined, priority: form.priority, files: formFiles, project: form.projectId };
       await api('/tasks/', { method: 'POST', body: JSON.stringify(body) });
       onToast?.('Task assigned', 'success');
-      setForm({ title: '', description: '', assignedTo: '', date: '', dueTime: '', priority: 'medium', projectId: '' });
+      setForm({ title: '', description: '', assignedTo: [], date: '', dueTime: '', priority: 'medium', projectId: '' });
       setFormFiles([]);
       fetch();
     } catch (err) {
@@ -124,6 +128,26 @@ export default function Tasks({ onToast }) {
     }
   };
 
+  const handleEditSave = async (e) => {
+    e.preventDefault();
+    if (!editForm.title || !editForm.assignedTo.length || !editForm.date || !editForm.projectId) {
+      onToast?.('Please fill all required fields', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      const body = { title: editForm.title, description: editForm.description, assignedTo: editForm.assignedTo, date: editForm.date, dueTime: editForm.dueTime || undefined, priority: editForm.priority, project: editForm.projectId };
+      await api(`/tasks/${editTask._id}`, { method: 'PUT', body: JSON.stringify(body) });
+      onToast?.('Task updated', 'success');
+      setEditTask(null);
+      fetch();
+    } catch (err) {
+      onToast?.(err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -158,12 +182,12 @@ export default function Tasks({ onToast }) {
             </div>
             <div className="form-field">
               <label>Assign To *</label>
-              <select value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })} required>
-                <option value="">Select employee</option>
+              <select multiple value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: Array.from(e.target.selectedOptions, o => o.value) })} required>
                 {employees.map(emp => (
                   <option key={emp._id} value={emp._id}>{emp.name} ({emp.notificationEmail || emp.email})</option>
                 ))}
               </select>
+              <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
             </div>
             <div className="form-field">
               <label>Date *</label>
@@ -235,7 +259,7 @@ export default function Tasks({ onToast }) {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
                           <div style={{ fontSize: 13, color: 'var(--text3)' }}>
-                            {task.assignedTo?.name} &middot; {task.date}{task.dueTime ? ' ' + task.dueTime : ''}
+                            {(task.assignedTo || []).map(a => a.name).join(', ')} &middot; {task.date}{task.dueTime ? ' ' + task.dueTime : ''}
                             {task.description && <span> &middot; <span style={{ color: 'var(--text2)' }}>{task.description}</span></span>}
                           </div>
                         </div>
@@ -244,9 +268,12 @@ export default function Tasks({ onToast }) {
                             {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                           </span>
                           {role === 'admin' && (
-                            <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={e => { e.stopPropagation(); deleteTask(task._id); }} disabled={deleting === task._id}>
-                              {deleting === task._id ? '...' : '✕'}
-                            </button>
+                            <>
+                              <button className="btn btn-sm btn-outline" style={{fontSize:10}} onClick={e => { e.stopPropagation(); setEditTask(task); setEditForm({ title: task.title, description: task.description || '', assignedTo: (task.assignedTo || []).map(a => a._id || a), date: task.date, dueTime: task.dueTime || '', priority: task.priority, projectId: task.project?._id || task.project }); }}>Edit</button>
+                              <button className="btn btn-sm btn-ghost" style={{color:'var(--red)'}} onClick={e => { e.stopPropagation(); deleteTask(task._id); }} disabled={deleting === task._id}>
+                                {deleting === task._id ? '...' : '✕'}
+                              </button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -272,7 +299,7 @@ export default function Tasks({ onToast }) {
             <div style={{ padding: '4px 0' }}>
               <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{selectedTask.title}</div>
               <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
-                Assigned to <strong>{selectedTask.assignedTo?.name}</strong> &middot; Due {selectedTask.date}{selectedTask.dueTime ? ' ' + selectedTask.dueTime : ''}
+                Assigned to <strong>{(selectedTask.assignedTo || []).map(a => a.name).join(', ')}</strong> &middot; Due {selectedTask.date}{selectedTask.dueTime ? ' ' + selectedTask.dueTime : ''}
               </div>
 
               {selectedTask.description && (
@@ -297,7 +324,7 @@ export default function Tasks({ onToast }) {
               )}
 
               {/* Add file button for admin or assigned employee */}
-              {(role === 'admin' || String(selectedTask.assignedTo?._id) === String(JSON.parse(localStorage.getItem('user') || '{}').id)) && (
+              {(role === 'admin' || (selectedTask.assignedTo || []).some(a => String(a._id || a) === String(JSON.parse(localStorage.getItem('user') || '{}').id))) && (
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ fontSize:12, fontWeight:600, color:'var(--text3)', display:'block', marginBottom:6 }}>Add File</label>
                   <input type="file" onChange={async (e) => {
@@ -353,7 +380,7 @@ export default function Tasks({ onToast }) {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['pending', 'in_progress', 'in_testing', 'done'].map(s => {
                   const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
-                  const isAssigned = String(selectedTask.assignedTo?._id) === String(userId);
+                  const isAssigned = (selectedTask.assignedTo || []).some(a => String(a._id || a) === String(userId));
                   const flow = ['pending', 'in_progress', 'in_testing', 'done'];
                   const idx = flow.indexOf(selectedTask.status);
                   const sIdx = flow.indexOf(s);
@@ -371,6 +398,68 @@ export default function Tasks({ onToast }) {
                 })}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {editTask && (
+        <div className="modal-overlay" onClick={() => setEditTask(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+            <div className="modal-head">
+              <div className="modal-title">Edit Task</div>
+              <button className="modal-close" onClick={() => setEditTask(null)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <form className="intake-form" onSubmit={handleEditSave}>
+              <div className="form-field">
+                <label>Title *</label>
+                <input type="text" value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} required />
+              </div>
+              <div className="form-field">
+                <label>Description</label>
+                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} />
+              </div>
+              <div className="form-field">
+                <label>Priority</label>
+                <select value={editForm.priority} onChange={e => setEditForm({ ...editForm, priority: e.target.value })}>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              <div className="form-field">
+                <label>Assign To *</label>
+                <select multiple value={editForm.assignedTo} onChange={e => setEditForm({ ...editForm, assignedTo: Array.from(e.target.selectedOptions, o => o.value) })} required>
+                  {employees.map(emp => (
+                    <option key={emp._id} value={emp._id}>{emp.name} ({emp.notificationEmail || emp.email})</option>
+                  ))}
+                </select>
+                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
+              </div>
+              <div className="form-field">
+                <label>Date *</label>
+                <input type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} required />
+              </div>
+              <div className="form-field">
+                <label>Due Time</label>
+                <input type="time" value={editForm.dueTime} onChange={e => setEditForm({ ...editForm, dueTime: e.target.value })} />
+              </div>
+              <div className="form-field">
+                <label>Project *</label>
+                <select value={editForm.projectId} onChange={e => setEditForm({ ...editForm, projectId: e.target.value })} required>
+                  <option value="">Select project</option>
+                  {projects.map(p => (
+                    <option key={p._id} value={p._id}>{p.title}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button type="submit" className="btn btn-tai" disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</button>
+                <button type="button" className="btn btn-outline" onClick={() => setEditTask(null)}>Cancel</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

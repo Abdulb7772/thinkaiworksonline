@@ -22,12 +22,17 @@ const checkUpcomingTasks = async () => {
     const dueMinutes = h * 60 + m;
     const diff = dueMinutes - currentMinutes;
     if (diff > 105 && diff <= 125) {
-      const employee = await Employee.findOne({ loginEmail: task.assignedTo.email });
-      const recipients = [task.assignedTo.email];
-      if (employee?.email && employee.email !== task.assignedTo.email) recipients.push(employee.email);
+      const assignees = Array.isArray(task.assignedTo) ? task.assignedTo : [task.assignedTo];
+      const allRecipients = [];
+      for (const assignee of assignees) {
+        const employee = await Employee.findOne({ loginEmail: assignee.email });
+        allRecipients.push(assignee.email);
+        if (employee?.email && employee.email !== assignee.email) allRecipients.push(employee.email);
+      }
+      const uniqueRecipients = [...new Set(allRecipients)];
       try {
         await sendEmail({
-          to: recipients,
+          to: uniqueRecipients,
           subject: `⏰ Task Due Soon: "${task.title}" in 2 hours`,
           html: `
             <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
@@ -35,7 +40,7 @@ const checkUpcomingTasks = async () => {
                 <h1 style="margin:0;color:#111;">ThinkAIWorks</h1>
                 <p style="margin:8px 0 0;color:#e67e22;font-weight:600;">⏰ 2-Hour Reminder</p>
               </div>
-              <p>Hi <strong>${task.assignedTo.name}</strong>,</p>
+              <p>Hi <strong>${assignees.map(a => a.name).join(', ')}</strong>,</p>
               <p>Your task <strong>"${task.title}"</strong> is due in <strong>2 hours</strong> (by ${task.dueTime}).</p>
               ${task.description ? `<p style="color:#555;">${task.description}</p>` : ''}
               <p style="margin-top:20px;color:#6b7280;font-size:13px;">Please make sure to complete it on time.</p>

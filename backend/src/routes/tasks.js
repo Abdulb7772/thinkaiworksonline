@@ -11,32 +11,36 @@ router.post('/', protect, async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can assign tasks' });
     const { title, description, assignedTo, date, dueTime, files, project, priority } = req.body;
-    if (!title || !assignedTo || !date || !project) return res.status(400).json({ error: 'title, assignedTo, date, and project required' });
-    const employee = await User.findById(assignedTo);
-    if (!employee || employee.role !== 'employee') return res.status(400).json({ error: 'Invalid employee' });
-    const task = await Task.create({ title, description, assignedTo, assignedBy: req.user._id, date, dueTime, files: files || [], project, priority: priority || 'medium' });
+    const ids = Array.isArray(assignedTo) ? assignedTo : [assignedTo];
+    if (!title || !ids.length || !date || !project) return res.status(400).json({ error: 'title, assignedTo, date, and project required' });
+    const employees = await User.find({ _id: { $in: ids }, role: 'employee' });
+    if (employees.length === 0) return res.status(400).json({ error: 'No valid employees' });
+    const task = await Task.create({ title, description, assignedTo: ids, assignedBy: req.user._id, date, dueTime, files: files || [], project, priority: priority || 'medium' });
 
-    const to = employee.notificationEmail || employee.email;
-    sendEmail({
-      to,
-      subject: `New Task Assigned: "${title}"`,
-      html: `
-        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
-          <h1 style="margin:0 0 16px;color:#111;font-size:20px;">New Task Assigned</h1>
-          <p>Hi <strong>${employee.name}</strong>,</p>
-          <p>A new task has been assigned to you by <strong>${req.user.name}</strong>.</p>
-          <div style="background:#fff;padding:18px;border-radius:12px;border:1px solid #e2e8f0;margin:20px 0;">
-            <p style="margin:0 0 8px;"><strong>Task:</strong> ${title}</p>
-            ${description ? `<p style="margin:0 0 8px;"><strong>Description:</strong> ${description}</p>` : ''}
-            <p style="margin:0;"><strong>Due:</strong> ${date}${dueTime ? ' at ' + dueTime : ''}</p>
+    for (const employee of employees) {
+      const to = employee.notificationEmail || employee.email;
+      sendEmail({
+        to,
+        subject: `New Task Assigned: "${title}"`,
+        html: `
+          <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
+            <h1 style="margin:0 0 16px;color:#111;font-size:20px;">New Task Assigned</h1>
+            <p>Hi <strong>${employee.name}</strong>,</p>
+            <p>A new task has been assigned to you by <strong>${req.user.name}</strong>.</p>
+            <div style="background:#fff;padding:18px;border-radius:12px;border:1px solid #e2e8f0;margin:20px 0;">
+              <p style="margin:0 0 8px;"><strong>Task:</strong> ${title}</p>
+              ${description ? `<p style="margin:0 0 8px;"><strong>Description:</strong> ${description}</p>` : ''}
+              <p style="margin:0;"><strong>Due:</strong> ${date}${dueTime ? ' at ' + dueTime : ''}</p>
+            </div>
+            <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">View Tasks</a>
           </div>
-          <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">View Tasks</a>
-        </div>
-      `,
-      text: `New task assigned: ${title}. Due: ${date}${dueTime ? ' at ' + dueTime : ''}. ${description ? `Description: ${description}` : ''}`,
-    }).catch(err => console.error('Task assignment email failed:', err.message));
+        `,
+        text: `New task assigned: ${title}. Due: ${date}${dueTime ? ' at ' + dueTime : ''}. ${description ? `Description: ${description}` : ''}`,
+      }).catch(err => console.error('Task assignment email failed:', err.message));
+    }
 
-    res.status(201).json(task);
+    const populated = await Task.findById(task._id).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name');
+    res.status(201).json(populated);
   } catch (error) {
     next(error);
   }
@@ -61,8 +65,9 @@ router.patch('/:id', protect, async (req, res, next) => {
     const { status, files, comment, dueTime } = req.body;
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
-    if (req.user.role !== 'admin' && task.assignedTo.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: 'Not authorized' });
+    if (req.user.role !== 'admin') {
+      const ids = Array.isArray(task.assignedTo) ? task.assignedTo : [task.assignedTo];
+      if (!ids.some(a => a.toString() === req.user._id.toString())) return res.status(403).json({ error: 'Not authorized' });
     }
     if (status) {
       if (!['pending', 'in_progress', 'in_testing', 'done'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
@@ -112,6 +117,28 @@ router.patch('/:id', protect, async (req, res, next) => {
       }
     }
 
+    const populated = await Task.findById(task._id).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name');
+    res.json(populated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/:id', protect, async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can edit tasks' });
+    const { title, description, assignedTo, date, dueTime, priority, project } = req.body;
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    const ids = assignedTo !== undefined ? (Array.isArray(assignedTo) ? assignedTo : [assignedTo]) : task.assignedTo;
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (assignedTo !== undefined) task.assignedTo = ids;
+    if (date !== undefined) task.date = date;
+    if (dueTime !== undefined) task.dueTime = dueTime;
+    if (priority !== undefined) task.priority = priority;
+    if (project !== undefined) task.project = project;
+    await task.save();
     const populated = await Task.findById(task._id).populate('assignedTo', 'name email').populate('assignedBy', 'name email').populate('project', 'title').populate('comments.user', 'name');
     res.json(populated);
   } catch (error) {

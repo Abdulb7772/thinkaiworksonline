@@ -14,7 +14,7 @@ export default function DashboardHome({ data, onToast }) {
   const isAdmin = role === 'admin';
 
   useEffect(() => {
-    api('/tasks/').then(t => { setTasks(t); }).catch(() => {}).finally(() => setLoading(false));
+    api('/tasks/').then(t => { setTasks(t.map(task => ({ ...task, assignedTo: Array.isArray(task.assignedTo) ? task.assignedTo : task.assignedTo ? [task.assignedTo] : [] }))); }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const projects = data?.projects || [];
@@ -29,7 +29,7 @@ export default function DashboardHome({ data, onToast }) {
   const completed = allTasks.filter(t => t.status === 'done');
   const pending = allTasks.filter(t => t.status === 'pending');
 
-  const adminTasks = isAdmin ? allTasks : allTasks.filter(t => String(t.assignedTo?._id || t.assignedTo) === String(user.id));
+  const adminTasks = isAdmin ? allTasks : allTasks.filter(t => (t.assignedTo || []).some(a => String(a._id || a) === String(user.id)));
   const adminProjects = isAdmin ? projects : projects.filter(p => p.employees?.some(e => (e._id || e) === user.id));
   const ongoingProjects = adminProjects.filter(p => p.status !== 'completed');
   const completedProjects = adminProjects.filter(p => p.status === 'completed');
@@ -65,7 +65,7 @@ export default function DashboardHome({ data, onToast }) {
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,color:'var(--text1)'}}>{t.title}</div>
                     <div style={{fontSize:11,color:'var(--text3)'}}>
-                      {isAdmin && <span>{t.assignedTo?.name} · </span>}
+                      {isAdmin && <span>{(t.assignedTo || []).map(a => a.name).join(', ')} · </span>}
                       {t.date} {t.project?.title && <span>· {t.project.title}</span>}
                     </div>
                   </div>
@@ -114,7 +114,7 @@ export default function DashboardHome({ data, onToast }) {
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:500}}>{t.title}</div>
                     <div style={{fontSize:10,color:'var(--text3)'}}>
-                      {t.date} {isAdmin && <span>· {t.assignedTo?.name}</span>}
+                      {t.date} {isAdmin && <span>· {(t.assignedTo || []).map(a => a.name).join(', ')}</span>}
                     </div>
                   </div>
                   <span style={{fontSize:10,fontFamily:'var(--font-mono)',color:t.date === todayStr ? 'var(--red)' : 'var(--amber)',whiteSpace:'nowrap'}}>
@@ -136,7 +136,7 @@ export default function DashboardHome({ data, onToast }) {
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:500}}>{t.title}</div>
                     <div style={{fontSize:10,color:'var(--text3)'}}>
-                      {t.date} {isAdmin && <span>· {t.assignedTo?.name}</span>}
+                      {t.date} {isAdmin && <span>· {(t.assignedTo || []).map(a => a.name).join(', ')}</span>}
                     </div>
                   </div>
                   <span className={`badge ${t.status === 'done' ? 'badge-green' : t.status === 'in_progress' ? 'badge-blue' : t.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`} style={{fontSize:9}}>
@@ -158,7 +158,7 @@ export default function DashboardHome({ data, onToast }) {
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:500}}>{t.title}</div>
                     <div style={{fontSize:10,color:'var(--text3)'}}>
-                      {t.date} {isAdmin && <span>· {t.assignedTo?.name}</span>}
+                      {t.date} {isAdmin && <span>· {(t.assignedTo || []).map(a => a.name).join(', ')}</span>}
                       {t.project?.title && <span> · {t.project.title}</span>}
                     </div>
                   </div>

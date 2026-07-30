@@ -48,7 +48,7 @@ export default function Projects({ onToast }) {
   const [editStatus, setEditStatus] = useState('');
   const [detailProject, setDetailProject] = useState(null);
   const [expandedTasks, setExpandedTasks] = useState({});
-  const [form, setForm] = useState({ title: '', description: '', client: '', employee: '', payment: '', startDate: '', completionDate: '' });
+  const [form, setForm] = useState({ title: '', description: '', clients: [], employees: [], payment: '', startDate: '', completionDate: '' });
   const [projectFiles, setProjectFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -80,7 +80,7 @@ export default function Projects({ onToast }) {
       setProjects(p);
       setCustomers(c);
       setEmployees(e);
-      setAllTasks(t);
+      setAllTasks(t.map(task => ({ ...task, assignedTo: Array.isArray(task.assignedTo) ? task.assignedTo : task.assignedTo ? [task.assignedTo] : [] })));
     } catch {} finally {
       setLoading(false);
     }
@@ -98,15 +98,15 @@ export default function Projects({ onToast }) {
         body: JSON.stringify({
           title: form.title,
           description: form.description,
-          clients: form.client ? [form.client] : [],
-          employees: form.employee ? [form.employee] : [],
+          clients: form.clients,
+          employees: form.employees,
           payment: Number(form.payment) || 0,
           startDate: form.startDate,
           files: projectFiles,
         }),
       });
       onToast?.('Project created', 'success');
-      setForm({ title: '', description: '', client: '', employee: '', startDate: '', completionDate: '' });
+      setForm({ title: '', description: '', clients: [], employees: [], startDate: '', completionDate: '' });
       setProjectFiles([]);
       setShowForm(false);
       fetch();
@@ -125,8 +125,8 @@ export default function Projects({ onToast }) {
       const body = {};
       if (form.title !== editProject.title) body.title = form.title;
       if (form.description !== (editProject.description || '')) body.description = form.description;
-      if (form.client !== (editProject.clients?.[0]?._id || '')) body.clients = form.client ? [form.client] : [];
-      if (form.employee !== (editProject.employees?.[0]?._id || '')) body.employees = form.employee ? [form.employee] : [];
+      if (JSON.stringify(form.clients) !== JSON.stringify(editProject.clients?.map(c => c._id || c) || [])) body.clients = form.clients;
+      if (JSON.stringify(form.employees) !== JSON.stringify(editProject.employees?.map(e => e._id || e) || [])) body.employees = form.employees;
       if (form.completionDate && form.startDate && form.completionDate < form.startDate) {
         onToast?.('Completion date cannot be before start date', 'error'); setSaving(false); return;
       }
@@ -177,8 +177,8 @@ export default function Projects({ onToast }) {
     setForm({
       title: project.title,
       description: project.description || '',
-      client: project.clients?.[0]?._id || '',
-      employee: project.employees?.[0]?._id || '',
+      clients: (project.clients || []).map(c => c._id || c),
+      employees: (project.employees || []).map(e => e._id || e),
       payment: project.payment || '',
       startDate: project.startDate || '',
       completionDate: project.completionDate || '',
@@ -244,18 +244,18 @@ export default function Projects({ onToast }) {
                 <textarea placeholder="Project details" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
               </div>
               <div className="form-field">
-                <label>Assign Client</label>
-                <select value={form.client} onChange={e => setForm({ ...form, client: e.target.value })}>
-                  <option value="">Select a client</option>
+                <label>Assign Client(s)</label>
+                <select multiple value={form.clients} onChange={e => setForm({ ...form, clients: Array.from(e.target.selectedOptions, o => o.value) })}>
                   {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                 </select>
+                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
               </div>
               <div className="form-field">
-                <label>Assign Employee (optional)</label>
-                <select value={form.employee} onChange={e => setForm({ ...form, employee: e.target.value })}>
-                  <option value="">Select an employee</option>
+                <label>Assign Employee(s) (optional)</label>
+                <select multiple value={form.employees} onChange={e => setForm({ ...form, employees: Array.from(e.target.selectedOptions, o => o.value) })}>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
                 </select>
+                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
               </div>
               <div className="form-field">
                 <label>Start Date</label>
@@ -369,7 +369,7 @@ export default function Projects({ onToast }) {
                     <div key={task._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--bg2)', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 500 }}>{task.title}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{task.assignedTo?.name} &middot; {task.date}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{(task.assignedTo || []).map(a => a.name).join(', ')} &middot; {task.date}</div>
                       </div>
                       <span className={`badge ${task.status === 'done' ? 'badge-green' : task.status === 'in_progress' ? 'badge-blue' : task.status === 'in_testing' ? 'badge-purple' : 'badge-amber'}`} style={{ fontSize: 10 }}>
                         {task.status === 'in_progress' ? 'In Progress' : task.status === 'in_testing' ? 'In Testing' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
@@ -457,18 +457,18 @@ export default function Projects({ onToast }) {
                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
               </div>
               <div className="form-field">
-                <label>Client</label>
-                <select value={form.client} onChange={e => setForm({ ...form, client: e.target.value })}>
-                  <option value="">Select a client</option>
+                <label>Client(s)</label>
+                <select multiple value={form.clients} onChange={e => setForm({ ...form, clients: Array.from(e.target.selectedOptions, o => o.value) })}>
                   {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                 </select>
+                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
               </div>
               <div className="form-field">
-                <label>Employee</label>
-                <select value={form.employee} onChange={e => setForm({ ...form, employee: e.target.value })}>
-                  <option value="">Select an employee</option>
+                <label>Employee(s)</label>
+                <select multiple value={form.employees} onChange={e => setForm({ ...form, employees: Array.from(e.target.selectedOptions, o => o.value) })}>
                   {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
                 </select>
+                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
               </div>
               <div style={{ display: 'flex', gap: 12 }}>
                 <div className="form-field" style={{ flex: 1 }}>

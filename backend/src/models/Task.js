@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const TaskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, enum: ['pending', 'in_progress', 'in_testing', 'done'], default: 'pending' },
   priority: { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'medium' },
