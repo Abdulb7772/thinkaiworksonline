@@ -20,7 +20,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
     console.log(`📧 Would send email to ${Array.isArray(to) ? to.join(', ') : to} — subject: "${subject}" (no RESEND_API_KEY configured)`);
     return { id: 'mock' };
   }
-  const from = process.env.EMAIL_FROM || 'noreply@thinkaiworks.online';
+  const from = process.env.EMAIL_FROM || '"ThinkAIWorks" <noreply@thinkaiworks.online>';
   const recipients = Array.isArray(to) ? to : [to];
   const recipientStr = recipients.join(', ');
 

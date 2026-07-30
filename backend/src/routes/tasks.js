@@ -71,6 +71,12 @@ router.patch('/:id', protect, async (req, res, next) => {
     }
     if (status) {
       if (!['pending', 'in_progress', 'in_testing', 'done'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+      if (req.user.role !== 'admin') {
+        const flow = ['pending', 'in_progress', 'in_testing', 'done'];
+        const curIdx = flow.indexOf(task.status);
+        const nextIdx = flow.indexOf(status);
+        if (nextIdx !== curIdx + 1) return res.status(403).json({ error: 'Employees can only advance status one step at a time' });
+      }
       task.status = status;
     }
     if (dueTime !== undefined) {
