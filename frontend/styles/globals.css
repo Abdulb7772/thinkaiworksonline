@@ -16,7 +16,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:va
 
 .shell{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
 
-.topbar{position:fixed;top:0;left:260px;right:0;height:70px;z-index:200;display:flex;align-items:center;padding:0 28px;background:var(--bg2);border-bottom:1px solid var(--border);gap:16px}
+.topbar{position:fixed;top:0;left:0;right:0;height:70px;z-index:200;display:flex;align-items:center;padding:0 28px;background:var(--bg2);border-bottom:1px solid var(--border);gap:16px}
 .brands{display:flex;align-items:center;gap:0}
 .brand-pill{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:30px;font-family:var(--font-head);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid transparent}
 .brand-pill.es{background:var(--es3);color:var(--es);border-color:rgba(0,229,200,.2)}
