@@ -1,21 +1,24 @@
 'use client';
-import { api } from '@/lib/config';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function uploadFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const res = await api('/upload', {
-          method: 'POST',
-          body: JSON.stringify({ file: reader.result, name: file.name }),
-        });
-        resolve(res);
-      } catch (err) { reject(err); }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}/api/upload`, {
+    method: 'POST',
+    headers,
+    body: formData,
   });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error || 'Upload failed');
+  return data;
 }
 
 const EXT_MAP = {
