@@ -249,7 +249,7 @@ export default function Attendance({ data, onToast, onRefresh }) {
         </div>
         <div style={{display:'flex',gap:10,alignItems:'center'}}>
           <div style={{fontFamily:'var(--font-mono)',fontSize:20,fontWeight:600,color:'var(--tai)',letterSpacing:1}}>{now}</div>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+          <input type="date" value={date} max={todayStr()} onChange={(e) => setDate(e.target.value)}
             style={{padding:'6px 10px',border:'1px solid var(--border2)',borderRadius:'var(--r)',background:'var(--bg2)',color:'#fff',fontSize:13,accentColor:'#fff',colorScheme:'dark'}} />
         </div>
       </div>
