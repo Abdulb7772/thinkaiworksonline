@@ -49,6 +49,8 @@ export default function Projects({ onToast }) {
   const [detailProject, setDetailProject] = useState(null);
   const [expandedTasks, setExpandedTasks] = useState({});
   const [form, setForm] = useState({ title: '', description: '', clients: [], employees: [], payment: '', startDate: '', completionDate: '' });
+  const [tmpClient, setTmpClient] = useState('');
+  const [tmpEmployee, setTmpEmployee] = useState('');
   const [projectFiles, setProjectFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -245,17 +247,39 @@ export default function Projects({ onToast }) {
               </div>
               <div className="form-field">
                 <label>Assign Client(s)</label>
-                <select multiple value={form.clients} onChange={e => setForm({ ...form, clients: Array.from(e.target.selectedOptions, o => o.value) })}>
-                  {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                </select>
-                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
+                <div style={{display:'flex',gap:6}}>
+                  <select value={tmpClient} onChange={e => setTmpClient(e.target.value)} style={{flex:1}}>
+                    <option value="">Select a client</option>
+                    {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                  </select>
+                  <button type="button" className="btn btn-sm btn-tai" disabled={!tmpClient || form.clients.includes(tmpClient)} onClick={() => { setForm({ ...form, clients: [...form.clients, tmpClient] }); setTmpClient(''); }}>+</button>
+                </div>
+                {form.clients.length > 0 && (
+                  <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:6}}>
+                    {form.clients.map(id => {
+                      const c = customers.find(c => c._id === id);
+                      return <span key={id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',background:'var(--tai3)',borderRadius:12,fontSize:11,color:'var(--tai)'}}>{c?.name}<button type="button" onClick={() => setForm({ ...form, clients: form.clients.filter(x => x !== id) })} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button></span>;
+                    })}
+                  </div>
+                )}
               </div>
               <div className="form-field">
                 <label>Assign Employee(s) (optional)</label>
-                <select multiple value={form.employees} onChange={e => setForm({ ...form, employees: Array.from(e.target.selectedOptions, o => o.value) })}>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
-                </select>
-                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
+                <div style={{display:'flex',gap:6}}>
+                  <select value={tmpEmployee} onChange={e => setTmpEmployee(e.target.value)} style={{flex:1}}>
+                    <option value="">Select an employee</option>
+                    {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
+                  </select>
+                  <button type="button" className="btn btn-sm btn-tai" disabled={!tmpEmployee || form.employees.includes(tmpEmployee)} onClick={() => { setForm({ ...form, employees: [...form.employees, tmpEmployee] }); setTmpEmployee(''); }}>+</button>
+                </div>
+                {form.employees.length > 0 && (
+                  <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:6}}>
+                    {form.employees.map(id => {
+                      const e = employees.find(emp => emp._id === id);
+                      return <span key={id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',background:'var(--tai3)',borderRadius:12,fontSize:11,color:'var(--tai)'}}>{e?.name}<button type="button" onClick={() => setForm({ ...form, employees: form.employees.filter(x => x !== id) })} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button></span>;
+                    })}
+                  </div>
+                )}
               </div>
               <div className="form-field">
                 <label>Start Date</label>
@@ -458,17 +482,39 @@ export default function Projects({ onToast }) {
               </div>
               <div className="form-field">
                 <label>Client(s)</label>
-                <select multiple value={form.clients} onChange={e => setForm({ ...form, clients: Array.from(e.target.selectedOptions, o => o.value) })}>
-                  {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                </select>
-                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
+                <div style={{display:'flex',gap:6}}>
+                  <select value={tmpClient} onChange={e => setTmpClient(e.target.value)} style={{flex:1}}>
+                    <option value="">Select a client</option>
+                    {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                  </select>
+                  <button type="button" className="btn btn-sm btn-tai" disabled={!tmpClient || form.clients.includes(tmpClient)} onClick={() => { setForm({ ...form, clients: [...form.clients, tmpClient] }); setTmpClient(''); }}>+</button>
+                </div>
+                {form.clients.length > 0 && (
+                  <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:6}}>
+                    {form.clients.map(id => {
+                      const c = customers.find(c => c._id === id);
+                      return <span key={id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',background:'var(--tai3)',borderRadius:12,fontSize:11,color:'var(--tai)'}}>{c?.name}<button type="button" onClick={() => setForm({ ...form, clients: form.clients.filter(x => x !== id) })} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button></span>;
+                    })}
+                  </div>
+                )}
               </div>
               <div className="form-field">
                 <label>Employee(s)</label>
-                <select multiple value={form.employees} onChange={e => setForm({ ...form, employees: Array.from(e.target.selectedOptions, o => o.value) })}>
-                  {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
-                </select>
-                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>Hold Ctrl/Cmd to select multiple</div>
+                <div style={{display:'flex',gap:6}}>
+                  <select value={tmpEmployee} onChange={e => setTmpEmployee(e.target.value)} style={{flex:1}}>
+                    <option value="">Select an employee</option>
+                    {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
+                  </select>
+                  <button type="button" className="btn btn-sm btn-tai" disabled={!tmpEmployee || form.employees.includes(tmpEmployee)} onClick={() => { setForm({ ...form, employees: [...form.employees, tmpEmployee] }); setTmpEmployee(''); }}>+</button>
+                </div>
+                {form.employees.length > 0 && (
+                  <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:6}}>
+                    {form.employees.map(id => {
+                      const e = employees.find(emp => emp._id === id);
+                      return <span key={id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',background:'var(--tai3)',borderRadius:12,fontSize:11,color:'var(--tai)'}}>{e?.name}<button type="button" onClick={() => setForm({ ...form, employees: form.employees.filter(x => x !== id) })} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button></span>;
+                    })}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: 12 }}>
                 <div className="form-field" style={{ flex: 1 }}>
