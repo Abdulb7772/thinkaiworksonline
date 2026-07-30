@@ -16,6 +16,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
   });
   const [clientEmail, setClientEmail] = useState('');
   const [attendeeEmail, setAttendeeEmail] = useState('');
+  const [customers, setCustomers] = useState([]);
   const [contacts, setContacts] = useState({ clients: [], employees: [] });
   const [saving, setSaving] = useState(false);
 
@@ -25,6 +26,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
       if (u.email) setForm((f) => ({ ...f, creatorEmail: u.email }));
     } catch {}
     api('/meetings/contacts').then(setContacts).catch(() => {});
+    api('/projects/customers/list').then(setCustomers).catch(() => {});
   }, []);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -43,6 +45,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
         datetime:       form.datetime,
         type:           form.type,
         company:        form.company,
+        client:         form.client || undefined,
         clientEmails:   clientEmail.trim() || undefined,
         creatorEmail:   form.creatorEmail.trim(),
         attendeeEmails: attendeeEmail.trim() || undefined,
@@ -109,6 +112,31 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
             </div>
           </div>
 
+          {/* Client */}
+          <div className="form-row">
+            <div className="form-field">
+              <label>Client</label>
+              <select value={form.client || ''} onChange={e => {
+                const c = customers.find(c => c._id === e.target.value);
+                setForm({ ...form, client: c?.name || '' });
+                setClientEmail(c?.email || '');
+              }}>
+                <option value="">Select a client</option>
+                {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="form-field">
+              <label>Meeting Link</label>
+              <input
+                type="url"
+                placeholder="https://zoom.us/j/..."
+                value={form.meetingLink}
+                onChange={set('meetingLink')}
+                style={{fontSize:13}}
+              />
+            </div>
+          </div>
+
           {/* Email & Links section */}
           <div style={{
             marginTop: 12,
@@ -135,20 +163,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
                 />
               </div>
               <div className="form-field">
-                <label style={{color:'var(--text2)'}}>Meeting Link</label>
-                <input
-                  type="url"
-                  placeholder="https://zoom.us/j/..."
-                  value={form.meetingLink}
-                  onChange={set('meetingLink')}
-                  style={{fontSize:13}}
-                />
-              </div>
-            </div>
-
-            <div className="form-row" style={{marginTop:0}}>
-              <div className="form-field">
-                <label>Client Email</label>
+                <label style={{color:'var(--text2)'}}>Client Email</label>
                 <input
                   key={'c' + contacts.clients.length}
                   list="clientEmailList"
@@ -161,6 +176,9 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
                   {contacts.clients.map((c, i) => <option key={i} value={c.email} />)}
                 </datalist>
               </div>
+            </div>
+
+            <div className="form-row" style={{marginTop:0}}>
               <div className="form-field">
                 <label>Attendee Email</label>
                 <input
