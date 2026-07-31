@@ -12,7 +12,11 @@ export default function Toast({ message, type, onClose, onConfirm }) {
   if (!message) return null;
 
   return (
-    <div className={`toast ${onConfirm ? 'confirm' : type === 'success' ? 'success' : 'info'}`}>
+    <>
+      {onConfirm && (
+        <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', animation: 'fadeIn .15s ease' }} />
+      )}
+      <div className={`toast ${onConfirm ? 'confirm' : type === 'success' ? 'success' : 'info'}`}>
       <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
         <span>{onConfirm ? '⚠' : type === 'success' ? '✓' : 'ℹ'}</span>
         {message}
@@ -23,6 +27,7 @@ export default function Toast({ message, type, onClose, onConfirm }) {
           <button className="btn btn-sm btn-ghost" style={{ padding: '2px 10px', fontSize: 11 }} onClick={onClose}>No</button>
         </span>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -164,7 +164,7 @@ td{padding:10px 12px;vertical-align:middle}
 .toast{position:fixed;bottom:28px;right:28px;padding:13px 20px;border-radius:var(--r2);font-size:13px;z-index:9999;max-width:380px;animation:fadeUp .3s ease;font-weight:500;border:1px solid}
 .toast.success{background:#0a1f14;border-color:rgba(34,212,122,.35);color:var(--green)}
 .toast.info{background:#0d0f20;border-color:rgba(74,158,255,.35);color:var(--blue)}
-.toast.confirm{top:50%;left:50%;transform:translate(-50%,-50%);bottom:auto;right:auto;max-width:420px}
+.toast.confirm{top:50%;left:50%;transform:translate(-50%,-50%);bottom:auto;right:auto;max-width:420px;background:#1a1030;border-color:rgba(124,92,252,.5);color:var(--tai)}
 
 .emp-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:16px;transition:border-color .2s}
 .emp-card:hover{border-color:var(--border2)}
