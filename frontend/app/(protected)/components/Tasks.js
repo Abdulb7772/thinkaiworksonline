@@ -33,7 +33,7 @@ export default function Tasks({ onToast }) {
 
   const empItems = (ids) => (ids || []).map(id => {
     const e = employees.find(x => x._id === id);
-    return e ? { id: e._id, name: e.name, email: e.email || e.notificationEmail || '' } : { id, name: id, email: '' };
+    return e ? { id: e._id, name: e.name, email: e.notificationEmail || e.email || '' } : { id, name: id, email: '' };
   });
 
   const fetch = async () => {

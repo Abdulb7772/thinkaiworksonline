@@ -46,7 +46,7 @@ export default function MultiEmailSelector({
       .then((data) => {
         if (!alive) return;
         const raw = Array.isArray(data) ? data : (data?.[listKey] || []);
-        setOptions(raw.map(o => ({ id: o[idKey] ?? o.id ?? null, name: o.name || '', email: o.email || '' })).filter(o => o.email));
+        setOptions(raw.map(o => ({ id: o[idKey] ?? o.id ?? null, name: o.name || '', email: o.notificationEmail || o.email || '' })).filter(o => o.email));
         setLoadError('');
       })
       .catch(() => { if (alive) setLoadError('Could not load options'); })
