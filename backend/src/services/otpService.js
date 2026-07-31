@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const Otp = require('../models/Otp');
 
 const OTP_EXPIRY_SECONDS = parseInt(process.env.OTP_EXPIRY_SECONDS, 10) || 60;
@@ -13,7 +13,7 @@ const generateOtp = () => {
 };
 
 const hashOtp = async (otp) => {
-  const salt = await bcrypt.genSalt(12);
+  const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(otp, salt);
 };
 
