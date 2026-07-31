@@ -12,7 +12,7 @@ export default function Toast({ message, type, onClose, onConfirm }) {
   if (!message) return null;
 
   return (
-    <div className={`toast ${type === 'success' ? 'success' : 'info'}`}>
+    <div className={`toast ${onConfirm ? 'confirm' : type === 'success' ? 'success' : 'info'}`}>
       <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
         <span>{onConfirm ? '⚠' : type === 'success' ? '✓' : 'ℹ'}</span>
         {message}
