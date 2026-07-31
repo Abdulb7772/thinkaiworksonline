@@ -8,19 +8,15 @@ cloudinary.config({
 });
 
 function uploadBuffer(buffer, name, mime) {
-  const isPdf = mime === 'application/pdf' || name.toLowerCase().endsWith('.pdf');
-  const resourceType = isPdf ? 'raw' : 'image';
-  const ext = (name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || '';
-  const base = name.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40);
-  const publicId = `${Date.now()}-${base}${ext ? '.' + ext : ''}`;
-
-  console.log(`[upload] start name=${name} mime=${mime} type=${resourceType} buffer=${buffer.length}`);
+  console.log(`[upload] start name=${name} mime=${mime} buffer=${buffer.length}`);
 
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream({
       folder: 'thinkaiworks',
-      public_id: publicId,
-      resource_type: resourceType,
+      use_filename: true,
+      unique_filename: true,
+      resource_type: 'auto',
+      filename: name,
     }, (error, result) => {
       if (error) {
         console.error(`[upload] fail name=${name} error=${error.message}`);
