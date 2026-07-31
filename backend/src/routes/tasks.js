@@ -63,7 +63,7 @@ router.get('/', protect, async (req, res, next) => {
 
 router.patch('/:id', protect, async (req, res, next) => {
   try {
-    const { status, files, comment, dueTime, deleteFile } = req.body;
+    const { status, files, comment, dueTime, deleteFile, deleteComment } = req.body;
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
     if (req.user.role !== 'admin') {
@@ -103,8 +103,11 @@ router.patch('/:id', protect, async (req, res, next) => {
         destroyFile(file.public_id, file.resource_type).catch(() => {});
         task.files = task.files.filter(f => f.public_id !== deleteFile);
         deletedFile = file;
-        task.comments.push({ text: `Deleted file "${file.name}"`, user: req.user._id });
       }
+    }
+    if (deleteComment) {
+      if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can delete comments' });
+      task.comments = task.comments.filter(c => String(c._id) !== String(deleteComment));
     }
     if (comment) {
       task.comments.push({ text: comment, user: req.user._id });

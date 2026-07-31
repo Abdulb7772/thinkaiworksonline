@@ -360,7 +360,21 @@ export default function Tasks({ onToast }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
                   {(selectedTask.comments || []).map((c, i) => (
                     <div key={i} style={{ padding: '8px 12px', background: 'var(--bg3)', borderRadius: 8, fontSize: 13 }}>
-                      <div style={{ fontWeight: 600, fontSize: 11, color: 'var(--tai)', marginBottom: 2 }}>{c.user?.name || 'Unknown'}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontWeight: 600, fontSize: 11, color: 'var(--tai)', marginBottom: 2, flex: 1 }}>{c.user?.name || 'Unknown'}</div>
+                        {role === 'admin' && (
+                          <button className="btn btn-sm btn-ghost" style={{ color: 'var(--red)', padding: '0 4px', fontSize: 10, flexShrink: 0 }} title="Delete comment" onClick={() => {
+                            onToast?.('Delete this comment?', 'confirm', async () => {
+                              try {
+                                const res = await api(`/tasks/${selectedTask._id}`, { method: 'PATCH', body: JSON.stringify({ deleteComment: c._id }) });
+                                setSelectedTask(res);
+                                setTasks(prev => prev.map(t => t._id === res._id ? res : t));
+                                onToast?.('Comment deleted', 'success');
+                              } catch (err) { onToast?.(err.message, 'error'); }
+                            });
+                          }}>✕</button>
+                        )}
+                      </div>
                       <div style={{ color: 'var(--text2)' }}>{c.text}</div>
                     </div>
                   ))}
