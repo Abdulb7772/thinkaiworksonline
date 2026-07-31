@@ -23,6 +23,7 @@ export default function MultiEmailSelector({
   placeholder = 'Type to search...',
   apiEndpoint,
   listKey,
+  idKey = 'id',
   selected = [],
   onChange,
   allowManualEmail = true,
@@ -42,11 +43,16 @@ export default function MultiEmailSelector({
     let alive = true;
     setLoading(true);
     api(apiEndpoint)
-      .then((data) => { if (alive) { setOptions(data?.[listKey] || []); setLoadError(''); } })
+      .then((data) => {
+        if (!alive) return;
+        const raw = Array.isArray(data) ? data : (data?.[listKey] || []);
+        setOptions(raw.map(o => ({ id: o[idKey] ?? o.id ?? null, name: o.name || '', email: o.email || '' })).filter(o => o.email));
+        setLoadError('');
+      })
       .catch(() => { if (alive) setLoadError('Could not load options'); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [apiEndpoint, listKey]);
+  }, [apiEndpoint, listKey, idKey]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 250);

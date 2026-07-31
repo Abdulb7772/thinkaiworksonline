@@ -5,6 +5,7 @@ import { api } from '@/lib/config';
 import { SkeletonCard } from './Skeleton';
 import { uploadFile } from '../utils/files';
 import FileViewer from './FileViewer';
+import MultiEmailSelector from './MultiEmailSelector';
 
 export default function Tasks({ onToast }) {
   const [tasks, setTasks] = useState([]);
@@ -21,8 +22,6 @@ export default function Tasks({ onToast }) {
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', assignedTo: [], date: '', dueTime: '', priority: 'medium', projectId: '' });
-  const [tmpEmployee, setTmpEmployee] = useState('');
-  const [tmpEditEmployee, setTmpEditEmployee] = useState('');
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -31,6 +30,11 @@ export default function Tasks({ onToast }) {
   }, []);
 
   const toArr = (v) => Array.isArray(v) ? v : v ? [v] : [];
+
+  const empItems = (ids) => (ids || []).map(id => {
+    const e = employees.find(x => x._id === id);
+    return e ? { id: e._id, name: e.name, email: e.email || e.notificationEmail || '' } : { id, name: id, email: '' };
+  });
 
   const fetch = async () => {
     try {
@@ -168,24 +172,16 @@ export default function Tasks({ onToast }) {
               </select>
             </div>
             <div className="form-field">
-              <label>Assign To *</label>
-              <div style={{display:'flex',gap:6}}>
-                <select value={tmpEmployee} onChange={e => setTmpEmployee(e.target.value)} style={{flex:1}}>
-                  <option value="">Select an employee</option>
-                  {employees.map(emp => (
-                    <option key={emp._id} value={emp._id}>{emp.name} ({emp.notificationEmail || emp.email})</option>
-                  ))}
-                </select>
-                <button type="button" className="btn btn-sm btn-tai" disabled={!tmpEmployee || form.assignedTo.includes(tmpEmployee)} onClick={() => { setForm({ ...form, assignedTo: [...form.assignedTo, tmpEmployee] }); setTmpEmployee(''); }}>+</button>
-              </div>
-              {form.assignedTo.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:6}}>
-                  {form.assignedTo.map(id => {
-                    const emp = employees.find(e => e._id === id);
-                    return <span key={id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',background:'var(--tai3)',borderRadius:12,fontSize:11,color:'var(--tai)'}}>{emp?.name}<button type="button" onClick={() => setForm({ ...form, assignedTo: form.assignedTo.filter(x => x !== id) })} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button></span>;
-                  })}
-                </div>
-              )}
+              <MultiEmailSelector
+                label="Assign To"
+                placeholder="Search employees by name or email..."
+                apiEndpoint="/tasks/employees"
+                idKey="_id"
+                selected={empItems(form.assignedTo)}
+                onChange={(items) => setForm({ ...form, assignedTo: items.map(i => i.id) })}
+                allowManualEmail={false}
+                required
+              />
             </div>
             <div className="form-field">
               <label>Date *</label>
@@ -454,23 +450,16 @@ export default function Tasks({ onToast }) {
               </div>
               <div className="form-field">
                 <label>Assign To *</label>
-                <div style={{display:'flex',gap:6}}>
-                  <select value={tmpEditEmployee} onChange={e => setTmpEditEmployee(e.target.value)} style={{flex:1}}>
-                    <option value="">Select an employee</option>
-                    {employees.map(emp => (
-                      <option key={emp._id} value={emp._id}>{emp.name} ({emp.notificationEmail || emp.email})</option>
-                    ))}
-                  </select>
-                  <button type="button" className="btn btn-sm btn-tai" disabled={!tmpEditEmployee || editForm.assignedTo.includes(tmpEditEmployee)} onClick={() => { setEditForm({ ...editForm, assignedTo: [...editForm.assignedTo, tmpEditEmployee] }); setTmpEditEmployee(''); }}>+</button>
-                </div>
-                {editForm.assignedTo.length > 0 && (
-                  <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:6}}>
-                    {editForm.assignedTo.map(id => {
-                      const emp = employees.find(e => e._id === id);
-                      return <span key={id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',background:'var(--tai3)',borderRadius:12,fontSize:11,color:'var(--tai)'}}>{emp?.name}<button type="button" onClick={() => setEditForm({ ...editForm, assignedTo: editForm.assignedTo.filter(x => x !== id) })} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button></span>;
-                    })}
-                  </div>
-                )}
+              <MultiEmailSelector
+                label="Assign To"
+                placeholder="Search employees by name or email..."
+                apiEndpoint="/tasks/employees"
+                idKey="_id"
+                selected={empItems(editForm.assignedTo)}
+                onChange={(items) => setEditForm({ ...editForm, assignedTo: items.map(i => i.id) })}
+                allowManualEmail={false}
+                required
+              />
               </div>
               <div className="form-field">
                 <label>Date *</label>
