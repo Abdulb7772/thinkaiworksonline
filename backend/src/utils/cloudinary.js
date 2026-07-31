@@ -10,7 +10,9 @@ cloudinary.config({
 function uploadBuffer(buffer, name, mime) {
   const isPdf = mime === 'application/pdf' || name.toLowerCase().endsWith('.pdf');
   const resourceType = isPdf ? 'raw' : 'image';
-  const publicId = `${Date.now()}-${name.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}`;
+  const ext = (name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || '';
+  const base = name.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40);
+  const publicId = `${Date.now()}-${base}${ext ? '.' + ext : ''}`;
 
   console.log(`[upload] start name=${name} mime=${mime} type=${resourceType} buffer=${buffer.length}`);
 
