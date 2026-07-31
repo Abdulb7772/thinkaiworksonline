@@ -2,20 +2,27 @@
 
 import { useEffect } from 'react';
 
-export default function Toast({ message, type, onClose }) {
+export default function Toast({ message, type, onClose, onConfirm }) {
   useEffect(() => {
+    if (onConfirm) return;
     const timer = setTimeout(() => onClose?.(), 3000);
     return () => clearTimeout(timer);
-  }, [onClose]);
+  }, [onClose, onConfirm]);
 
   if (!message) return null;
 
   return (
     <div className={`toast ${type === 'success' ? 'success' : 'info'}`}>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span>{type === 'success' ? '✓' : 'ℹ'}</span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+        <span>{onConfirm ? '⚠' : type === 'success' ? '✓' : 'ℹ'}</span>
         {message}
       </span>
+      {onConfirm && (
+        <span style={{ display: 'flex', gap: 6, marginLeft: 14, flexShrink: 0 }}>
+          <button className="btn btn-sm btn-tai" style={{ padding: '2px 10px', fontSize: 11 }} onClick={() => { onConfirm(); onClose(); }}>Yes</button>
+          <button className="btn btn-sm btn-ghost" style={{ padding: '2px 10px', fontSize: 11 }} onClick={onClose}>No</button>
+        </span>
+      )}
     </div>
   );
 }

@@ -73,8 +73,8 @@ export default function Dashboard() {
     if (page && !(u.role === 'customer' && page === 'overview')) setActivePage(page);
   }, [router]);
 
-  const showToast = useCallback((msg, type = 'success') => {
-    setToast({ msg, type });
+  const showToast = useCallback((msg, type = 'success', onConfirm) => {
+    setToast({ msg, type, onConfirm });
   }, []);
 
   const sections = {
@@ -147,6 +147,7 @@ export default function Dashboard() {
         <Toast
           message={toast.msg}
           type={toast.type}
+          onConfirm={toast.onConfirm}
           onClose={() => setToast(null)}
         />
       )}

@@ -315,14 +315,15 @@ export default function Tasks({ onToast }) {
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <FileViewer file={f} />
                         {role === 'admin' && (
-                          <button className="btn btn-sm btn-ghost" style={{ color: 'var(--red)', padding: '2px 6px', fontSize: 10, flexShrink: 0 }} title="Delete file" onClick={async () => {
-                            if (!window.confirm(`Delete file "${f.name}"?`)) return;
-                            try {
-                              const res = await api(`/tasks/${selectedTask._id}`, { method: 'PATCH', body: JSON.stringify({ deleteFile: f.public_id }) });
-                              setSelectedTask(res);
-                              setTasks(prev => prev.map(t => t._id === res._id ? res : t));
-                              onToast?.('File deleted', 'success');
-                            } catch (err) { onToast?.(err.message, 'error'); }
+                          <button className="btn btn-sm btn-ghost" style={{ color: 'var(--red)', padding: '2px 6px', fontSize: 10, flexShrink: 0 }} title="Delete file" onClick={() => {
+                            onToast?.(`Delete file "${f.name}"?`, 'confirm', async () => {
+                              try {
+                                const res = await api(`/tasks/${selectedTask._id}`, { method: 'PATCH', body: JSON.stringify({ deleteFile: f.public_id }) });
+                                setSelectedTask(res);
+                                setTasks(prev => prev.map(t => t._id === res._id ? res : t));
+                                onToast?.('File deleted', 'success');
+                              } catch (err) { onToast?.(err.message, 'error'); }
+                            });
                           }}>✕</button>
                         )}
                       </div>
