@@ -43,6 +43,8 @@ const startMeetingReminderJob = () => {
             attendeeEmails: meeting.attendeeEmails,
             adminEmails:    meeting.adminEmails,
             meetingLink:    meeting.meetingLink,
+            clients:        meeting.clients,
+            attendeeList:   meeting.attendeeList,
           });
 
           meeting.reminderSent = true;

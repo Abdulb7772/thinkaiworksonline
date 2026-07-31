@@ -11,6 +11,8 @@ const MeetingSchema = new mongoose.Schema({
   creatorEmail: { type: String, default: '' },
   attendeeEmails: { type: [String], default: [] },
   adminEmails: { type: [String], default: [] },
+  clients: [{ id: String, name: String, email: String, external: { type: Boolean, default: false } }],
+  attendeeList: [{ id: String, name: String, email: String, external: { type: Boolean, default: false } }],
   meetingLink: { type: String, default: '' },
   completedAt: { type: Date },
   cancelledAt: { type: Date },

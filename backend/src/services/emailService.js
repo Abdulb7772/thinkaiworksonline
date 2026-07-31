@@ -115,20 +115,29 @@ const meetingHtml = ({ title, datetime, attendees, meetingLink, bodyContent, cre
   `;
 };
 
-const getRecipients = ({ clientEmails, creatorEmail, attendeeEmails, adminEmails }) => [
-  ...(Array.isArray(clientEmails) ? clientEmails.map(e => e.trim()).filter(Boolean) : []),
-  ...(creatorEmail ? [creatorEmail.trim()] : []),
-  ...(Array.isArray(attendeeEmails) ? attendeeEmails.map(e => e.trim()).filter(Boolean) : []),
-  ...(Array.isArray(adminEmails) ? adminEmails.map(e => e.trim()).filter(Boolean) : []),
-].filter(Boolean);
+const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
 
-const sendMeetingReminder = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink }) => {
-  const allRecipients = getRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails });
+const collectRecipients = ({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList }) => {
+  const set = new Set();
+  const add = (e) => { const n = normalizeEmail(e); if (n) set.add(n); };
+  (Array.isArray(clients) ? clients : []).forEach(c => add(c && c.email));
+  (Array.isArray(attendeeList) ? attendeeList : []).forEach(a => add(a && a.email));
+  (Array.isArray(clientEmails) ? clientEmails : []).forEach(add);
+  add(creatorEmail);
+  (Array.isArray(attendeeEmails) ? attendeeEmails : []).forEach(add);
+  (Array.isArray(adminEmails) ? adminEmails : []).forEach(add);
+  return [...set];
+};
+
+const sendMeetingReminder = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink, clients, attendeeList }) => {
+  const allRecipients = collectRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList });
   if (allRecipients.length === 0) return;
 
   const allEmails = [
     ...(Array.isArray(clientEmails) ? clientEmails : []),
     ...(Array.isArray(attendeeEmails) ? attendeeEmails : []),
+    ...(Array.isArray(clients) ? clients.map(c => c.email) : []),
+    ...(Array.isArray(attendeeList) ? attendeeList.map(a => a.email) : []),
   ];
   const attendeesStr = allEmails.length > 0 ? allEmails.join(', ') : (attendees || '');
 
@@ -142,13 +151,15 @@ const sendMeetingReminder = async ({ title, datetime, attendees, type, clientEma
   });
 };
 
-const sendMeetingCreated = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink }) => {
-  const allRecipients = getRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails });
+const sendMeetingCreated = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink, clients, attendeeList }) => {
+  const allRecipients = collectRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList });
   if (allRecipients.length === 0) return;
 
   const allEmails = [
     ...(Array.isArray(clientEmails) ? clientEmails : []),
     ...(Array.isArray(attendeeEmails) ? attendeeEmails : []),
+    ...(Array.isArray(clients) ? clients.map(c => c.email) : []),
+    ...(Array.isArray(attendeeList) ? attendeeList.map(a => a.email) : []),
   ];
   const attendeesStr = allEmails.length > 0 ? allEmails.join(', ') : (attendees || '');
 
@@ -165,13 +176,15 @@ const sendMeetingCreated = async ({ title, datetime, attendees, type, clientEmai
   });
 };
 
-const sendMeetingFollowUp = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink }) => {
-  const allRecipients = getRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails });
+const sendMeetingFollowUp = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink, clients, attendeeList }) => {
+  const allRecipients = collectRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList });
   if (allRecipients.length === 0) return;
 
   const allEmails = [
     ...(Array.isArray(clientEmails) ? clientEmails : []),
     ...(Array.isArray(attendeeEmails) ? attendeeEmails : []),
+    ...(Array.isArray(clients) ? clients.map(c => c.email) : []),
+    ...(Array.isArray(attendeeList) ? attendeeList.map(a => a.email) : []),
   ];
   const attendeesStr = allEmails.length > 0 ? allEmails.join(', ') : (attendees || '');
 
@@ -237,8 +250,8 @@ const sendMeetingFollowUp = async ({ title, datetime, attendees, type, clientEma
   });
 };
 
-const sendMeetingFollowUp2h = async ({ title, datetime, attendees, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink }) => {
-  const allRecipients = getRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails });
+const sendMeetingFollowUp2h = async ({ title, datetime, attendees, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink, clients, attendeeList }) => {
+  const allRecipients = collectRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList });
   if (allRecipients.length === 0) return;
 
   const bodyContent = `
@@ -297,13 +310,15 @@ const sendOtpEmail = async ({ to, otp, name }) => {
   });
 };
 
-const sendMeetingCancelled = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink }) => {
-  const allRecipients = getRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails });
+const sendMeetingCancelled = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink, clients, attendeeList }) => {
+  const allRecipients = collectRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList });
   if (allRecipients.length === 0) return;
 
   const allEmails = [
     ...(Array.isArray(clientEmails) ? clientEmails : []),
     ...(Array.isArray(attendeeEmails) ? attendeeEmails : []),
+    ...(Array.isArray(clients) ? clients.map(c => c.email) : []),
+    ...(Array.isArray(attendeeList) ? attendeeList.map(a => a.email) : []),
   ];
   const attendeesStr = allEmails.length > 0 ? allEmails.join(', ') : (attendees || '');
 
@@ -396,4 +411,29 @@ const taskUpdateText = ({ heading, lines, url = 'https://www.thinkaiworks.online
   'To stop receiving these updates, contact your administrator.',
 ].join('\n');
 
-module.exports = { sendEmail, sendMeetingReminder, sendMeetingCreated, sendMeetingFollowUp, sendMeetingFollowUp2h, sendMeetingCancelled, sendOtpEmail, taskUpdateHtml, taskUpdateText };
+const sendMeetingUpdated = async ({ title, datetime, attendees, type, clientEmails, creatorEmail, attendeeEmails, adminEmails, meetingLink, clients, attendeeList }) => {
+  const allRecipients = collectRecipients({ clientEmails, creatorEmail, attendeeEmails, adminEmails, clients, attendeeList });
+  if (allRecipients.length === 0) return;
+
+  const allEmails = [
+    ...(Array.isArray(clientEmails) ? clientEmails : []),
+    ...(Array.isArray(attendeeEmails) ? attendeeEmails : []),
+    ...(Array.isArray(clients) ? clients.map(c => c.email) : []),
+    ...(Array.isArray(attendeeList) ? attendeeList.map(a => a.email) : []),
+  ];
+  const attendeesStr = allEmails.length > 0 ? allEmails.join(', ') : (attendees || '');
+
+  const html = meetingHtml({
+    title, datetime, attendees: attendeesStr, meetingLink, creatorEmail, type,
+    bodyContent: '<div style="background:rgba(74,158,255,0.08);border:1px solid rgba(74,158,255,0.2);border-radius:10px;padding:12px 18px;margin-top:20px;text-align:center;"><p style="margin:0;color:#4a9eff;font-size:13px;font-weight:600;">✏️ Meeting details have been updated — please review</p></div>',
+  });
+
+  await sendEmail({
+    to: allRecipients,
+    subject: `✏️ Updated: "${title}"`,
+    html,
+    text: `The meeting "${title}" has been updated for ${datetime ? new Date(datetime).toLocaleString() : 'TBD'}.${attendeesStr ? ` Attendees: ${attendeesStr}` : ''}${meetingLink ? ` Join: ${meetingLink}` : ''}`,
+  });
+};
+
+module.exports = { sendEmail, sendMeetingReminder, sendMeetingCreated, sendMeetingFollowUp, sendMeetingFollowUp2h, sendMeetingCancelled, sendOtpEmail, sendMeetingUpdated, taskUpdateHtml, taskUpdateText, collectRecipients };

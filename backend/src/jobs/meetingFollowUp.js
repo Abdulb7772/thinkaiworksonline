@@ -27,6 +27,8 @@ const startMeetingFollowUpJob = () => {
             attendeeEmails: meeting.attendeeEmails,
             adminEmails:    meeting.adminEmails,
             meetingLink:    meeting.meetingLink,
+            clients:        meeting.clients,
+            attendeeList:   meeting.attendeeList,
           });
 
           meeting.followUpSent2h = true;

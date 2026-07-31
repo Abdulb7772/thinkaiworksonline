@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/config';
+import MultiEmailSelector from './MultiEmailSelector';
 
 const types = ['Internal', 'Video', 'Client Meeting'];
 
@@ -14,9 +15,8 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
     creatorEmail: '',
     meetingLink: '',
   });
-  const [clientEmail, setClientEmail] = useState('');
-  const [attendeeEmail, setAttendeeEmail] = useState('');
-  const [contacts, setContacts] = useState({ clients: [], employees: [] });
+  const [clients, setClients] = useState([]);
+  const [attendees, setAttendees] = useState([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -24,7 +24,6 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
       const u = JSON.parse(localStorage.getItem('user') || '{}');
       if (u.email) setForm((f) => ({ ...f, creatorEmail: u.email }));
     } catch {}
-    api('/meetings/contacts').then(setContacts).catch(() => {});
   }, []);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -33,20 +32,26 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title) return;
+    if (!clients.length) {
+      onToast?.('Add at least one client', 'error');
+      return;
+    }
+    if (!attendees.length) {
+      onToast?.('Add at least one attendee', 'error');
+      return;
+    }
     setSaving(true);
-
-    const hasEmails = clientEmail.trim() || form.creatorEmail.trim() || attendeeEmail.trim();
 
     try {
       const payload = {
-        title:          form.title,
-        datetime:       form.datetime,
-        type:           form.type,
-        company:        form.company,
-        clientEmails:   clientEmail.trim() || undefined,
-        creatorEmail:   form.creatorEmail.trim(),
-        attendeeEmails: attendeeEmail.trim() || undefined,
-        meetingLink:    form.meetingLink.trim(),
+        title:        form.title,
+        datetime:     form.datetime,
+        type:         form.type,
+        company:      form.company,
+        creatorEmail: form.creatorEmail.trim(),
+        meetingLink:  form.meetingLink.trim(),
+        clients,
+        attendees,
       };
 
       const meeting = await api('/meetings', {
@@ -55,12 +60,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
       });
 
       onSaved?.(meeting);
-      onToast?.(
-        hasEmails
-          ? 'Meeting created — reminder emails will be sent 10 min before'
-          : 'Meeting created successfully',
-        'success'
-      );
+      onToast?.('Meeting created — reminder emails will be sent 10 min before', 'success');
       onClose();
     } catch (err) {
       onToast?.(err.message, 'error');
@@ -71,7 +71,7 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560 }}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 620 }}>
         <div className="modal-head">
           <div className="modal-title">Create Meeting</div>
           <button className="modal-close" onClick={onClose}>
@@ -109,6 +109,32 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
             </div>
           </div>
 
+          {/* Clients */}
+          <div className="form-field" style={{ marginTop: 4 }}>
+            <MultiEmailSelector
+              label="Client"
+              placeholder="Search clients or type an email..."
+              apiEndpoint="/meetings/contacts"
+              listKey="clients"
+              selected={clients}
+              onChange={setClients}
+              required
+            />
+          </div>
+
+          {/* Attendees */}
+          <div className="form-field" style={{ marginTop: 4 }}>
+            <MultiEmailSelector
+              label="Attendees / Employees"
+              placeholder="Search employees or type an email..."
+              apiEndpoint="/meetings/contacts"
+              listKey="employees"
+              selected={attendees}
+              onChange={setAttendees}
+              required
+            />
+          </div>
+
           {/* Email & Links section */}
           <div style={{
             marginTop: 12,
@@ -143,37 +169,6 @@ export default function CreateMeeting({ onClose, onSaved, onToast }) {
                   onChange={set('meetingLink')}
                   style={{fontSize:13}}
                 />
-              </div>
-            </div>
-
-            <div className="form-row" style={{marginTop:0}}>
-              <div className="form-field">
-                <label>Client Email</label>
-                <input
-                  key={'c' + contacts.clients.length}
-                  list="clientEmailList"
-                  placeholder={contacts.clients.length ? 'Type or select' : 'Enter client email'}
-                  value={clientEmail}
-                  onChange={e => setClientEmail(e.target.value)}
-                  autoComplete="off"
-                />
-                <datalist id="clientEmailList">
-                  {contacts.clients.map((c, i) => <option key={i} value={c.email} />)}
-                </datalist>
-              </div>
-              <div className="form-field">
-                <label>Attendee Email</label>
-                <input
-                  key={'e' + contacts.employees.length}
-                  list="attendeeEmailList"
-                  placeholder={contacts.employees.length ? 'Type or select' : 'Enter attendee email'}
-                  value={attendeeEmail}
-                  onChange={e => setAttendeeEmail(e.target.value)}
-                  autoComplete="off"
-                />
-                <datalist id="attendeeEmailList">
-                  {contacts.employees.map((e, i) => <option key={i} value={e.email} />)}
-                </datalist>
               </div>
             </div>
           </div>

@@ -7,7 +7,7 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "seed": "node src/seeds/seed.js",
-    "test": "node test/cloudinary-upload.test.js"
+    "test": "node test/cloudinary-upload.test.js && node test/meeting-recipients.test.js"
   },
   "engines": {
     "node": ">=18"
