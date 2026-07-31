@@ -14,7 +14,7 @@ const getResend = () => {
   return resendInstance;
 };
 
-const sendEmail = async ({ to, subject, html, text }) => {
+const sendEmail = async ({ to, subject, html, text, replyTo }) => {
   const resend = getResend();
   if (!resend) {
     console.log(`📧 Would send email to ${Array.isArray(to) ? to.join(', ') : to} — subject: "${subject}" (no RESEND_API_KEY configured)`);
@@ -30,6 +30,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
     subject,
     html,
     text,
+    reply_to: replyTo,
   });
 
   if (error) {
@@ -366,4 +367,33 @@ const sendMeetingCancelled = async ({ title, datetime, attendees, type, clientEm
   });
 };
 
-module.exports = { sendEmail, sendMeetingReminder, sendMeetingCreated, sendMeetingFollowUp, sendMeetingFollowUp2h, sendMeetingCancelled, sendOtpEmail };
+const taskUpdateHtml = ({ heading, lines }) => `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
+    <div style="padding:24px 28px 12px;border-bottom:1px solid #e5e7eb;">
+      <span style="font-weight:700;font-size:17px;color:#111827;">ThinkAIWorks</span>
+    </div>
+    <div style="padding:24px 28px;">
+      <h1 style="margin:0 0 4px;color:#111827;font-size:18px;font-weight:700;">${heading}</h1>
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px;margin:16px 0;">
+        ${lines.map(l => `<p style="margin:0 0 6px;color:#374151;font-size:14px;line-height:1.5;">${l}</p>`).join('')}
+      </div>
+      <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:10px 22px;background:#7c5cfc;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">View in Dashboard</a>
+    </div>
+    <div style="padding:14px 28px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;line-height:1.6;">
+      <p style="margin:0;">You are receiving this email because you are a member of the ThinkAIWorks workspace. To stop receiving these updates, contact your administrator.</p>
+      <p style="margin:6px 0 0;">ThinkAIWorks &middot; thinkaiworks.online</p>
+    </div>
+  </div>
+`;
+
+const taskUpdateText = ({ heading, lines, url = 'https://www.thinkaiworks.online/' }) => [
+  heading,
+  ...lines.map(l => l.replace(/<[^>]+>/g, '')),
+  '',
+  `View it in the dashboard: ${url}`,
+  '',
+  'You are receiving this email because you are a member of the ThinkAIWorks workspace.',
+  'To stop receiving these updates, contact your administrator.',
+].join('\n');
+
+module.exports = { sendEmail, sendMeetingReminder, sendMeetingCreated, sendMeetingFollowUp, sendMeetingFollowUp2h, sendMeetingCancelled, sendOtpEmail, taskUpdateHtml, taskUpdateText };

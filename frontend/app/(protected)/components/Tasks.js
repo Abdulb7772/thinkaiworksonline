@@ -312,7 +312,20 @@ export default function Tasks({ onToast }) {
                   <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: 'var(--text1)' }}>Files</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {selectedTask.files.map((f, i) => (
-                      <FileViewer key={i} file={f} />
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <FileViewer file={f} />
+                        {role === 'admin' && (
+                          <button className="btn btn-sm btn-ghost" style={{ color: 'var(--red)', padding: '2px 6px', fontSize: 10, flexShrink: 0 }} title="Delete file" onClick={async () => {
+                            if (!window.confirm(`Delete file "${f.name}"?`)) return;
+                            try {
+                              const res = await api(`/tasks/${selectedTask._id}`, { method: 'PATCH', body: JSON.stringify({ deleteFile: f.public_id }) });
+                              setSelectedTask(res);
+                              setTasks(prev => prev.map(t => t._id === res._id ? res : t));
+                              onToast?.('File deleted', 'success');
+                            } catch (err) { onToast?.(err.message, 'error'); }
+                          }}>✕</button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>

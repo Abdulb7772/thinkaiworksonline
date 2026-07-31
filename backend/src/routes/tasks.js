@@ -2,7 +2,7 @@ const express = require('express');
 const Task = require('../models/Task');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, taskUpdateHtml, taskUpdateText } = require('../services/emailService');
 const { destroyFile } = require('../utils/cloudinary');
 
 const router = express.Router();
@@ -21,21 +21,22 @@ router.post('/', protect, async (req, res, next) => {
       const to = employee.notificationEmail || employee.email;
       sendEmail({
         to,
+        replyTo: req.user.notificationEmail || req.user.email,
         subject: `New Task Assigned: "${title}"`,
-        html: `
-          <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
-            <h1 style="margin:0 0 16px;color:#111;font-size:20px;">New Task Assigned</h1>
-            <p>Hi <strong>${employee.name}</strong>,</p>
-            <p>A new task has been assigned to you by <strong>${req.user.name}</strong>.</p>
-            <div style="background:#fff;padding:18px;border-radius:12px;border:1px solid #e2e8f0;margin:20px 0;">
-              <p style="margin:0 0 8px;"><strong>Task:</strong> ${title}</p>
-              ${description ? `<p style="margin:0 0 8px;"><strong>Description:</strong> ${description}</p>` : ''}
-              <p style="margin:0;"><strong>Due:</strong> ${date}${dueTime ? ' at ' + dueTime : ''}</p>
-            </div>
-            <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">View Tasks</a>
-          </div>
-        `,
-        text: `New task assigned: ${title}. Due: ${date}${dueTime ? ' at ' + dueTime : ''}. ${description ? `Description: ${description}` : ''}`,
+        html: taskUpdateHtml({
+          heading: 'New Task Assigned',
+          lines: [
+            `Hi <strong>${employee.name}</strong>,`,
+            `A new task has been assigned to you by <strong>${req.user.name}</strong>.`,
+            `<strong>Task:</strong> ${title}`,
+            ...(description ? [`<strong>Description:</strong> ${description}`] : []),
+            `<strong>Due:</strong> ${date}${dueTime ? ' at ' + dueTime : ''}`,
+          ],
+        }),
+        text: taskUpdateText({
+          heading: `New task assigned: "${title}"`,
+          lines: [`Assigned by: ${req.user.name}`, `Due: ${date}${dueTime ? ' at ' + dueTime : ''}`, ...(description ? [`Description: ${description}`] : [])],
+        }),
       }).catch(err => console.error('Task assignment email failed:', err.message));
     }
 
@@ -62,7 +63,7 @@ router.get('/', protect, async (req, res, next) => {
 
 router.patch('/:id', protect, async (req, res, next) => {
   try {
-    const { status, files, comment, dueTime } = req.body;
+    const { status, files, comment, dueTime, deleteFile } = req.body;
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Task not found' });
     if (req.user.role !== 'admin') {
@@ -94,6 +95,17 @@ router.patch('/:id', protect, async (req, res, next) => {
       }
       task.files = files;
     }
+    let deletedFile = null;
+    if (deleteFile) {
+      if (req.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can delete files' });
+      const file = (task.files || []).find(f => f.public_id === deleteFile);
+      if (file) {
+        destroyFile(file.public_id, file.resource_type).catch(() => {});
+        task.files = task.files.filter(f => f.public_id !== deleteFile);
+        deletedFile = file;
+        task.comments.push({ text: `Deleted file "${file.name}"`, user: req.user._id });
+      }
+    }
     if (comment) {
       task.comments.push({ text: comment, user: req.user._id });
     }
@@ -107,19 +119,34 @@ router.patch('/:id', protect, async (req, res, next) => {
         if (comment) updates.push(`Comment: "${comment}"`);
         sendEmail({
           to: admin.notificationEmail || admin.email,
+          replyTo: req.user.notificationEmail || req.user.email,
           subject: `Task Update: "${task.title}"`,
-          html: `
-            <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f4f7fb;border-radius:14px;">
-              <h1 style="margin:0 0 16px;color:#111;font-size:20px;">Task Updated by ${req.user.name}</h1>
-              <div style="background:#fff;padding:18px;border-radius:12px;border:1px solid #e2e8f0;margin:20px 0;">
-                <p style="margin:0 0 8px;"><strong>Task:</strong> ${task.title}</p>
-                ${updates.map(u => `<p style="margin:0 0 4px;">${u}</p>`).join('')}
-              </div>
-              <a href="https://www.thinkaiworks.online/" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#7c5cfc;color:#fff;text-decoration:none;font-weight:600;">View in Dashboard</a>
-            </div>
-          `,
-          text: `${req.user.name} updated "${task.title}": ${updates.join('. ')}`,
+          html: taskUpdateHtml({
+            heading: `Task updated by ${req.user.name}`,
+            lines: [`<strong>Task:</strong> ${task.title}`, ...updates.map(u => u)],
+          }),
+          text: taskUpdateText({ heading: `Task updated by ${req.user.name}: "${task.title}"`, lines: updates }),
         }).catch(err => console.error('Task update email failed:', err.message));
+      }
+    }
+
+    if (req.user.role === 'admin' && deletedFile) {
+      const employees = await User.find({ _id: { $in: task.assignedTo } });
+      for (const employee of employees) {
+        sendEmail({
+          to: employee.notificationEmail || employee.email,
+          replyTo: req.user.notificationEmail || req.user.email,
+          subject: `File removed from task: "${task.title}"`,
+          html: taskUpdateHtml({
+            heading: 'File removed from task',
+            lines: [
+              `<strong>Task:</strong> ${task.title}`,
+              `<strong>File:</strong> ${deletedFile.name}`,
+              `<strong>Removed by:</strong> ${req.user.name}`,
+            ],
+          }),
+          text: taskUpdateText({ heading: `File removed from task "${task.title}"`, lines: [`File: ${deletedFile.name}`, `Removed by: ${req.user.name}`] }),
+        }).catch(err => console.error('File removal email failed:', err.message));
       }
     }
 
