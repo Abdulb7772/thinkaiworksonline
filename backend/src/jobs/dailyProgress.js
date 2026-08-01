@@ -53,7 +53,7 @@ const sendDailyProgress = async () => {
 };
 
 const startDailyProgressJob = () => {
-  cron.schedule('0 18 * * 1-5', sendDailyProgress, { timezone: 'America/New_York' });
+  cron.schedule('0 18 * * 1-5', sendDailyProgress, { timezone: 'Asia/Karachi' });
   console.log('📋 Daily progress job scheduled for 6 PM Mon-Fri');
 };
 
