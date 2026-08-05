@@ -1,5 +1,6 @@
 const express = require('express');
 const Employee = require('../models/Employee');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const router = express.Router();
 
@@ -190,6 +191,28 @@ router.put('/:id', async (req, res, next) => {
     if (req.body.tasks !== undefined) update.tasks = req.body.tasks;
     if (req.body.rating !== undefined) update.rating = req.body.rating;
     if (req.body.attendanceLog !== undefined) update.attendanceLog = mergedLog;
+
+    if (req.body.password !== undefined && req.body.password.length > 0 && req.body.password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    }
+
+    const userPatch = {};
+    if (req.body.loginEmail !== undefined) userPatch.email = String(req.body.loginEmail).trim();
+    if (req.body.email !== undefined) userPatch.notificationEmail = String(req.body.email).trim();
+    if (req.body.name !== undefined) userPatch.name = req.body.name;
+    if (req.body.password) userPatch.password = req.body.password;
+
+    if (Object.keys(userPatch).length) {
+      const user = await User.findOne({ email: (existing.loginEmail || '').trim().toLowerCase() });
+      if (user) {
+        if (userPatch.email) {
+          const clash = await User.findOne({ email: String(userPatch.email).toLowerCase(), _id: { $ne: user._id } });
+          if (clash) return res.status(400).json({ error: 'That login email is already in use.' });
+        }
+        Object.assign(user, userPatch);
+        await user.save();
+      }
+    }
 
     const employee = await Employee.findByIdAndUpdate(req.params.id, update, { new: true });
     res.json(employee);
