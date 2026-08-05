@@ -179,17 +179,21 @@ router.post('/login', async (req, res, next) => {
       return res.status(400).json({ error: 'Please provide email and password.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    console.log('Login attempt for:', normalizedEmail);
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
     if (!user) {
+      console.log('Login failed: user not found for', normalizedEmail);
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      console.log('Login failed: password mismatch for', normalizedEmail);
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    if (user.emailVerified === false) {
+    if (user.emailVerified === false && user.role !== 'admin') {
       const otp = await createOtpSession({
         email: user.email,
         name: user.name,
@@ -239,6 +243,63 @@ router.post('/change-password', protect, async (req, res, next) => {
     await user.save();
 
     res.json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Forgot password - request OTP
+router.post('/forgot-password', async (req, res, next) => {
+  try {
+    if (!isDBConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      // Avoid revealing whether email exists
+      return res.json({ message: 'If an account exists, a verification code has been sent.' });
+    }
+
+    const otp = await createOtpSession({
+      email: normalizedEmail,
+      name: user.name,
+      password: null,
+      role: user.role,
+      ip: req.ip || req.connection?.remoteAddress,
+      userAgent: req.headers['user-agent'],
+    });
+
+    // send OTP to the registered login email
+    await sendOtpEmail({ to: user.email, otp, name: user.name });
+    res.json({ message: 'If an account exists, a verification code has been sent.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Forgot password - verify OTP and set new password
+router.post('/forgot-password/confirm', async (req, res, next) => {
+  try {
+    if (!isDBConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) return res.status(400).json({ error: 'Email, OTP and newPassword are required.' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const result = await verifyOtp(normalizedEmail, otp);
+    if (!result.valid) return res.status(400).json({ error: result.reason });
+
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    user.password = newPassword;
+    await user.save();
+
+    await markVerified(result.record);
+
+    res.json({ message: 'Password reset successfully.' });
   } catch (error) {
     next(error);
   }

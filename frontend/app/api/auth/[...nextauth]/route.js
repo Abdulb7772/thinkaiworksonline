@@ -27,9 +27,18 @@ export const authOptions = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: credentials.email, password: credentials.password }),
         });
-        const data = await readJsonResponse(res).catch((error) => {
-          throw new Error(`Login API error: ${error.message}`);
-        });
+          let data;
+          try {
+            data = await readJsonResponse(res);
+          } catch (error) {
+            try {
+              const txt = await res.text();
+              console.error('Auth backend non-JSON response:', res.status, txt.substring(0, 1000));
+            } catch (e) {
+              console.error('Auth backend read error:', e.message);
+            }
+            throw new Error(`Login API error: ${error.message}`);
+          }
         if (!res.ok) {
           if (data.needsVerification && data.email) {
             throw new Error(`VERIFY_NEEDED:${data.email}|${data.sentTo || data.email}`);

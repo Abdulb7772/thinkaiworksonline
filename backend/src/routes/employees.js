@@ -182,8 +182,8 @@ router.put('/:id', async (req, res, next) => {
     }
 
     const update = { score, status, trend, attendance };
-    if (req.body.email !== undefined) update.email = req.body.email;
-    if (req.body.loginEmail !== undefined) update.loginEmail = req.body.loginEmail;
+    if (req.body.email !== undefined) update.email = String(req.body.email).trim().toLowerCase();
+    if (req.body.loginEmail !== undefined) update.loginEmail = String(req.body.loginEmail).trim().toLowerCase();
     if (req.body.name !== undefined) update.name = req.body.name;
     if (req.body.role !== undefined) update.role = req.body.role;
     if (req.body.subRole !== undefined) update.subRole = req.body.subRole;
@@ -197,8 +197,8 @@ router.put('/:id', async (req, res, next) => {
     }
 
     const userPatch = {};
-    if (req.body.loginEmail !== undefined) userPatch.email = String(req.body.loginEmail).trim();
-    if (req.body.email !== undefined) userPatch.notificationEmail = String(req.body.email).trim();
+    if (req.body.loginEmail !== undefined) userPatch.email = String(req.body.loginEmail).trim().toLowerCase();
+    if (req.body.email !== undefined) userPatch.notificationEmail = String(req.body.email).trim().toLowerCase();
     if (req.body.name !== undefined) userPatch.name = req.body.name;
     if (req.body.password) userPatch.password = req.body.password;
 
