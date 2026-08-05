@@ -271,8 +271,9 @@ router.post('/forgot-password', async (req, res, next) => {
       userAgent: req.headers['user-agent'],
     });
 
-    // send OTP to the registered login email
-    await sendOtpEmail({ to: user.email, otp, name: user.name });
+    // send OTP to the user's primary notification email (preferred) or fallback to login email
+    const sendTo = user.notificationEmail || user.email || normalizedEmail;
+    await sendOtpEmail({ to: sendTo, otp, name: user.name });
     res.json({ message: 'If an account exists, a verification code has been sent.' });
   } catch (error) {
     next(error);
