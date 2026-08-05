@@ -21,8 +21,8 @@ export default function ForgotPasswordPage() {
   const sendCode = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMsg(null);
     try {
-      await api('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
       const resp = await api('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
       setMsg(resp.message || 'If an account exists, a verification code was sent.');
       if (resp.sentTo) setSentTo(resp.sentTo);
@@ -38,6 +38,7 @@ export default function ForgotPasswordPage() {
   const confirmReset = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMsg(null);
     try {
       await api('/auth/forgot-password/confirm', { method: 'POST', body: JSON.stringify({ email, otp, newPassword }) });
       setMsg('Password reset. You can now sign in.');
@@ -57,6 +58,7 @@ export default function ForgotPasswordPage() {
   const resend = async () => {
     if (!email) return setMsg('Enter your email first');
     setLoading(true);
+    setMsg(null);
     try {
       const resp = await api('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
       setMsg(resp.message || 'Verification code resent.');
@@ -73,13 +75,15 @@ export default function ForgotPasswordPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="auth-card" style={{ width: 520, padding: 28, borderRadius: 12 }}>
         <h2 style={{ margin: 0, marginBottom: 8 }}>Forgot password</h2>
-        <p style={{ marginTop: 0, marginBottom: 18, color: '#6b7280' }}>Enter your account email to receive a verification code.</p>
+        <p style={{ marginTop: 0, marginBottom: 18, color: '#6b7280' }}>
+          Enter your primary or secondary email. A verification code will be sent to your primary email.
+        </p>
 
         {step === 1 && (
           <form onSubmit={sendCode}>
             <div className="input-group">
               <label>Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="primary@email.com or login@email.com" required />
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button type="submit" className={`auth-btn ${loading ? 'loading' : ''}`} style={{ flex: 1 }}>Send verification code</button>
@@ -91,12 +95,12 @@ export default function ForgotPasswordPage() {
         {step === 2 && (
           <form onSubmit={confirmReset}>
             <div style={{ marginBottom: 10, color: '#374151' }}>
-              {sentTo ? (<span>Verification code sent to <strong>{sentTo}</strong></span>) : <span>Verification code sent</span>}
+              {sentTo ? (<span>Verification code sent to your primary email <strong>{sentTo}</strong></span>) : <span>Verification code sent to your primary email</span>}
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
               <div style={{ flex: 1 }}>
                 <label>Verification Code</label>
-                <input value={otp} onChange={(e) => setOtp(e.target.value)} required />
+                <input value={otp} onChange={(e) => setOtp(e.target.value)} inputMode="numeric" required />
               </div>
               <div style={{ width: 120 }}>
                 <label>&nbsp;</label>

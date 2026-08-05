@@ -256,12 +256,16 @@ router.post('/forgot-password', async (req, res, next) => {
     if (!email) return res.status(400).json({ error: 'Email is required.' });
 
     const normalizedEmail = String(email || '').toLowerCase().trim();
-    const user = await User.findOne({ email: normalizedEmail });
-        if (!user) {
-          // Keep generic response to avoid user enumeration
-          return res.json({ message: 'If an account exists, a verification code has been sent.' });
-        }
+    // match either the login email or the primary (notification) email
+    const user = await User.findOne({
+      $or: [{ email: normalizedEmail }, { notificationEmail: normalizedEmail }],
+    });
+    if (!user) {
+      // Keep generic response to avoid user enumeration
+      return res.json({ message: 'If an account exists, a verification code has been sent.' });
+    }
 
+    // key the OTP session to the email the user typed so confirm finds it
     const otp = await createOtpSession({
       email: normalizedEmail,
       name: user.name,
@@ -301,7 +305,9 @@ router.post('/forgot-password/confirm', async (req, res, next) => {
     const result = await verifyOtp(normalizedEmail, otp);
     if (!result.valid) return res.status(400).json({ error: result.reason });
 
-    const user = await User.findOne({ email: normalizedEmail }).select('+password');
+    const user = await User.findOne({
+      $or: [{ email: normalizedEmail }, { notificationEmail: normalizedEmail }],
+    }).select('+password');
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
     user.password = newPassword;
