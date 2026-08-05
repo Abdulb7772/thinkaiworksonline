@@ -53,6 +53,8 @@ process.on('uncaughtException', (error) => { console.error(error); shutdown('UNC
 
 const startServer = async () => {
   try {
+    const masked = mongoUri.replace(/:\/\/(.*@)/, '://***@');
+    console.log('Connecting to MongoDB with:', masked);
     await connectDB(mongoUri);
   } catch {
     console.warn('MongoDB unavailable — running without database');

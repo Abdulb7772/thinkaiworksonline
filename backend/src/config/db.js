@@ -7,13 +7,18 @@ let isConnected = false;
 
 const connectDB = async (uri) => {
   try {
+    const maskUri = (u) => {
+      if (!u) return u;
+      return u.replace(/:\/\/(.*@)/, '://***@');
+    };
+    console.log('Attempting MongoDB connection to:', maskUri(uri));
     await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       bufferCommands: false,
     });
     isConnected = true;
-    console.log('✓ MongoDB connected successfully');
+    console.log('✓ MongoDB connected successfully — DB:', mongoose.connection.name);
     return mongoose.connection;
   } catch (error) {
     console.error('✗ MongoDB connection failed:', error.message);
