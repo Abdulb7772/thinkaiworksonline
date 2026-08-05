@@ -293,6 +293,23 @@ router.post('/forgot-password', async (req, res, next) => {
   }
 });
 
+// Forgot password - verify OTP only (does not consume; confirm consumes it)
+router.post('/forgot-password/verify', async (req, res, next) => {
+  try {
+    if (!isDBConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required.' });
+
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const result = await verifyOtp(normalizedEmail, otp);
+    if (!result.valid) return res.status(400).json({ error: result.reason });
+
+    res.json({ valid: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Forgot password - verify OTP and set new password
 router.post('/forgot-password/confirm', async (req, res, next) => {
   try {

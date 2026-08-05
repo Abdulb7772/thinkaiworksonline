@@ -1,130 +1,71 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/config';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState(null);
-  const [sentTo, setSentTo] = useState(null);
-  const [count, setCount] = useState(0);
-  const timerRef = useRef(null);
-  const OTP_SECONDS = 60;
+  const [error, setError] = useState('');
 
-  const sendCode = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email) return setError('Email is required');
     setLoading(true);
-    setMsg(null);
+    setError('');
     try {
       const resp = await api('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
-      setMsg(resp.message || 'If an account exists, a verification code was sent.');
-      if (resp.sentTo) setSentTo(resp.sentTo);
-      setStep(2);
-      setCount(OTP_SECONDS);
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => setCount((c) => c - 1), 1000);
+      sessionStorage.setItem('fp_email', email);
+      router.push(`/forgot-password/verify?email=${encodeURIComponent(email)}&sentTo=${encodeURIComponent(resp.sentTo || email)}`);
     } catch (err) {
-      setMsg(err.message || 'Failed to send code');
-    } finally { setLoading(false); }
-  };
-
-  const confirmReset = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMsg(null);
-    try {
-      await api('/auth/forgot-password/confirm', { method: 'POST', body: JSON.stringify({ email, otp, newPassword }) });
-      setMsg('Password reset. You can now sign in.');
-      setTimeout(() => router.push('/login'), 1200);
-    } catch (err) {
-      setMsg(err.message || 'Failed to reset password');
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => {
-    if (count <= 0 && timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+      setError(err.message || 'Failed to send code');
+      setLoading(false);
     }
-  }, [count]);
-
-  const resend = async () => {
-    if (!email) return setMsg('Enter your email first');
-    setLoading(true);
-    setMsg(null);
-    try {
-      const resp = await api('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
-      setMsg(resp.message || 'Verification code resent.');
-      if (resp.sentTo) setSentTo(resp.sentTo);
-      setCount(OTP_SECONDS);
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => setCount((c) => c - 1), 1000);
-    } catch (err) {
-      setMsg(err.message || 'Failed to resend');
-    } finally { setLoading(false); }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="auth-card" style={{ width: 520, padding: 28, borderRadius: 12 }}>
-        <h2 style={{ margin: 0, marginBottom: 8 }}>Forgot password</h2>
-        <p style={{ marginTop: 0, marginBottom: 18, color: '#6b7280' }}>
-          Enter your primary or secondary email. A verification code will be sent to your primary email.
-        </p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <div className="bg-grid" />
+      <div className="bg-glow es" />
+      <div className="bg-glow tai" />
 
-        {step === 1 && (
-          <form onSubmit={sendCode}>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="brand-row">
+            <div className="brand-icon es">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div className="brand-divider" />
+            <div className="brand-icon tai">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            </div>
+          </div>
+          <h1 className="auth-title">Forgot password</h1>
+          <p className="auth-subtitle">Enter your primary or secondary email. The verification code will be sent to your primary email.</p>
+
+          <form className="auth-form" onSubmit={handleSubmit} autoComplete="off">
             <div className="input-group">
-              <label>Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="primary@email.com or login@email.com" required />
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button type="submit" className={`auth-btn ${loading ? 'loading' : ''}`} style={{ flex: 1 }}>Send verification code</button>
-              <Link href="/login"><button type="button" className="auth-btn" style={{ background: '#eef2ff', color: '#111' }}>Back</button></Link>
-            </div>
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={confirmReset}>
-            <div style={{ marginBottom: 10, color: '#374151' }}>
-              {sentTo ? (<span>Verification code sent to your primary email <strong>{sentTo}</strong></span>) : <span>Verification code sent to your primary email</span>}
-            </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ flex: 1 }}>
-                <label>Verification Code</label>
-                <input value={otp} onChange={(e) => setOtp(e.target.value)} inputMode="numeric" required />
+              <label htmlFor="email">Email</label>
+              <div className="input-wrap">
+                <svg className="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <input type="email" id="email" placeholder="example@thinkaiworks.online" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); setError(''); }} className={error ? 'error' : ''} />
               </div>
-              <div style={{ width: 120 }}>
-                <label>&nbsp;</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" onClick={resend} className="auth-btn" disabled={count > 0}>{count > 0 ? `Resend (${count}s)` : 'Resend'}</button>
-                </div>
-              </div>
+              <div className={`field-error ${error ? 'visible' : ''}`}>{error}</div>
             </div>
 
-            <div className="input-group">
-              <label>New Password</label>
-              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button type="submit" className={`auth-btn ${loading ? 'loading' : ''}`} style={{ flex: 1 }}>Reset password</button>
-              <Link href="/login"><button type="button" className="auth-btn" style={{ background: '#eef2ff', color: '#111' }}>Cancel</button></Link>
-            </div>
+            <button type="submit" className={`auth-btn ${loading ? 'loading' : ''}`} style={{ background: 'var(--tai)', color: '#fff' }} disabled={loading}>
+              <span className="btn-text">Send verification code</span>
+              <div className="spinner" />
+            </button>
           </form>
-        )}
 
-        <div style={{ marginTop: 12 }}>
-          <Link href="/login">Back to sign in</Link>
+          <div className="auth-footer">
+            Remembered it? <Link href="/login">Back to sign in</Link>
+          </div>
         </div>
-        {msg && <div style={{ marginTop: 12 }}>{msg}</div>}
       </div>
     </div>
   );
