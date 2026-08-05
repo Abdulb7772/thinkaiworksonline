@@ -302,6 +302,12 @@ const sendOtpEmail = async ({ to, otp, name }) => {
     </div>
   `;
 
+  // Ensure Resend integration is configured for OTP delivery
+  const resend = getResend();
+  if (!resend) {
+    throw new Error('RESEND_API_KEY is not configured. OTP emails require a valid Resend API key.');
+  }
+
   await sendEmail({
     to,
     subject: 'Verify Your Email Address',

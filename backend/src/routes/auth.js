@@ -257,10 +257,10 @@ router.post('/forgot-password', async (req, res, next) => {
 
     const normalizedEmail = String(email || '').toLowerCase().trim();
     const user = await User.findOne({ email: normalizedEmail });
-    if (!user) {
-      // Avoid revealing whether email exists
-      return res.json({ message: 'If an account exists, a verification code has been sent.' });
-    }
+        if (!user) {
+          // Keep generic response to avoid user enumeration
+          return res.json({ message: 'If an account exists, a verification code has been sent.' });
+        }
 
     const otp = await createOtpSession({
       email: normalizedEmail,
@@ -274,7 +274,16 @@ router.post('/forgot-password', async (req, res, next) => {
     // send OTP to the user's primary notification email (preferred) or fallback to login email
     const sendTo = user.notificationEmail || user.email || normalizedEmail;
     await sendOtpEmail({ to: sendTo, otp, name: user.name });
-    res.json({ message: 'If an account exists, a verification code has been sent.' });
+        const mask = (e) => {
+          try {
+            const [local, domain] = String(e).split('@');
+            if (!domain) return e;
+            const visible = local.slice(0, 1);
+            return `${visible}***@${domain}`;
+          } catch { return e; }
+        };
+        
+        res.json({ message: 'If an account exists, a verification code has been sent.', sentTo: mask(sendTo) });
   } catch (error) {
     next(error);
   }
