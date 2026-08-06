@@ -62,7 +62,7 @@ export default function DashboardHome({ data, onToast }) {
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {adminTasks.slice(0, 8).map(t => (
                 <div key={t._id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',background:'var(--bg2)',borderRadius:8,border:'1px solid var(--border)',fontSize:12}}>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{flex:1,minWidth:0,overflow:'hidden'}}>
                     <div style={{fontWeight:600,color:'var(--text1)'}}>{t.title}</div>
                     <div style={{fontSize:11,color:'var(--text3)'}}>
                       {isAdmin && <span>{(t.assignedTo || []).map(a => a.name).join(', ')} · </span>}
@@ -111,7 +111,7 @@ export default function DashboardHome({ data, onToast }) {
             <div style={{display:'flex',flexDirection:'column',gap:6}}>
               {approaching.slice(0, 5).map(t => (
                 <div key={t._id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:'var(--bg2)',borderRadius:6,border:'1px solid var(--border)',fontSize:12}}>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{flex:1,minWidth:0,overflow:'hidden'}}>
                     <div style={{fontWeight:500}}>{t.title}</div>
                     <div style={{fontSize:10,color:'var(--text3)'}}>
                       {t.date} {isAdmin && <span>· {(t.assignedTo || []).map(a => a.name).join(', ')}</span>}
@@ -133,7 +133,7 @@ export default function DashboardHome({ data, onToast }) {
             <div style={{display:'flex',flexDirection:'column',gap:6}}>
               {urgentTasks.slice(0, 5).map(t => (
                 <div key={t._id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:'var(--bg2)',borderRadius:6,border:'1px solid var(--border)',fontSize:12}}>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{flex:1,minWidth:0,overflow:'hidden'}}>
                     <div style={{fontWeight:500}}>{t.title}</div>
                     <div style={{fontSize:10,color:'var(--text3)'}}>
                       {t.date} {isAdmin && <span>· {(t.assignedTo || []).map(a => a.name).join(', ')}</span>}
@@ -155,7 +155,7 @@ export default function DashboardHome({ data, onToast }) {
             <div style={{display:'flex',flexDirection:'column',gap:6}}>
               {completed.slice(0, 5).map(t => (
                 <div key={t._id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:'var(--bg2)',borderRadius:6,border:'1px solid var(--border)',fontSize:12}}>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{flex:1,minWidth:0,overflow:'hidden'}}>
                     <div style={{fontWeight:500}}>{t.title}</div>
                     <div style={{fontSize:10,color:'var(--text3)'}}>
                       {t.date} {isAdmin && <span>· {(t.assignedTo || []).map(a => a.name).join(', ')}</span>}
@@ -177,7 +177,7 @@ export default function DashboardHome({ data, onToast }) {
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
             {completedProjects.slice(0, 5).map(p => (
               <div key={p._id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',background:'var(--bg2)',borderRadius:8,border:'1px solid var(--border)'}}>
-                <div style={{flex:1,minWidth:0}}>
+                <div style={{flex:1,minWidth:0,overflow:'hidden'}}>
                   <div style={{fontWeight:600,fontSize:13,color:'var(--text1)'}}>{p.title}</div>
                   <div style={{fontSize:11,color:'var(--text3)'}}>
                     ${p.payment?.toLocaleString() || 0}

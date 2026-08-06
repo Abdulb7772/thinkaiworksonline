@@ -8,10 +8,12 @@ const UpdateEntrySchema = new mongoose.Schema({
   description: { type: String, default: '' },
   pInvite: { type: String, default: '' },
   doi: { type: String, default: '' },
-  status: { type: String, enum: ['V', 'I'], default: 'V' },
+  date: { type: String, default: '' },
+  status: { type: String, default: 'V' },
   fu1: { type: String, default: '' },
   fu2: { type: String, default: '' },
   response: { type: String, default: '' },
+  order: { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('UpdateEntry', UpdateEntrySchema);

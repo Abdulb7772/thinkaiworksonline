@@ -99,52 +99,61 @@ function EmployeeCard({ employee, date, isToday, saving, onToggle, onMarkAbsent,
   const canToggle = isToday && !status?.absent && (!status?.raw || (status?.checkin && !status?.checkout));
 
   return (
-    <div key={employee._id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',background:'var(--bg3)',borderRadius:'var(--r)',border:'1px solid var(--border)',marginBottom:8}}>
+    <div className="att-row" style={{display:'flex',alignItems:'center',gap:12,flexWrap:'nowrap',padding:'10px 14px',background:'var(--bg3)',borderRadius:'var(--r)',border:'1px solid var(--border)',marginBottom:8}}>
       <div className="emp-avatar" style={{width:32,height:32,fontSize:12,background:'var(--tai3)',color:'var(--tai)',flexShrink:0}}>
         {employee.initials || employee.name?.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
       </div>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:600,fontSize:13}}>{employee.name}</div>
+      <div className="att-name" style={{flex:'1 1 auto',minWidth:0,overflow:'hidden'}}>
+        <div style={{fontWeight:600,fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{employee.name}</div>
         <div style={{fontSize:11,color:'var(--text2)'}}>{employee.role || '—'}</div>
       </div>
-      <div style={{textAlign:'center',minWidth:56}}>
-        <div style={{fontSize:10,color:'var(--text2)'}}>In</div>
-        <div style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:status?.checkin ? 'var(--green)' : 'var(--text3)'}}>{status?.checkin || '—'}</div>
+      <div className="att-times" style={{display:'flex',alignItems:'center',gap:12}}>
+        <div style={{textAlign:'center',minWidth:56}}>
+          <div style={{fontSize:10,color:'var(--text2)'}}>In</div>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:status?.checkin ? 'var(--green)' : 'var(--text3)'}}>{status?.checkin || '—'}</div>
+        </div>
+        <div style={{textAlign:'center',minWidth:56}}>
+          <div style={{fontSize:10,color:'var(--text2)'}}>Out</div>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:status?.checkout ? 'var(--red)' : 'var(--text3)'}}>{status?.checkout || '—'}</div>
+        </div>
+        <div style={{textAlign:'center',minWidth:48}}>
+          <div style={{fontSize:10,color:'var(--text2)'}}>Hrs</div>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:hours > 0 ? 'var(--es)' : 'var(--text3)'}}>{fmtHours(hours)}</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+          {absentLabel && (
+            <div style={{fontSize:10,fontWeight:700,color:'var(--red)',letterSpacing:.5}}>{absentLabel}</div>
+          )}
+          {onToggle ? (
+            <>
+              <Toggle
+                checked={!!status?.checkedIn}
+                onChange={canToggle ? () => onToggle(employee, status) : undefined}
+                disabled={!canToggle}
+                label=""
+              />
+              {!canToggle && status?.checkout && (
+                <div style={{fontSize:10,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>Completed</div>
+              )}
+              {canMarkAbsent && (
+                <button type="button" onClick={() => onMarkAbsent(employee)}
+                  style={{marginTop:4,fontSize:10,color:'var(--text2)',background:'transparent',border:'none',cursor:'pointer',textDecoration:'underline'}}>
+                  Record absent
+                </button>
+              )}
+            </>
+          ) : (
+            <div style={{fontSize:10,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>View only</div>
+          )}
+        </div>
       </div>
-      <div style={{textAlign:'center',minWidth:56}}>
-        <div style={{fontSize:10,color:'var(--text2)'}}>Out</div>
-        <div style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:status?.checkout ? 'var(--red)' : 'var(--text3)'}}>{status?.checkout || '—'}</div>
-      </div>
-      <div style={{textAlign:'center',minWidth:48}}>
-        <div style={{fontSize:10,color:'var(--text2)'}}>Hrs</div>
-        <div style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:hours > 0 ? 'var(--es)' : 'var(--text3)'}}>{fmtHours(hours)}</div>
-      </div>
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-        {absentLabel && (
-          <div style={{fontSize:10,fontWeight:700,color:'var(--red)',letterSpacing:.5}}>{absentLabel}</div>
-        )}
-        {onToggle ? (
-          <>
-            <Toggle
-              checked={!!status?.checkedIn}
-              onChange={canToggle ? () => onToggle(employee, status) : undefined}
-              disabled={!canToggle}
-              label=""
-            />
-            {!canToggle && status?.checkout && (
-              <div style={{fontSize:10,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>Completed</div>
-            )}
-            {canMarkAbsent && (
-              <button type="button" onClick={() => onMarkAbsent(employee)}
-                style={{marginTop:4,fontSize:10,color:'var(--text2)',background:'transparent',border:'none',cursor:'pointer',textDecoration:'underline'}}>
-                Record absent
-              </button>
-            )}
-          </>
-        ) : (
-          <div style={{fontSize:10,color:'var(--text3)',fontFamily:'var(--font-mono)'}}>View only</div>
-        )}
-      </div>
+      <style>{`
+        @media (max-width: 640px) {
+          .att-row { flex-wrap: wrap; }
+          .att-name { flex: 1 1 100%; }
+          .att-times { flex: 1 1 100%; justify-content: space-between; }
+        }
+      `}</style>
     </div>
   );
 }

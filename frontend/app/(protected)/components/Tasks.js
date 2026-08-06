@@ -250,7 +250,7 @@ export default function Tasks({ onToast }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {group.tasks.map(task => (
                       <div key={task._id} onClick={() => setSelectedTask(task)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--bg2)', borderRadius: 10, border: '1px solid var(--border)', transition: 'border-color .15s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                           <div style={{ fontWeight: 600, color: 'var(--text1)', marginBottom: 2 }}>{task.title}</div>
                           <div style={{ fontSize: 13, color: 'var(--text3)' }}>
                             {(task.assignedTo || []).map(a => a.name).join(', ')} &middot; {task.date}{task.dueTime ? ' ' + task.dueTime : ''}
@@ -357,7 +357,7 @@ export default function Tasks({ onToast }) {
                   {(selectedTask.comments || []).map((c, i) => (
                     <div key={i} style={{ padding: '8px 12px', background: 'var(--bg3)', borderRadius: 8, fontSize: 13 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ fontWeight: 600, fontSize: 11, color: 'var(--tai)', marginBottom: 2, flex: 1 }}>{c.user?.name || 'Unknown'}</div>
+                        <div style={{ fontWeight: 600, fontSize: 11, color: 'var(--tai)', marginBottom: 2, flex: 1, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{c.user?.name || 'Unknown'}</div>
                         {role === 'admin' && (
                           <button className="btn btn-sm btn-ghost" style={{ color: 'var(--red)', padding: '0 4px', fontSize: 10, flexShrink: 0 }} title="Delete comment" onClick={() => {
                             onToast?.('Delete this comment?', 'confirm', async () => {

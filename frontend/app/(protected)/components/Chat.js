@@ -121,8 +121,8 @@ export default function Chat({ onToast }) {
         </div>
       </div>
 
-      <div className="card" style={{ display: 'flex', gap: 0, padding: 0, overflow: 'hidden', minHeight: 400 }}>
-        <div style={{ width: 260, borderRight: '1px solid var(--border)', flexShrink: 0 }}>
+      <div className={`card chat-shell${activeUser ? ' chat-open' : ''}`} style={{ display: 'flex', gap: 0, padding: 0, overflow: 'hidden', minHeight: 400 }}>
+        <div className="chat-contacts" style={{ width: 260, borderRight: '1px solid var(--border)', flexShrink: 0 }}>
           <div style={{ padding: '14px 16px', fontWeight: 600, borderBottom: '1px solid var(--border)', fontSize: 13, color: 'var(--text2)' }}>CONTACTS</div>
           <div style={{ overflow: 'auto', maxHeight: 360 }}>
             {loading ? (
@@ -148,14 +148,26 @@ export default function Chat({ onToast }) {
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="chat-pane" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {!activeUser ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text3)' }}>
               Select a contact to start chatting
             </div>
           ) : (
             <>
-              <div style={{ padding: '14px 18px', fontWeight: 600, borderBottom: '1px solid var(--border)', fontSize: 14 }}>
+              <div style={{ padding: '14px 18px', fontWeight: 600, borderBottom: '1px solid var(--border)', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveUser(null)}
+                  className="chat-back"
+                  aria-label="Back to contacts"
+                  style={{
+                    display: 'none', background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text2)', padding: '2px 4px',
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+                </button>
                 {activeUser.name}
               </div>
               <div style={{ flex: 1, overflow: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -221,6 +233,15 @@ export default function Chat({ onToast }) {
           )}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .chat-contacts { width: 100% !important; border-right: none !important; }
+          .chat-shell.chat-open .chat-contacts { display: none; }
+          .chat-shell.chat-open .chat-pane { width: 100%; }
+          .chat-back { display: flex !important; align-items: center; }
+        }
+      `}</style>
     </div>
   );
 }

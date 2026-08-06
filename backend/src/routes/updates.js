@@ -4,12 +4,12 @@ const { isDBConnected } = require('../config/db');
 
 const router = express.Router();
 
-const FIELDS = ['platform', 'profile', 'niche', 'clientName', 'description', 'pInvite', 'doi', 'status', 'fu1', 'fu2', 'response'];
+const FIELDS = ['platform', 'profile', 'niche', 'clientName', 'description', 'pInvite', 'doi', 'date', 'status', 'fu1', 'fu2', 'response', 'order'];
 
 router.get('/', async (req, res, next) => {
   try {
     if (!isDBConnected()) return res.status(503).json({ error: 'Database unavailable.' });
-    const entries = await UpdateEntry.find().sort({ createdAt: 1 });
+    const entries = await UpdateEntry.find().sort({ order: 1, createdAt: 1 });
     res.json(entries);
   } catch (error) {
     next(error);
@@ -19,7 +19,12 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     if (!isDBConnected()) return res.status(503).json({ error: 'Database unavailable.' });
-    const entry = await UpdateEntry.create({});
+    const body = {};
+    for (const f of FIELDS) {
+      if (f === 'order') body.order = Number(req.body.order) || 0;
+      else if (req.body[f] !== undefined) body[f] = String(req.body[f] ?? '');
+    }
+    const entry = await UpdateEntry.create(body);
     res.status(201).json(entry);
   } catch (error) {
     next(error);
@@ -31,11 +36,7 @@ router.put('/:id', async (req, res, next) => {
     if (!isDBConnected()) return res.status(503).json({ error: 'Database unavailable.' });
     const patch = {};
     for (const f of FIELDS) {
-      if (f === 'status') {
-        patch.status = req.body.status === 'I' ? 'I' : 'V';
-      } else if (req.body[f] !== undefined) {
-        patch[f] = String(req.body[f] ?? '');
-      }
+      if (req.body[f] !== undefined) patch[f] = String(req.body[f] ?? '');
     }
     const entry = await UpdateEntry.findByIdAndUpdate(req.params.id, patch, { new: true });
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });

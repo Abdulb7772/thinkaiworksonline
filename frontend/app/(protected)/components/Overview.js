@@ -103,7 +103,7 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
               }}>
                 {getInitials(lead.name)}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ fontWeight: 600, fontSize: 13 }}>{lead.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--text2)' }}>
                   {lead.service} · {lead.budget}
@@ -137,7 +137,7 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
               }}>
                 {evt.time}
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ fontWeight: 500, fontSize: 13 }}>{evt.title}</div>
                 <div style={{ fontSize: 11, color: 'var(--text3)' }}>{evt.type}</div>
               </div>
@@ -190,7 +190,7 @@ export default function Overview({ data, leads, onToast, onAddLead }) {
                 }}>
                   {getInitials(p.name)}
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   <div style={{ fontWeight: 500, fontSize: 13 }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: 'var(--text3)' }}>{p.role}</div>
                 </div>
