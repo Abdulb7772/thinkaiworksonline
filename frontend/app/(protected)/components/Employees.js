@@ -26,17 +26,18 @@ export default function Employees({ company, onToast, data, onRefresh }) {
   const [deleting, setDeleting] = useState(null);
 
   const handleDelete = async (id, name) => {
-    if (!confirm(`Remove "${name}"? This cannot be undone.`)) return;
-    setDeleting(id);
-    try {
-      await api(`/employees/${id}`, { method: 'DELETE' });
-      onToast?.(`${name} removed`);
-      onRefresh();
-    } catch (err) {
-      onToast?.(err.message);
-    } finally {
-      setDeleting(null);
-    }
+    onToast?.(`Remove "${name}"? This cannot be undone.`, 'confirm', async () => {
+      setDeleting(id);
+      try {
+        await api(`/employees/${id}`, { method: 'DELETE' });
+        onToast?.(`${name} removed`);
+        onRefresh();
+      } catch (err) {
+        onToast?.(err.message);
+      } finally {
+        setDeleting(null);
+      }
+    });
   };
 
   const employees = (data?.employees || []).filter(e => e.score || e.tasks || e.rating || e.attendance || e.status);

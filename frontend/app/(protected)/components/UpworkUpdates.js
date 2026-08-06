@@ -146,7 +146,7 @@ function Row({ entry, onSave, onDelete, onEdit, onAddBelow, showAdd, colWidths }
               style={{ padding: '2px 8px', borderRight: '1px solid var(--border)', cursor: 'text' }}
               onClick={(e) => { if (e.target !== e.currentTarget) return; e.currentTarget.querySelector('input')?.focus(); }}
             >
-              <input value={values[c.key] ?? ''} onChange={set(c.key)} onBlur={save} placeholder="—" style={inputStyle(c.key)} />
+              <input value={values[c.key] ?? ''} onChange={set(c.key)} onBlur={() => save()} placeholder="—" style={inputStyle(c.key)} />
             </td>
           );
         })}
@@ -257,18 +257,19 @@ export default function UpworkUpdates({ onToast }) {
   };
 
   const deleteRow = async (values) => {
-    if (!window.confirm('Delete this row?')) return;
-    try {
-      await api(`/updates/${values._id}`, { method: 'DELETE' });
-      setEntries((prev) => {
-        const next = prev.filter((e) => e._id !== values._id);
-        if (addBelowId === values._id) setAddBelowId(next.length ? next[next.length - 1]._id : null);
-        return next;
-      });
-      onToast?.('Row deleted', 'success');
-    } catch (err) {
-      onToast?.(err.message || 'Failed to delete row', 'error');
-    }
+    onToast?.('Delete this row?', 'confirm', async () => {
+      try {
+        await api(`/updates/${values._id}`, { method: 'DELETE' });
+        setEntries((prev) => {
+          const next = prev.filter((e) => e._id !== values._id);
+          if (addBelowId === values._id) setAddBelowId(next.length ? next[next.length - 1]._id : null);
+          return next;
+        });
+        onToast?.('Row deleted', 'success');
+      } catch (err) {
+        onToast?.(err.message || 'Failed to delete row', 'error');
+      }
+    });
   };
 
   return (
