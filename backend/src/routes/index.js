@@ -28,5 +28,6 @@ router.use('/tasks', require('./tasks'));
 router.use('/chat', require('./chat'));
 router.use('/projects', require('./projects'));
 router.use('/upload', require('./upload'));
+router.use('/updates', require('./updates'));
 
 module.exports = router;

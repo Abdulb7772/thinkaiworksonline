@@ -10,6 +10,7 @@ import Toast from '../(protected)/components/Toast';
 import Overview from '../(protected)/components/Overview';
 import DashboardHome from '../(protected)/components/DashboardHome';
 import Upwork from '../(protected)/components/Upwork';
+import UpworkUpdates from '../(protected)/components/UpworkUpdates';
 import CRM from '../(protected)/components/CRM';
 import Meetings from '../(protected)/components/Meetings';
 import Employees from '../(protected)/components/Employees';
@@ -81,6 +82,7 @@ export default function Dashboard() {
     overview:         { comp: Overview,               props: { data, leads, onAddLead: addLead } },
     dashboard:        { comp: DashboardHome,         props: { data, onToast: showToast } },
     upwork:           { comp: Upwork,                 props: { leads, onAddLead: addLead, onRemoveLead: removeLead } },
+    updates:          { comp: UpworkUpdates,          props: {} },
     crm:              { comp: CRM,                    props: { data, onAddLead: addLead } },
     meetings:         { comp: Meetings,               props: { data, onRefresh: fetchData } },
     employees:        { comp: Employees,              props: { data, onRefresh: fetchData } },
