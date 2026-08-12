@@ -261,8 +261,7 @@ router.post('/forgot-password', async (req, res, next) => {
       $or: [{ email: normalizedEmail }, { notificationEmail: normalizedEmail }],
     });
     if (!user) {
-      // Keep generic response to avoid user enumeration
-      return res.json({ message: 'If an account exists, a verification code has been sent.' });
+      return res.status(404).json({ error: 'No account found with this email.' });
     }
 
     // key the OTP session to the email the user typed so confirm finds it
