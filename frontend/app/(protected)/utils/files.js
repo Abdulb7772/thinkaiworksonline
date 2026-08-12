@@ -1,6 +1,6 @@
 'use client';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 const ALLOWED_MIMES = ['image/jpeg','image/png','image/webp','image/gif','application/pdf'];
 const ALLOWED_EXTS = ['jpg','jpeg','png','webp','gif','pdf'];

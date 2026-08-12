@@ -4,7 +4,10 @@ const User = require('../models/User');
 const Client = require('../models/Client');
 const Employee = require('../models/Employee');
 const { sendMeetingCreated, sendMeetingFollowUp, sendMeetingCancelled, sendMeetingUpdated } = require('../services/emailService');
+const { protect } = require('../middleware/auth');
 const router = express.Router();
+
+router.use(protect);
 
 const toArr = (v) => Array.isArray(v) ? v : (v === undefined || v === null ? [] : [v]);
 

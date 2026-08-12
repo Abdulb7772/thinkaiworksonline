@@ -1,8 +1,11 @@
 const express = require('express');
 const UpdateEntry = require('../models/UpdateEntry');
 const { isDBConnected } = require('../config/db');
+const { protect } = require('../middleware/auth');
 
 const router = express.Router();
+
+router.use(protect);
 
 const FIELDS = ['platform', 'profile', 'niche', 'clientName', 'description', 'pInvite', 'doi', 'date', 'status', 'fu1', 'fu2', 'response', 'order'];
 

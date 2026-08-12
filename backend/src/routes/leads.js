@@ -1,6 +1,9 @@
 const express = require('express');
 const Lead = require('../models/Lead');
+const { protect } = require('../middleware/auth');
 const router = express.Router();
+
+router.use(protect);
 
 router.get('/', async (req, res, next) => {
   try {

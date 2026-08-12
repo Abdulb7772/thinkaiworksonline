@@ -1,6 +1,9 @@
 const express = require('express');
 const Ticket = require('../models/Ticket');
+const { protect } = require('../middleware/auth');
 const router = express.Router();
+
+router.use(protect);
 
 router.get('/', async (req, res, next) => {
   try {

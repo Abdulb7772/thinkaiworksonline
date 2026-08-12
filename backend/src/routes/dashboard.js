@@ -8,7 +8,10 @@ const Campaign = require('../models/Campaign');
 const Budget = require('../models/Budget');
 const User = require('../models/User');
 const Project = require('../models/Project');
+const { protect } = require('../middleware/auth');
 const router = express.Router();
+
+router.use(protect);
 
 function normalizeAttendanceLog(log) {
   if (!log) return {};

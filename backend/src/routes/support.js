@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/auth');
 const { callGemini, getFriendlyGeminiError, SYSTEM_PROMPT } = require('../utils/gemini');
+
+router.use(protect);
 router.post('/chat', async (req, res, next) => {
   try {
     const { message } = req.body;

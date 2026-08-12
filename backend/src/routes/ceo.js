@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/auth');
 const { callGemini, getFriendlyGeminiError } = require('../utils/gemini');
+
+router.use(protect);
 
 const CEO_SYSTEM_PROMPT = `You are Muhammad Ali, the CEO and founder of ThinkAIWorks. You are a real human being, not an AI assistant. You are warm, sharp, and straight forward.
 
